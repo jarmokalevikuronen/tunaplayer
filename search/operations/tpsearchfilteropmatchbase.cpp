@@ -1,0 +1,96 @@
+/*
+This file is part of tunaplayer project
+Copyright (C) 2012  Jarmo Kuronen <jarmok@iki.fi>
+
+This is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This software is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this software; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
+#include "tpsearchfilteropmatchbase.h"
+#include "tpschemes.h"
+#include "tpsearchfilterevalargs.h"
+
+TPSearchFilterOpMatchBase::TPSearchFilterOpMatchBase()
+{
+}
+
+bool TPSearchFilterOpMatchBase::addArg(const QString arg)
+{
+    if (!value1.isSetUp())
+        return value1.parse(arg);
+    else if (!value2.isSetUp())
+        return value2.parse(arg);
+
+    return false;
+}
+
+const QString TPSearchFilterOpMatchBase::evalValue(Value &valRef, TPSearchFilterEvalArgs &args)
+{
+    if (valRef.scheme == Value::ValueTargetObject)
+        return args.object()->getString(valRef.value);
+    else if (valRef.scheme == Value::ValueTargetParameter)
+        return args.args()->argValue(valRef.value);
+    else if (valRef.scheme == Value::ValueTargetValue)
+        return valRef.value;
+
+    return QString();
+}
+
+qint64 TPSearchFilterOpMatchBase::evalValueNum(Value &valRef, TPSearchFilterEvalArgs &args)
+{
+    // TODO: cache the value is scheme is value:// or parameter://
+    return evalValue(valRef, args).toLongLong();
+}
+
+
+const QString TPSearchFilterOpMatchBase::evalValue1(TPSearchFilterEvalArgs &args)
+{
+    return evalValue(value1, args);
+}
+
+qint64 TPSearchFilterOpMatchBase::evalValue1Num(TPSearchFilterEvalArgs &args)
+{
+    return evalValueNum(value1, args);
+}
+
+const QString TPSearchFilterOpMatchBase::evalValue2(TPSearchFilterEvalArgs &args)
+{
+    return evalValue(value2, args);
+}
+
+qint64 TPSearchFilterOpMatchBase::evalValue2Num(TPSearchFilterEvalArgs &args)
+{
+    return evalValueNum(value2, args);
+}
+
+bool TPSearchFilterOpMatchBase::Value::parse(const QString line)
+{
+    if (line.startsWith(schemeValue))
+    {
+        value = line.mid(schemeValue.length());
+        scheme = ValueTargetValue;
+    }
+    else if (line.startsWith(schemeParameter))
+    {
+        value = line.mid(schemeParameter.length());
+        scheme = ValueTargetParameter;
+    }
+    else if (line.startsWith(schemeObject))
+    {
+        value = line.mid(schemeObject.length());
+        scheme = ValueTargetObject;
+    }
+
+    return scheme != ValueTargetInvalid;
+}

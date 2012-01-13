@@ -1,0 +1,152 @@
+#include <QDirIterator>
+
+#include "playlistmgr.h"
+#include "playlistutils.h"
+#include "tppathutils.h"
+
+PlaylistMgr::PlaylistMgr(QObject *parent) : QAbstractListModel(parent)
+{
+    // Setup roles
+    QHash<int, QByteArray> roles;
+    roles.insert(NameRole, "name");
+    roles.insert(CountRole, "tracks");
+    roles.insert(LengthRole, "duration");
+    roles.insert(IdRole, "id");
+    roles.insert(CategoryRole, "category");
+    roles.insert(SmallArtRole, "art.small");
+    roles.insert(LargeArtRole, "art.large");
+    setRoleNames(roles);
+
+    db = new TPAssociativeDB(this, TPPathUtils::getPlaylistDbFilename());
+}
+
+PlaylistMgr::~PlaylistMgr()
+{
+    for (int i=0;i<playlists.count();++i)
+        playlists.at(i)->dec();
+
+    playlists.clear();
+
+    if (db)
+        db->saveIfDirty();
+
+    delete db;
+}
+
+void PlaylistMgr::scanPlaylists(TrackDB &trackDB, AlbumDB &albumDB, QStringList folders)
+{
+    QStringList playlistFiles;
+
+    QStringList::iterator it = folders.begin();
+    while (it != folders.end())
+    {
+        listPlaylistFiles(*it, playlistFiles);
+        ++it;
+    }
+
+    it = playlistFiles.begin();
+    while (it != playlistFiles.end())
+    {
+        addPlaylist(PlaylistUtils::importLocalPlaylist(trackDB, albumDB, db, *it));
+        ++it;
+    }
+}
+
+void PlaylistMgr::listPlaylistFiles(const QString folder, QStringList &list)
+{
+    QStringList nameFilters; nameFilters << "*.m3u" << "*.M3U";
+
+    QDirIterator *dirIterator = new QDirIterator(
+                    folder,
+                    nameFilters,
+                    QDir::Readable | QDir::Files,
+                    QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
+
+    while (dirIterator->hasNext())
+    {
+        dirIterator->next();
+        list.append(dirIterator->fileInfo().absoluteFilePath());
+    }
+    delete dirIterator;
+
+}
+
+Playlist* PlaylistMgr::getPlaylistByName(const QString name)
+{
+    if (name.length() == 0)
+        return NULL;
+
+    QList<Playlist*>::iterator it = playlists.begin();
+    while (it != playlists.end())
+    {
+        Playlist *current = *it;
+
+        if (current->getName() == name)
+            return current;
+
+        ++it;
+    }
+    return NULL;
+}
+
+bool PlaylistMgr::removePlaylistById(const QString id)
+{
+    Playlist *playlist = getPlaylistById(id);
+    if (playlist)
+        return removePlaylistByName(playlist->getName());
+
+    return false;
+}
+
+bool PlaylistMgr::removePlaylistByName(const QString name)
+{
+    Playlist *playlist = getPlaylistByName(name);
+    if (playlist)
+    {
+        int index = playlists.indexOf(playlist);
+        if (index >= 0)
+        {
+            playlist->dec();
+            playlists.removeAt(index);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+//
+
+void PlaylistMgr::addPlaylist(Playlist *playlist)
+{
+    if (!playlist)
+        return;
+
+    int indexOf = playlists.indexOf(playlist);
+    // Already added -> just leave silently..
+    if (indexOf >= 0)
+        return;
+
+    Playlist *existing = getPlaylistByName(playlist->getName());
+    if (existing)
+    {
+        QString basename = playlist->getName();
+        QString newname;
+        int index = 1;
+        do
+        {
+            newname = basename;
+            newname += " (";
+            newname += QString::number(index++);
+            newname += ")";
+            existing = getPlaylistByName(newname);
+        } while (existing);
+
+        playlist->setName(newname);
+    }
+
+    beginInsertRows(QModelIndex(), playlists.count(), playlists.count());
+    playlists.append(playlist);
+    endInsertRows();
+}
+

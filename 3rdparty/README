@@ -1,0 +1,5 @@
+Subfolders under this folder contains various 3rd party components
+that are compiled "in" to the tunaplayer.
+
+json: From: https://github.com/ereilin/qt-json. License: Unknown
+libwebsocket: Lisence LGPL.

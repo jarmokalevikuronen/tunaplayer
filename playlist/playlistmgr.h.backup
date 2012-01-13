@@ -1,0 +1,207 @@
+#ifndef PLAYLISTMGR_H
+#define PLAYLISTMGR_H
+
+#include <QList>
+#include <QStringList>
+#include <QAbstractListModel>
+#include <QDebug>
+#include "playlist.h"
+#include "trackdb.h"
+#include "albumdb.h"
+#include "tpassociative.h"
+#include "tpschemes.h"
+#include "playlistutils.h"
+
+class PlaylistMgr : public QAbstractListModel
+{
+    Q_OBJECT
+
+private: // Enums
+
+    enum Roles
+    {
+        NameRole = Qt::UserRole + 1,
+        TypeRole,
+        CountRole,
+        LengthRole,
+        IdRole,
+        CategoryRole,
+        SmallArtRole,
+        LargeArtRole
+    };
+
+private: // From QAbstractListModel
+
+    int rowCount(const QModelIndex &index) const
+    {
+        if (index.isValid())
+            return 0;
+
+        return count();
+    }
+
+    QVariant data(const QModelIndex &index, int role) const
+    {
+        if (!index.isValid())
+            return QVariant();
+
+        Playlist *p = playlists.at(index.row());
+
+        if (role == Qt::DisplayRole || role == NameRole)
+            return QVariant(p->getName());
+        else if (role == CountRole)
+            return QVariant(p->count());
+        else if (role == LengthRole)
+            return QVariant(p->getLength());
+        else if (role == IdRole)
+            return QVariant(idOf(p));
+        else if (role == CategoryRole)
+            return QVariant(p->getCategory());
+        else if (role == SmallArtRole)
+            return QVariant(p->getSmallArtName());
+        else if (role == LargeArtRole)
+            return QVariant(p->getLargeArtName());
+
+        return QVariant();
+    }
+
+
+public:
+
+    PlaylistMgr(QObject *parent = NULL);
+    ~PlaylistMgr();
+
+    //! @brief Scans a specific folder for playlists and parses those into objects
+    //! @folder where to search playlists from.
+    void scanPlaylists(TrackDB &trackDB, AlbumDB &albumDB, QStringList folders);
+
+    inline int count() const
+    {
+        return playlists.count();
+    }
+
+    inline Playlist* getPlaylist(int index) const
+    {
+        return playlists.at(index);
+    }
+
+    inline int indexOf(Playlist *playlist) const
+    {
+        return playlists.indexOf(playlist);
+    }
+
+    inline Track* findTrack(const QString id)
+    {
+        for (int i=0;i<playlists.count();++i)
+        {
+            Track *track = playlists.at(i)->findTrack(id);
+            if (track)
+                return track;
+        }
+
+        return NULL;
+    }
+
+    inline Playlist* getPlaylist(const QString someId)
+    {
+        Playlist *pl = getPlaylistByName(someId);
+        return pl ? pl : getPlaylistById(someId);
+    }
+
+    inline Playlist* getPlaylistById(const QString id)
+    {
+        Playlist *playlist = (Playlist *)TPUtils::toPtr(id, schemePlaylist);
+
+        if (playlists.indexOf(playlist) >= 0)
+            return playlist;
+
+        return NULL;
+    }
+
+    inline QString idOf(Playlist *pl) const
+    {
+        return pl->identifier(true);
+    }
+
+    //! @brief Reloads a playlist from a file.
+    bool reloadPlaylist(Playlist *pl)
+    {
+        Q_ASSERT(pl);
+
+        int idx = playlists.indexOf(pl);
+        if (idx < 0)
+            return false;
+        playlists.removeAt(idx);
+
+        Playlist *reloaded = PlaylistUtils::importLocalPlaylist(TrackDB::instance(), AlbumDB::instance(), db, pl->getFilename());
+        if (!reloaded)
+            return false;
+        playlists.append(reloaded);
+
+        return true;
+    }
+
+    Playlist* getPlaylistByName(const QString name);
+    bool removePlaylistByName(const QString name);
+    bool removePlaylistById(const QString id);
+    bool removePlaylist(const QString someId)
+    {
+        return removePlaylistById(someId) || removePlaylistByName(someId);
+    }
+
+    //! @brief Adds a playlist. Pointer ownership transfers.
+    //! @param playlist playlist to be added.
+    void addPlaylist(Playlist *playlist);
+
+    const QString uniquePlaylistName(const QString name)
+    {
+        Playlist *existing = getPlaylistByName(name);
+        if (existing)
+        {
+            QString basename = name;
+            QString newname;
+            int index = 2;
+            do
+            {
+                newname = basename;
+                newname += " (";
+                newname += QString::number(index++);
+                newname += ")";
+                existing = getPlaylistByName(newname);
+            } while (existing);
+
+            return newname;
+        }
+
+        return name;
+    }
+
+    Playlist* createEmptyPlaylist()
+    {
+        return new Playlist();
+    }
+
+    Playlist* createPlaylist(const QString uniqueName)
+    {
+        if (getPlaylistByName(uniqueName))
+            return NULL;
+
+        // TODO: Should fix the name through some function that will
+        // remove unwanted characters if such exists.
+        Playlist *pl = new Playlist(uniqueName, db, TPPathUtils::getPlaylistFolder() + uniqueName + ".m3u");
+
+        return pl;
+    }
+
+
+private:
+
+    void listPlaylistFiles(const QString folder, QStringList &list);
+
+private:
+
+    TPAssociativeDB *db;
+    QList< Playlist *> playlists;
+};
+
+#endif // PLAYLISTMGR_H

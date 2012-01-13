@@ -1,0 +1,220 @@
+# -------------------------------------------------
+# Project created by QtCreator 2011-03-22T22:27:20
+# -------------------------------------------------
+
+CONFIG += console
+CONFIG -= app_bundle
+INCLUDEPATH += ./playlist ./feed ./webserver ./webserver/libwebsocket ./albumart/util ./albumart/fetch ./basictypes ./search ./alsa
+
+# TAGLIB
+LIBS += -L/usr/lib/ -ltag
+# ALSA
+LIBS += -L/usr/lib/ -lasound
+
+QT += gui
+QT += network
+QT += xml
+TEMPLATE = app
+
+##### BEGIN PLAYER
+DEPENDPATH += ./player
+SOURCES += player.cpp \
+    tpreferencecounted.cpp \
+    playerengine.cpp \
+    musicplayercore.cpp \
+    feed/tpfeedmgr.cpp \
+    feed/tpfeed.cpp \
+    feed/tpfeeddownloader.cpp \
+    tpassociative.cpp \
+    tpmediafilemetaextractor.cpp \
+    tpsettings.cpp \
+    tppathutils.cpp \
+    albumart/fetch/tplastfmimagesearch.cpp \
+    albumart/fetch/googleimagesearch.cpp \
+    albumart/fetch/albumartdownloadrequest.cpp \
+    albumart/fetch/albumartdownloadmodel.cpp \
+    albumart/fetch/albumartdownloader.cpp \
+    albumart/util/albumartutil.cpp \
+    tputils.cpp \
+    playlist/tpplaylistrunner.cpp \
+    tpidbase.cpp \
+    search/tpstoredprocedureargs.cpp \
+    search/tpsearchfilterevalargs.cpp \
+    search/operations/tpsearchfilteropand.cpp \
+    search/operations/tpsearchfilteropor.cpp \
+    search/operations/tpsearchfilteropnand.cpp \
+    search/operations/tpsearchfilteropcontainerbase.cpp \
+    search/operations/tpsearchfilteropmatchbase.cpp \
+    search/operations/tpsearchfiltermatchcontains.cpp \
+    search/operations/tpsearchfiltermatchequals.cpp \
+    search/operations/tpsearchfiltermatchstartswith.cpp \
+    search/operations/tpsearchfiltermatchendswith.cpp \
+    search/operations/tpsearchfiltermatchcomparenum.cpp \
+    search/operations/tpsearchfilteropfactory.cpp \
+    search/sort/sorting.cpp \
+    search/tpstoredprocedure.cpp \
+    albumart/fetch/tpautomaticalbumartdownloader.cpp \
+    search/tpsearchfacadedataproviderinterface.cpp \
+    search/tpsearchfacadedataproviders.cpp \
+    search/tpsearchobjectprovider.cpp \
+    search/tpsearchresults.cpp \
+    search/tpstoredprocedurerequest.cpp \
+    search/tpstoreprocedurerunner.cpp \
+    db/tptrackdb.cpp \
+    db/tpartistdb.cpp \
+    db/tpalbumdb.cpp \
+    db/tpdatabases.cpp \
+    tpplaybackstatisticscollector.cpp \
+    search/tpstoredproceduremgr.cpp \
+    basictypes/tpartist.cpp \
+    tpaudioutils.cpp \
+    tpfilescanner.cpp \
+    basictypes/tpalbum.cpp \
+    tpgenre.cpp \
+    basictypes/tptrack.cpp \
+    tpclargs.cpp \
+    alsa\tpalsavolume.cpp
+
+HEADERS += player.h \
+    tpreferencecounted.h \
+    playerengine.h \
+    musicplayercore.h \
+    feed/tpfeedmgr.h \
+    feed/tpfeed.h \
+    feed/tpfeeddownloader.h \
+    tpassociative.h \
+    tpassociativemeta.h \
+    tpmediafilemetaextractor.h \
+    tpsettings.h \
+    tppathutils.h \
+    albumart/fetch/tplastfmimagesearch.h \
+    albumart/fetch/googleimagesearch.h \
+    albumart/fetch/albumartdownloadrequest.h \
+    albumart/fetch/albumartdownloadmodel.h \
+    albumart/fetch/albumartdownloader.h \
+    albumart/util/albumartutil.h \
+    tputils.h \
+    playlist/tpplaylistrunner.h \
+    tpidbase.h \
+    tpidbasemap.h \
+    tpschemes.h \
+    search/tpstoredprocedureargs.h \
+    search/operations/tpsearchfilteropinterface.h \
+    search/tpsearchfilterevalargs.h \
+    search/operations/tpsearchfilteropand.h \
+    search/operations/tpsearchfilteropor.h \
+    search/operations/tpsearchfilteropnand.h \
+    search/operations/tpsearchfilteropcontainerbase.h \
+    search/operations/tpsearchfilteropmatchbase.h \
+    search/operations/tpsearchfiltermatchcontains.h \
+    search/operations/tpsearchfiltermatchequals.h \
+    search/operations/tpsearchfiltermatchstartswith.h \
+    search/operations/tpsearchfiltermatchendswith.h \
+    search/operations/tpsearchfiltermatchcomparenum.h \
+    search/operations/tpsearchfilteropfactory.h \
+    search/sort/sorting.h \
+    search/tpstoredprocedure.h \
+    albumart/fetch/tpautomaticalbumartdownloader.h \
+    search/tpsearchfacadedataproviderinterface.h \
+    search/tpsearchfacadedataproviders.h \
+    search/tpsearchobjectprovider.h \
+    search/tpsearchresults.h \
+    search/tpstoredprocedurerequest.h \
+    search/tpstoreprocedurerunner.h \
+    db/tpdbtemplate.h \
+    db/tptrackdb.h \
+    db/tpartistdb.h \
+    db/tpalbumdb.h \
+    db/tpdatabases.h \
+    musicplaybackdefines.h \
+    tpplaybackstatisticscollector.h \
+    search/tpstoredproceduremgr.h \
+    basictypes/tpartist.h \
+    tpaudioutils.h \
+    tpfilescanner.h \
+    basictypes/tpalbum.h \
+    tpplayerif.h \
+    tpgenre.h \
+    basictypes/tptrack.h \
+    webserver/tpprotocoldefines.h \
+    tplog.h \
+    tpclargs.h \
+    alsa\tpalsavolume.h
+##### END PLAYER
+
+##### BEGIN JSON
+DEPENDPATH += ./3rdparty/json
+SOURCES += ./3rdparty/json/json.cpp
+HEADERS += ./3rdparty/json/json.h
+INCLUDEPATH += ./3rdparty/json
+#### END JSON
+
+##### BEGIN TAGLIB
+INCLUDEPATH += /usr/include/taglib
+##### END TAGLIB
+
+##### BEGIN LIBWEBSOCKET
+DEPENDPATH += ./3rdparty/libwebsocket
+SOURCES += ./3rdparty/libwebsocket/sha-1.c \
+    ./3rdparty/libwebsocket/parsers.c \
+    ./3rdparty/libwebsocket/md5.c \
+    ./3rdparty/libwebsocket/libwebsockets.c \
+    ./3rdparty/libwebsocket/handshake.c \
+    ./3rdparty/libwebsocket/extension-x-google-mux.c \
+    ./3rdparty/libwebsocket/extension-deflate-stream.c \
+    ./3rdparty/libwebsocket/extension.c \
+    ./3rdparty/libwebsocket/client-handshake.c \
+    ./3rdparty/libwebsocket/base64-decode.c
+
+HEADERS += ./3rdparty/libwebsocket/private-libwebsockets.h \
+    ./3rdparty/libwebsocket/libwebsockets.h \
+    ./3rdparty/libwebsocket/extension-x-google-mux.h \
+    ./3rdparty/libwebsocket/extension-deflate-stream.h
+##### END LIBWEBSOCKET
+
+##### BEGIN WEBSERVER
+DEPENDPATH += ./webserver
+SOURCES += ./webserver/tplibwebsocketinterface.cpp \
+    ./webserver/tpwebsocketvirtualfolder.cpp \
+    ./webserver/tpwebsocketprotocol.cpp \
+    ./webserver/tpwebsocketprotocolmessage.cpp
+
+HEADERS += ./webserver/tplibwebsocketinterface.h \
+    ./webserver/tpwebsocketdataproviderinterface.h \
+    ./webserver/tpwebsocketvirtualfolder.h \
+    ./webserver/tpwebsocketprotocol.h \
+    ./webserver/tpwebsocketprotocolmessage.h
+##### END WEBSERVER
+
+##### BEGIN PLAYLISTS
+DEPENDPATH += ./playlist
+
+HEADERS += ./playlist/playlistutils.h \
+    ./playlist/playlistmgr.h \
+    ./playlist/playlist.h
+SOURCES += ./playlist/playlistutils.cpp \
+    ./playlist/playlistmgr.cpp \
+    ./playlist/playlist.cpp
+##### END PLAYLISTS
+
+#### BEGIC BASIC TYPES and containers
+DEPENDPATH += ./basictypes
+#### END BASIC TYPES
+
+
+
+SOURCES += main.cpp
+
+
+TARGET = tunaplayer
+CONFIG(debug, debug|release) { 
+    message("Debug build of tunaPlayer")
+    CONFIG += -DDEBUG -D_DEBUG
+    DESTDIR = ./tunaplayer-debug
+    OBJECTS_DIR = ./tunaplayer-debug/objects
+}
+else { 
+    message("Release build of tunaPlayer")
+    DESTDIR = ./tunaplayer-release
+    OBJECTS_DIR = ./tunaplayer-release/objects
+}
