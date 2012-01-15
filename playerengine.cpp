@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <QDebug>
 #include "playerengine.h"
+#include "tplog.h"
 
 TPPlayerProxy::TPPlayerProxy(PlayerBackend_MPlayer *_player, QObject *parent) :
     QObject(parent), player(_player)
@@ -98,14 +99,45 @@ bool TPPlayerProxy::Execute(const QString &command, bool ignoreCheck)
     {
         QString seekWithDelimiter(playerCmdSeek + ":");
 
-        int position = command.mid(seekWithDelimiter.length()).toInt();
+        QString remainder = command.mid(seekWithDelimiter.length());
+        if (!remainder.length())
+        {
+            ERROR() << "PLAYER: Invalid seek command";
+            return false;
+        }
+
+        DEBUG() << "PLAYER: seek instruction: " << remainder;
+
+        int position = 0;
+        if (remainder.endsWith('%'))
+        {
+            int percents = remainder.mid(0, remainder.length()-1).toInt();
+            DEBUG() << "PLAYER: Seek Percents: " << percents;
+            // range to 1..99
+            percents = qMin(99, percents);
+            percents = qMax(1, percents);
+
+            if (!playlistRunner->getCurrentTrack())
+                return false;
+
+            int len = playlistRunner->getCurrentTrack()->getLen();
+            if (len < 1)
+                return false;
+
+            position = len * percents;
+            position /= 100;
+            DEBUG() << "PLAYER: seek percents " << percents << " translated to seconds " << position;
+        }
+        else
+            position = remainder.toInt();
+
         if (position < 0)
             position = 0;
         result = seekToPosition(position);
     }
     else
     {
-        qDebug() << "PLAYER: Unsupported command: " << command;
+        ERROR() << "PLAYER: Unsupported command: " << command;
     }
 
     return result;
