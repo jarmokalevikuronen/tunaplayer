@@ -693,10 +693,17 @@ void TPMusicPlayerCore::currentPlaybackPositionChanged(TPTrack *track, int secon
 
     if (track)
     {
-        if (track->getLen() >= seconds)
-            percents = (seconds * 100) / track->getLen();
+        int len = track->getLen();
 
-        emit playbackPositionChanged(seconds, track->getLen(), (100 * seconds) / track->getLen());
+        if (len <= 0)
+            emit playbackPositionChanged(seconds, 0, 0);
+        else
+        {
+            if (len >= seconds)
+                percents = (seconds * 100) / len;
+
+            emit playbackPositionChanged(seconds, len, percents);
+        }
     }
     else
     {
