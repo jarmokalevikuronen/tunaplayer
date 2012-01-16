@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <QObject>
 #include <QProcess>
+#include <QTimer>
 #include "tptrack.h"
 
 
@@ -105,6 +106,8 @@ private slots:
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void processHasStdoutData();
 
+    void runWatchdog();
+
 public:
 
     bool seekTo(int seconds);
@@ -117,6 +120,8 @@ public:
 
 private:
 
+    void kickWatchdog();
+    void stopWatchdog();
     void changeToState(State _state);
     void processOutput(QString );
     void setNewPlaybackPosition(int position);
@@ -131,6 +136,9 @@ private:
     bool muted;
     bool ignoreStateChange;
     bool playbackLengthReported;
+
+    //! Watchdog  used to monitor for MPlayer that occasionally "hangs"
+    QTimer watchdog;
 };
 
 #endif // PLAYER_H

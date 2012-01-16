@@ -27,10 +27,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 PlayerBackend_MPlayer::PlayerBackend_MPlayer(QObject *parent) :
     QObject(parent)
 {
+    // Connect to process signals
     QObject::connect(&process, SIGNAL(error(QProcess::ProcessError)), SLOT(processError(QProcess::ProcessError)));
     QObject::connect(&process, SIGNAL(finished(int,QProcess::ExitStatus)), SLOT(processFinished(int,QProcess::ExitStatus)));
     QObject::connect(&process, SIGNAL(readyReadStandardOutput()), SLOT(processHasStdoutData()));
     QObject::connect(&process, SIGNAL(readyReadStandardError()), SLOT(processHasStdoutData()));
+
+    // Connecto to watchdog signals
+    QObject::connect(&watchdog, SIGNAL(timeout()), this, SLOT(runWatchdog()));
+    watchdog.setSingleShot(true);
 
     playbackPosition = -1;
     muted = false;
@@ -45,6 +50,8 @@ PlayerBackend_MPlayer::~PlayerBackend_MPlayer()
     disconnect(&process, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(processFinished(int,QProcess::ExitStatus)));
     disconnect(&process, SIGNAL(readyReadStandardOutput()), this, SLOT(processHasStdoutData()));
     disconnect(&process, SIGNAL(readyReadStandardError()), this, SLOT(processHasStdoutData()));
+
+    disconnect(&watchdog, SIGNAL(timeout()), this, SLOT(runWatchdog()));
 
     process.terminate();
     process.close();
@@ -181,6 +188,8 @@ void PlayerBackend_MPlayer::setNewStreamTitle(const QString title)
 
 void PlayerBackend_MPlayer::processHasStdoutData()
 {
+    kickWatchdog();
+
     QString output = process.readAllStandardError();
     output += process.readAllStandardOutput();
     processOutput(output.trimmed());
@@ -188,6 +197,8 @@ void PlayerBackend_MPlayer::processHasStdoutData()
 
 void PlayerBackend_MPlayer::processFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
+    stopWatchdog();
+
     Q_UNUSED(exitCode);
     Q_UNUSED(exitStatus);
     changeToState(Stopped);
@@ -195,6 +206,8 @@ void PlayerBackend_MPlayer::processFinished(int exitCode, QProcess::ExitStatus e
 
 void PlayerBackend_MPlayer::processError(QProcess::ProcessError err)
 {
+    stopWatchdog();
+
     ERROR() << "MPLAYER: processError: " << err;
     if (state != Paused)
         stop(false);
@@ -210,6 +223,7 @@ bool PlayerBackend_MPlayer::play(TPTrack *track)
     {
         process.terminate();
         process.waitForFinished(3000);
+        process.close();
 
         playbackLengthReported = track->getLen() > 0;
         QString filename;
@@ -227,9 +241,12 @@ bool PlayerBackend_MPlayer::play(TPTrack *track)
         else
             cli = TPSettings::instance().get(settingPlayTrackCmd).toString().arg(filename);
 
-        DEBUG() << "MPLAYER: executing cli " << cli;
+        DEBUG() << "PLAYER: executing cli " << cli;
         process.start(cli);
         status = process.waitForStarted(5000);
+
+        if (status)
+            kickWatchdog();
 
         if (status && muted)
             mute(true);
@@ -347,3 +364,25 @@ void PlayerBackend_MPlayer::changeToState(State _state)
             emit playerStateChanged(state);
     }
 }
+
+void PlayerBackend_MPlayer::kickWatchdog()
+{
+    watchdog.stop();
+    watchdog.start(1000 * 15); // 15s watchdog timer.
+}
+
+void PlayerBackend_MPlayer::runWatchdog()
+{
+    ERROR() << "PLAYER: Watchdog expired. Stopping player process.";
+
+    process.terminate();
+    process.waitForFinished(3000);
+    process.close();
+    changeToState(Stopped);
+}
+
+void PlayerBackend_MPlayer::stopWatchdog()
+{
+    watchdog.stop();
+}
+

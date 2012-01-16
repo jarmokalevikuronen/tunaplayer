@@ -101,4 +101,7 @@ static const QString protocolEventStartupProgressArgPercents("percent");
 static const QString protocolEventVolumeChanged("volumechanged");
 static const QString protocolEventVolumeChangedArgPercentsKey("percents");
 
+// Reported when current playlist has changed.
+static const QString protocolEventCurrentPlaylistChanged("currentplaylistchanged");
+
 #endif // TPPROTOCOLDEFINES_H

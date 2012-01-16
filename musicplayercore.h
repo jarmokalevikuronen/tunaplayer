@@ -134,14 +134,6 @@ tehdään kopio ja sitä rataa!!!
     bool saveCurrentPlaylist(const QString name);
 
     bool removePlaylist(const QString id);
-#if 0
-    Q_INVOKABLE const QString  getActivePlaylistName() const
-    {
-        Q_ASSERT(playlistModel);
-        return playlistModel->playlistName();
-    }
-#endif
-
 
     //! @brief Searches a album art from the supported
     //! services (lastfm, google image search)
@@ -221,13 +213,6 @@ tehdään kopio ja sitä rataa!!!
 
     bool executePlaybackOperation(const QString operation);
 
-#if 0
-    inline PlaylistModel* getPlaylistModel() const
-    {
-        Q_ASSERT(playlistModel);
-        return playlistModel;
-    }
-#endif
     inline TPAlbumArtDownloadModel* getAlbumArtDownloadModel() const
     {
         Q_ASSERT(albumArtDownloader);

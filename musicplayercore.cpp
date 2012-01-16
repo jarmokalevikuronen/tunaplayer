@@ -666,7 +666,7 @@ void TPMusicPlayerCore::albumArtDownloaded(int index)
 
 void TPMusicPlayerCore::albumArtDownloadComplete()
 {
-    DEBUG() << "CORE: STATE: albumArtDownloadComplate";
+    DEBUG() << "CORE: STATE: albumArtDownloadComplete";
 
     protocolReportEvent(protocolEventAlbumArtSearchComplete);
 }
@@ -684,6 +684,8 @@ void TPMusicPlayerCore::currentTrackChanged(TPTrack *track)
         emit playingAlbumChanged();
         protocolReportEvent(protocolEventPlaybackAlbumChanged);
     }
+
+    protocolReportEvent(protocolEventCurrentPlaylistChanged);
 }
 
 void TPMusicPlayerCore::currentPlaybackPositionChanged(TPTrack *track, int seconds)
@@ -872,7 +874,10 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
             if (objectId.isValid() && !objectId.isNull())
             {
                 if (addToPlaylist(objectId, position))
+                {
                     protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+                    protocolReportEvent(protocolEventCurrentPlaylistChanged);
+                }
                 else
                     protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
             }
