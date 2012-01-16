@@ -603,6 +603,9 @@ bool TPMusicPlayerCore::setActivePlaylist(const QString nameOrId)
 
     playbackOperationsChanged();
 
+    // notify all clients that current playlist has changed..
+    protocolReportEvent(protocolEventCurrentPlaylistChanged);
+
     return true;
 }
 
@@ -951,6 +954,8 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
             if (pl)
                 pl->shuffle();
             protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+            if (pl)
+                protocolReportEvent(protocolEventCurrentPlaylistChanged);
         }
         else if (msgId == protocolCommandSeekToTrack)
         {
