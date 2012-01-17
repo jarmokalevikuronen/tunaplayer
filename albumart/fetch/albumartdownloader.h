@@ -24,7 +24,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QImage>
 #include <QPixmap>
 #include "albumartdownloadrequest.h"
-#include "albumartdownloadmodel.h"
 #include "tpschemes.h"
 
 class TPAlbumArtDownloadRequest;
@@ -37,8 +36,11 @@ class Album;
 class TPAlbumArtDownloader : public QObject
 {
     Q_OBJECT
+
 public:
+
     explicit TPAlbumArtDownloader(QObject *parent = 0);
+    ~TPAlbumArtDownloader();
 
     bool exec(TPAlbumArtDownloadRequest *_request, const QString services = "");
 
@@ -49,44 +51,31 @@ public:
 
     inline TPAlbum *currentAlbum() const
     {
-        if (request)
-            return request->getAlbum();
-
-        return NULL;
+        return request ? request->getAlbum() : 0;
     }
 
-    int idToIndex(const QString id)
-    {
-        if (!id.startsWith(schemeDlAlbumArt))
-            return -1;
-
-        bool ok = false;
-        int index = id.mid(schemeDlAlbumArt.length()).toInt(&ok);
-
-        return ok ? index : -1;
-    }
-
+    //! @brief Returns a full path to file specified by a index
     const QString getFullPathToFile(int index);
+
+    //! @brief Converts a index to a filename.
     const QString indexToFilename(int index);
 
-    TPAlbumArtDownloadModel *getModel() const
+    //! @brief Saves downloaded image as album art of the given album
+    //! @param id idenfier of the downloaded album art to save
+    //! @param album album that this downloaded art shall be bound to.
+    bool saveImage(const QString id, TPAlbum *album);
+
+    inline void reset()
     {
-        return model;
+        images.clear();
+        cachedIndexes.clear();
     }
 
-    bool saveImage(const QString id, TPAlbum *album)
-    {
-        int index = idToIndex(id);
-        if (index < 0)
-            return false;
+private:
 
-        return model->saveImage(index, album);
-    }
-
-    void reset()
-    {
-        model->clearImages();
-    }
+    int idToIndex(const QString id);
+    int getNextIndex();
+    void cleanDownloadFolder();
 
 signals:
 
@@ -102,11 +91,13 @@ private slots:
 
 private:
 
+    //! Completion percentage.
     int percentsComplete;
 
     //! Album art download request
     TPAlbumArtDownloadRequest *request;
 
+    //! Total amount of image downloaded so far.
     int totalImagesDownloaded;
 
     //! Class doing searches using google image search API (json)
@@ -119,11 +110,13 @@ private:
     int lastfmImages;
     bool lastfmComplete;
 
-
-    // Download mode if any.
-    TPAlbumArtDownloadModel *model;
-
     QList<int>  cachedIndexes;
+
+
+    QMap<int, QImage>   images;
+
+    //! Cached value that is used to track previous index.
+    int nextIndex;
 };
 
 #endif // ALBUMARTDOWNLOADER_H

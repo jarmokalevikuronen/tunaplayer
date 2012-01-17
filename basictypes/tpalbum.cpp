@@ -275,9 +275,9 @@ QMap<QString, QVariant> TPAlbum::toMap(QStringList *filteredKeys)
         values.insert(albumAttrArtistId, getString(albumAttrArtistId));
         values.insert(objectAttrIdentifier, getString(objectAttrIdentifier));
         if (smallArt)
-            values.insert(albumAttrArtSmall, getString(albumAttrArtSmall));
+            values.insert(albumAttrArtSmall, TPPathUtils::getNormalizedPathForWebServer(fullPathToAlbumArt(ESmallArt)));
         if (largeArt)
-            values.insert(albumAttrArtLarge, getString(albumAttrArtLarge));
+            values.insert(albumAttrArtLarge, TPPathUtils::getNormalizedPathForWebServer(fullPathToAlbumArt(EBigArt)));
     }
 
     return values;

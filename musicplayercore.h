@@ -186,39 +186,10 @@ tehdään kopio ja sitä rataa!!!
         }
     }
 
-    bool selectSearchedAlbumArt(const QString id)
-    {
-        bool success = false;
-
-        if (currentArtDownloadAlbum)
-        {
-            success = albumArtDownloader->saveImage(id, currentArtDownloadAlbum);
-            albumArtDownloader->reset();
-
-            if (success)
-            {
-                TPTrack *current = player->getCurrentTrack();
-                if (current && current->getAlbum() == currentArtDownloadAlbum)
-                    // TODO: We should actually emit a protocol event here, should not we?
-                    // Lets notify with signal that the album cover that is show somewhere has changed also.
-                    emit playingAlbumChanged();
-            }
-
-            currentArtDownloadAlbum->dec();
-            currentArtDownloadAlbum = NULL;
-        }
-
-        return success;
-    }
+    bool selectSearchedAlbumArt(const QString id);
 
     bool executePlaybackOperation(const QString operation);
 
-    inline TPAlbumArtDownloadModel* getAlbumArtDownloadModel() const
-    {
-        Q_ASSERT(albumArtDownloader);
-
-        return albumArtDownloader->getModel();
-    }
 
     inline TPPlayerProxy* getPlayer() const
     {
@@ -240,15 +211,6 @@ tehdään kopio ja sitä rataa!!!
         return db->getFeedDB();
     }
 
-
-    //! @brief returns a full path to album art file for a specific object
-    //! object can be track, artist, album, playlist or basically whatever
-    //! object tjat supports arts in a first place.
-    //! @param id identifier to be seached for.
-    //! @param type describes the type of image. Accepted values are
-    //! "small" => For smaller size of image
-    //! "large" => For larger album art image.
-    const QString albumArtPath(const QString id, const QString type);
 
 signals:
 

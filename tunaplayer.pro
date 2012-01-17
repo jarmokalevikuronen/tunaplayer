@@ -32,7 +32,6 @@ SOURCES += player.cpp \
     albumart/fetch/tplastfmimagesearch.cpp \
     albumart/fetch/googleimagesearch.cpp \
     albumart/fetch/albumartdownloadrequest.cpp \
-    albumart/fetch/albumartdownloadmodel.cpp \
     albumart/fetch/albumartdownloader.cpp \
     albumart/util/albumartutil.cpp \
     tputils.cpp \
@@ -90,7 +89,6 @@ HEADERS += player.h \
     albumart/fetch/tplastfmimagesearch.h \
     albumart/fetch/googleimagesearch.h \
     albumart/fetch/albumartdownloadrequest.h \
-    albumart/fetch/albumartdownloadmodel.h \
     albumart/fetch/albumartdownloader.h \
     albumart/util/albumartutil.h \
     tputils.h \

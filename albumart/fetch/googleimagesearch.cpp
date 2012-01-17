@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "json.h"
 #include <QApplication>
 #include <QImage>
-#include <QDebug>
+#include "tplog.h"
 
 using namespace QtJson;
 
@@ -70,7 +70,7 @@ void TPGoogleImageSearch::searchFinished(QNetworkReply *reply)
     QList<QVariant> resultList = responseDataMap["results"].toList();
 
     expectedResponses = resultList.count();
-    qDebug() << QString("GOOGLE: %1 potential album arts to download").arg(expectedResponses);
+    DEBUG() << QString("ALBUMART: GOOGLE: %1 potential album arts to download").arg(expectedResponses);
     if (expectedResponses > 0)
     {      
         QObject::connect(manager,SIGNAL(finished(QNetworkReply*)),this,SLOT(downloadFinished(QNetworkReply*)));
@@ -91,22 +91,22 @@ void TPGoogleImageSearch::searchFinished(QNetworkReply *reply)
 void TPGoogleImageSearch::downloadFinished(QNetworkReply *reply)
 {    
     if (reply->error())
-        qDebug() << "downloadFinished: " << reply->error();
+        ERROR() << "ALBUMART: GOOGLE: downloadFinished: " << reply->error();
     else
     {
         QImage image;
         if (image.loadFromData(reply->readAll()))
         {
-            qDebug() << "GOOGLE: image downloaded from: " << reply->request().url().toString();
+            DEBUG() << "ALBUMART: GOOGLE: image downloaded from: " << reply->request().url().toString();
             emit imageDownloaded(this, image);
         }
         else
-            qDebug() << "GOOGLE: Failed to load image from: " << reply->request().url().toString();
+            DEBUG() << "ALBUMART: GOOGLE: Failed to load image from: " << reply->request().url().toString();
     }
 
     if (--expectedResponses <= 0)
     {
-        qDebug() << "GOOGLE: Complete";
+        DEBUG() << "ALBUMART: GOOGLE: Complete";
 
         QObject::disconnect(manager,0,0,0);
         emit complete(this);

@@ -517,67 +517,6 @@ bool TPMusicPlayerCore::seekToTrack(const QString trackId)
     return true;
 }
 
-const QString TPMusicPlayerCore::albumArtPath(const QString id, const QString type)
-{
-    QString artDir;
-    TPAlbum *artAlbum = NULL;
-
-    QString fullPathToArtFile;
-
-    // Firstly, lets see whether the identifier is actually a playlist
-    TPPlaylist *pl = db->getPlaylistDB()->getPlaylist(id);
-    if (pl)
-    {
-        if (pl->count() > 1)
-        {
-            QString artFilename;
-            TPTrack *track = pl->at(0);
-            if (track->getAlbum())
-            {
-                artDir = TPPathUtils::getPlaylistArtFolder();
-                artAlbum = track->getAlbum();
-            }
-        }
-    }
-    if (!pl)
-    {
-        artDir = TPPathUtils::getAlbumArtFolder();
-
-        TPTrack *track = db->getTrackDB()->getById(id);
-        if (track)
-            artAlbum = track->getAlbum();
-        else
-        {
-            TPArtist *artist = db->getArtistDB()->getById(id);
-            if (artist)
-            {
-                if (artist->countAlbums())
-                    artAlbum = artist->getAlbum(0);
-            }
-            else
-            {
-                artAlbum = db->getAlbumDB()->getById(id);
-                if (!artAlbum)
-                {
-                    int index = albumArtDownloader->idToIndex(id);
-                    if (index >= 0)
-                        return TPPathUtils::getAlbumArtDownloadFolder() + albumArtDownloader->indexToFilename(index);
-                }
-            }
-        }
-    }
-
-    if (artAlbum && artDir.length())
-    {
-        QString pathToFile = artDir + artAlbum->getAlbumArtFilename(type == "small" ? TPAlbum::ESmallArt : TPAlbum::EBigArt);
-        if (QFile::exists(pathToFile))
-            return pathToFile;
-    }
-
-    return QString();
-}
-
-
 bool TPMusicPlayerCore::setActivePlaylist(const QString nameOrId)
 {
     TPPlaylist *playlist = NULL;
@@ -861,7 +800,7 @@ QVariantMap TPMusicPlayerCore::processSearchResults(TPSearchResults *searchResul
 void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSocketProtocolMessage message)
 {
     QTime t; t.start();
-
+usleep(100000);
     if (message.isCommand())
     {
         QString msgId = message.id();
@@ -996,7 +935,9 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
             if (objectId.isValid() && !objectId.isNull())
             {
                 if (selectSearchedAlbumArt(objectId.toString()))
+                {
                     protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+                }
                 else
                     protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
             }
@@ -1169,5 +1110,38 @@ void TPMusicPlayerCore::startupProgress(int percents, bool force)
 
         protocolReportEvent(protocolEventStartupProgress, args);
     }
+}
+
+
+
+
+bool TPMusicPlayerCore::selectSearchedAlbumArt(const QString id)
+{
+    bool success = false;
+
+    if (currentArtDownloadAlbum)
+    {
+        success = albumArtDownloader->saveImage(id, currentArtDownloadAlbum);
+        albumArtDownloader->reset();
+
+        if (success)
+        {
+            TPTrack *current = player->getCurrentTrack();
+            if (current && current->getAlbum() == currentArtDownloadAlbum)
+            {
+                // TODO: We should actually emit a protocol event here, should not we?
+                // Lets notify with signal that the album cover that is show somewhere has changed also.
+                protocolReportEvent(protocolEventPlaybackAlbumChanged);
+                emit playingAlbumChanged();
+            }
+
+            protocolReportEvent(protocolEventAlbumChanged, currentArtDownloadAlbum->toMap());
+        }
+
+        currentArtDownloadAlbum->dec();
+        currentArtDownloadAlbum = NULL;
+    }
+
+    return success;
 }
 

@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <QString>
 
+//! @class TPUtils
+//! @brief Generic utility functions of time, url, filename handling.
 class TPUtils
 {
 public:
@@ -32,6 +34,9 @@ public:
     static QString ensureFilenameCharacters(const QString source);
 };
 
+//!
+//! @brief Calls a dec method for all objects within the given container.
+//!
 #define TPDecForAll(container)\
 {\
     for (int i=0;i<container.count();++i){\
