@@ -31,7 +31,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpfilescanner.h"
 #include "albumartdownloader.h"
 #include "albumartdownloadrequest.h"
-#include "albumartdownloadmodel.h"
 #include "feed/tpfeedmgr.h"
 #include "tpautomaticalbumartdownloader.h"
 #include "db/tpdatabases.h"

@@ -216,3 +216,9 @@ else {
     DESTDIR = ./tunaplayer-release
     OBJECTS_DIR = ./tunaplayer-release/objects
 }
+
+
+TARGET.path = /usr/bin
+
+INSTALLS += TARGET
+

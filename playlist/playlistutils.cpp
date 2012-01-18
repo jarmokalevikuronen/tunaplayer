@@ -110,12 +110,12 @@ TPPlaylist* TPPlaylistUtils::importLocalPlaylist(TPTrackDB *trackDB, TPAlbumDB *
 
                     if (artFileBig.length())
                     {
-                        album->setString(albumAttrArtLarge, TPPathUtils::getPlaylistArtsSubfolder() + artFileBig);
+                        album->setString(albumAttrArtLarge, TPPathUtils::getPlaylistArtFolder() + artFileBig);
                         playlist->setLargeArtName(artFileBig);
                     }
                     if (artFileSmall.length())
                     {
-                        album->setString(albumAttrArtSmall, TPPathUtils::getPlaylistArtsSubfolder() + artFileSmall);
+                        album->setString(albumAttrArtSmall, TPPathUtils::getPlaylistArtFolder() + artFileSmall);
                         playlist->setSmallArtName(artFileSmall);
                     }
                     if (!album->getString(albumAttrArtSmall).length() && album->getString(albumAttrArtLarge).length())

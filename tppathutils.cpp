@@ -183,10 +183,6 @@ QString TPPathUtils::getTspFolder()
     return ensureBasePath("tsp");
 }
 
-QString TPPathUtils::getPlaylistArtsSubfolder()
-{
-    return QString("playlist-arts") + QDir::separator();
-}
 
 QStringList TPPathUtils::getMediaPaths()
 {

@@ -53,7 +53,6 @@ public:
     static QString getFeedsSettingsDbFilename();
     static QString getFeedItemsSettingsDbFilename();
     static QString getTspFolder();
-    static QString getPlaylistArtsSubfolder();
     static QStringList getMediaPaths();
 };
 
