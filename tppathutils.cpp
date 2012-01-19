@@ -110,6 +110,11 @@ QString TPPathUtils::getPlaylistArtFolder()
     return ensureBasePath(subdir);
 }
 
+QString TPPathUtils::getRootPath()
+{
+    return ensureBasePath("");
+}
+
 QString TPPathUtils::getAlbumArtFolder()
 {
     return ensureBasePath("albumart");

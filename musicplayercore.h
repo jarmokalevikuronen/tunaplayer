@@ -91,10 +91,7 @@ public:
     //! @brief removes a specified track from the current playlist.
     bool removeFromPlaylist(const QString id);
 
-    void clearActivePlaylist()
-    {
-        setActivePlaylist(QString(""));
-    }
+    void clearActivePlaylist();
 
 private slots:
 

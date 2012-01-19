@@ -76,13 +76,24 @@ public:
 
     inline bool hasAlbumArt(ArtType type) const
     {
-        QString filename = TPPathUtils::getAlbumArtFolder() + const_cast<TPAlbum*>(this)->getAlbumArtFilename(type);
+        QString artFile = const_cast<TPAlbum*>(this)->getAlbumArtFilename(type);
+        QString filename = TPPathUtils::getAlbumArtFolder() + artFile;
         QFile f(filename);
-        return f.exists();
+        if (f.exists())
+            return true;
+
+        // NOTE: Playlists do store their album arts with fully qualified paths.
+        return QFile::exists(artFile);
     }
 
     inline const QString fullPathToAlbumArt(ArtType type)
     {
+        QString artFile = getAlbumArtFilename(type);
+
+        // Special handling for fully qualified paths if such are used.
+        if (artFile.startsWith(QDir::separator()))
+            return artFile;
+
         return TPPathUtils::getAlbumArtFolder() + getAlbumArtFilename(type);
     }
 

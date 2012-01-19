@@ -512,9 +512,7 @@ bool TPMusicPlayerCore::seekToTrack(const QString trackId)
     if (!pl->hasTrack(track))
         return false;
 
-    player->seekToTrack(track);
-
-    return true;
+    return player->seekToTrack(track);
 }
 
 bool TPMusicPlayerCore::setActivePlaylist(const QString nameOrId)
@@ -537,7 +535,7 @@ bool TPMusicPlayerCore::setActivePlaylist(const QString nameOrId)
     }
 
     // NOTE: Player takes ownership of this playlist instance that
-    // was previously cloned.
+    // was previously cloned. (if any, null is valid value also).
     player->setPlaylist(playlist);
 
     playbackOperationsChanged();
@@ -1143,5 +1141,10 @@ bool TPMusicPlayerCore::selectSearchedAlbumArt(const QString id)
     }
 
     return success;
+}
+
+void TPMusicPlayerCore::clearActivePlaylist()
+{
+    setActivePlaylist(QString(""));
 }
 

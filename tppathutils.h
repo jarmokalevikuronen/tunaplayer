@@ -54,6 +54,7 @@ public:
     static QString getFeedItemsSettingsDbFilename();
     static QString getTspFolder();
     static QStringList getMediaPaths();
+    static QString getRootPath();
 };
 
 #endif // TPPATHUTILS_H
