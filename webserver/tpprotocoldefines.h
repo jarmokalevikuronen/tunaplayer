@@ -79,6 +79,9 @@ static const QString protocolCommandExecSPResponseArgArgsKey("sp-args-in");
 static const QString protocolCommandExecSPResponseArgItemsKey("items");
 static const QString protocolCommandExecSPResponseArgItemKey("item");
 
+// Notified when new tracks wre found -> it is time for UI to do a refresh.
+static const QString protocolEventDatabaseChanged("databasechanged");
+
 static const QString protocolEventPlaybackTrackChanged("playbacktrackchanged");
 static const QString protocolEventPlaybackAlbumChanged("playbackalbumchanged");
 

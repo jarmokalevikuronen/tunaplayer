@@ -40,7 +40,6 @@ public slots:
 
 private: // New implementation
 
-    bool functional();
     bool init();
     void cleanup();
 

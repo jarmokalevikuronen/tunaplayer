@@ -23,8 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpalbum.h"
 #include "albumartutil.h"
 #include "tppathutils.h"
-
-#include <QDebug>
+#include "tplog.h"
 
 TPAutomaticAlbumArtDownloader::TPAutomaticAlbumArtDownloader(QObject *parent) :
     QObject(parent)
@@ -47,8 +46,6 @@ void TPAutomaticAlbumArtDownloader::execute(TPAlbumDB *db)
             // We will try max. 5 times to download a specific album art.
             int triesLeft = album->getInt(albumAttrAutomaticAlbumArtDownloadTries, 3);
 
-            qDebug() << "TriesLeft: " << triesLeft;
-
             if (triesLeft > 0)
             {
                 album->setInt(albumAttrAutomaticAlbumArtDownloadTries, triesLeft - 1);
@@ -59,7 +56,7 @@ void TPAutomaticAlbumArtDownloader::execute(TPAlbumDB *db)
         }
     }
 
-    qDebug() << "albumsToDownload: " << albumsToDownload.count();
+    DEBUG() << "ALBUMART: albumsToDownload: " << albumsToDownload.count();
 
     if (albumsToDownload.count())
     {
@@ -83,7 +80,7 @@ void TPAutomaticAlbumArtDownloader::imageDownloaded(QObject */*caller*/, QImage 
 {
     Q_ASSERT(currentAlbum);
 
-    qDebug() << "imageDownloaded..";
+    DEBUG() << "imageDownloaded..";
 
     // Process here the downloaded image
     if (!image.isNull())
@@ -122,7 +119,7 @@ bool TPAutomaticAlbumArtDownloader::startDownloadNextAlbum()
 {
     Q_ASSERT(is);
 
-    qDebug() << "startDownloadNextAlbum: remaining: " << albumsToDownload.count();
+    DEBUG() << "startDownloadNextAlbum: remaining: " << albumsToDownload.count();
 
     if (albumsToDownload.count() <= 0)
         return false;

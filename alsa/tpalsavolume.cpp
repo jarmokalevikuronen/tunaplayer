@@ -29,19 +29,11 @@ TPALSAVolume::TPALSAVolume(QObject *parent) :
     masterElem = 0;
     minVolume = 0;
     maxVolume = 0;
-
-    if (!init())
-        cleanup();
 }
 
 TPALSAVolume::~TPALSAVolume()
 {
     cleanup();
-}
-
-bool TPALSAVolume::functional()
-{
-    return masterElem != 0 && maxVolume > minVolume && maxVolume;
 }
 
 bool TPALSAVolume::init()
@@ -110,8 +102,11 @@ bool TPALSAVolume::init()
 
 bool TPALSAVolume::setVolume(int percents)
 {
-    if (!functional() || percents < 0 || percents > 100)
+    if (!init())
         return false;
+
+    percents = qMax(0, percents);
+    percents = qMin(100, percents);
 
     // -> Convert from percents to actual range.
     long range = maxVolume - minVolume;
@@ -130,12 +125,14 @@ bool TPALSAVolume::setVolume(int percents)
         snd_mixer_selem_set_playback_volume(masterElem, static_cast<snd_mixer_selem_channel_id_t>(i), value);
     }
 
+    cleanup();
+
     return true;
 }
 
 bool TPALSAVolume::getVolume(int *percents)
 {
-    if (!functional())
+    if (!init())
         return false;
 
     // The volume is get just from front left channel -> lets assume each and every
@@ -145,6 +142,7 @@ bool TPALSAVolume::getVolume(int *percents)
     if (status != 0)
     {
         ERROR() << "ALSA: snd_mixer_selem_get_playback_volume failed (" << snd_strerror(status) << ")";
+        cleanup();
         return false;
     }
 
@@ -156,12 +154,12 @@ bool TPALSAVolume::getVolume(int *percents)
     _percents = qMin((_percents), 100);
     _percents = qMax((_percents), 0);
 
-
     if (percents)
         *percents = _percents;
 
     DEBUG() << "ALSA: Volume: " << _percents << "%";
 
+    cleanup();
     return true;
 }
 

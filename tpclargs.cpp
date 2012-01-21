@@ -25,7 +25,7 @@ TPCLArgs *TPCLArgs::_instance = 0;
 const char *TPCLArgs::cliArgHttpPort = "-p";
 const char *TPCLArgs::cliArgAlsaCardName = "-volacard";
 const char *TPCLArgs::cliArgAlsaControlName = "-volactrl";
-
+const char *TPCLArgs::cliArgMediaPath = "-media";
 
 void TPCLArgs::initialize(QStringList cliArgs)
 {

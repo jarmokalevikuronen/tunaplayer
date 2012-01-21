@@ -387,13 +387,9 @@ Q_INVOKABLE QVariant TPMusicPlayerCore::currentTrackLength() const
     return QVariant((int)0);
 }
 
-
-#define DEFAULT_PLAYLIST_NAME   "(Not Saved)"
-
 bool TPMusicPlayerCore::addToPlaylist(QVariant aObject, const QString &position)
 {
     Q_ASSERT(player);
-    //Q_ASSERT(feedMgr);
 
     bool toBack = true;
 
@@ -798,7 +794,7 @@ QVariantMap TPMusicPlayerCore::processSearchResults(TPSearchResults *searchResul
 void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSocketProtocolMessage message)
 {
     QTime t; t.start();
-usleep(100000);
+
     if (message.isCommand())
     {
         QString msgId = message.id();
@@ -1041,8 +1037,9 @@ void TPMusicPlayerCore::createMaintainTask()
 {
     connect(&maintainTimer, SIGNAL(timeout()), this, SLOT(startMaintainTask()));
     maintainTimer.setSingleShot(false);
-    int maintainInterval = TPSettings::instance().get(settingMaintainIntervalMinutes, 30).toInt();
-    maintainInterval = qMax(maintainInterval, 30);
+    // TODO: Increase the default maintain interval to some higher value.
+    int maintainInterval = TPSettings::instance().get(settingMaintainIntervalMinutes, 1).toInt();
+    maintainInterval = qMax(maintainInterval, 1);
     maintainInterval = qMin(maintainInterval, 60*24);
     // Start timer, do minute -> millisecond conversion.
     maintainTimer.start(maintainInterval * 60 * 1000);
@@ -1062,11 +1059,15 @@ void TPMusicPlayerCore::maintainTaskState(TPFileScanner::State state)
         for (int i=0;i<results->count();++i)
             db->getTrackDB()->insertItem(results->at(i));
 
-        //
-        // TODO: Should we notify here that some context
-        // has changed, like the most recently added items or alike.
-        //
         results->clear();
+        protocolReportEvent(protocolEventDatabaseChanged);
+
+        bool autoartDisabled = TPSettings::instance().get(settingDisableAutoArtLoader, false).toBool();
+        if (!autoartDisabled && autoArtLoader)
+        {
+            DEBUG() << "Triggering automatic album art download";
+            autoArtLoader->execute(db->getAlbumDB());
+        }
     }
 
     // Get rid of the maintain scanner
@@ -1127,7 +1128,6 @@ bool TPMusicPlayerCore::selectSearchedAlbumArt(const QString id)
             TPTrack *current = player->getCurrentTrack();
             if (current && current->getAlbum() == currentArtDownloadAlbum)
             {
-                // TODO: We should actually emit a protocol event here, should not we?
                 // Lets notify with signal that the album cover that is show somewhere has changed also.
                 protocolReportEvent(protocolEventPlaybackAlbumChanged);
                 emit playingAlbumChanged();

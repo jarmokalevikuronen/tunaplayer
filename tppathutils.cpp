@@ -19,7 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "tppathutils.h"
 #include "tputils.h"
-#include <QDebug>
+#include "tpclargs.h"
 
 
 #define TP_DATA_FOLDER                  ".tunaplayer"
@@ -191,9 +191,11 @@ QString TPPathUtils::getTspFolder()
 
 QStringList TPPathUtils::getMediaPaths()
 {
+    QStringList listOfPaths;
     QDir d;
-    QStringList list;
-    list << d.homePath();
-            //+ QDir::separator() + "Music/";
-    return list;
+
+    // From command line, multiple paths can be gived if separated with ';'
+    // E.g. /home/jarmo/;/home/jokumuu
+    listOfPaths << TPCLArgs::instance().arg(TPCLArgs::cliArgMediaPath, d.homePath()).toString().split(';');
+    return listOfPaths;
 }
