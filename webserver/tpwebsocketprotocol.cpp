@@ -92,5 +92,5 @@ void TPWebSocketProtocol::sendNow()
     if (pendingResponses.count() || pendingEvents.count())
         sendTimer->start(0);
 
-    qDebug() << "WEBSOCKET: SEND: QUEUE: Responses=" << pendingResponses.count() << " Events=" << pendingEvents.count();
+//    qDebug() << "WEBSOCKET: SEND: QUEUE: Responses=" << pendingResponses.count() << " Events=" << pendingEvents.count();
 }

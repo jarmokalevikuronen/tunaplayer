@@ -378,6 +378,7 @@ void PlayerBackend_MPlayer::runWatchdog()
     process.terminate();
     process.waitForFinished(3000);
     process.close();
+    changeToState(Playing);
     changeToState(Stopped);
 }
 

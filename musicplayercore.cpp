@@ -457,17 +457,44 @@ bool TPMusicPlayerCore::removePlaylist(const QString id)
 
 bool TPMusicPlayerCore::removeFromPlaylist(const QString id)
 {
-    TPTrack *track = findTrack(id);
-    if (track)
+    if (id.startsWith(schemeArtist))
     {
-        TPPlaylist *pl = player->getPlaylist();
-        if (pl)
-        {
-            TPPlaylist *clonedFrom = pl->getClonedFrom();
+        TPArtist *artist = db->getArtistDB()->getById(id);
+        if (!artist)
+            return false;
+        DEBUG() << "CORE: removeArtistFromPlaylist: " << id;
+        for (int i=0;i<artist->countAlbums();i++)
+            removeFromPlaylist(artist->getAlbum(i)->identifier(true));
 
-            pl->remove(track);
-            TPPlaylistUtils::exportLocalPlaylist(pl, clonedFrom ? clonedFrom->getFilename() : pl->getFilename());
-            return true;
+        return true;
+    }
+    else if (id.startsWith(schemeAlbum))
+    {
+        TPAlbum *album = db->getAlbumDB()->getById(id);
+        if (!album)
+            return false;
+        DEBUG() << "CORE: removeAlbumFromPlaylist: " << id;
+        for (int i=0;i<album->countTracks();i++)
+            removeFromPlaylist(album->getTrackByPos(i)->identifier(true));
+
+        return true;
+    }
+    else
+    {
+        TPTrack *track = findTrack(id);
+        if (track)
+        {
+            DEBUG() << "CORE: removeTrackFromPlaylist: " << id;
+            TPPlaylist *pl = player->getPlaylist();
+            if (pl)
+            {
+                TPPlaylist *clonedFrom = pl->getClonedFrom();
+
+                pl->remove(track);
+
+                TPPlaylistUtils::exportLocalPlaylist(pl, clonedFrom ? clonedFrom->getFilename() : pl->getFilename());
+                return true;
+            }
         }
     }
 
@@ -860,7 +887,11 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
             if (id.isValid() && !id.isNull())
             {
                 if (removeFromPlaylist(id.toString()))
+                {
                     protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+                    // Notify all connected clients that current playlist has changed.
+                    protocolReportEvent(protocolEventCurrentPlaylistChanged);
+                }
                 else
                     protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
             }

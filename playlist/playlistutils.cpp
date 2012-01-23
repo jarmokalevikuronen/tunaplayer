@@ -151,6 +151,10 @@ bool TPPlaylistUtils::exportLocalPlaylist(TPPlaylist *playlist, QString m3ufile)
 {
     Q_ASSERT(playlist);
 
+    if (m3ufile.length() <= 0)
+        // Not even planning to really save.
+        return true;
+
     if (playlist->count())
     {
         if (m3ufile.length() <= 0)

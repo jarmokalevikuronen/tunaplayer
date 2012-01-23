@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <QDebug>
 
-static int logFlags = 1|2|4|8|16;
+/*static int logFlags = 1|2|4|8|16;*/
 
 #define PERF()          qDebug() << "16: "
 #define STATE()         qDebug() << "8: "

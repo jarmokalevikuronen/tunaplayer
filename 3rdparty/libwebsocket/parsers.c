@@ -1886,13 +1886,13 @@ int libwebsockets_serve_http_file(struct libwebsocket *wsi, const char *file,
 	fd = open(file, O_RDONLY);
 #endif
 	if (fd < 1) {
-		p += sprintf(p, "HTTP/1.0 400 Bad\x0d\x0a"
+                p += sprintf(p, "HTTP/1.0 404 Not Found\x0d\x0a"
 			"Server: libwebsockets\x0d\x0a"
+                        "Content-Length: 0\x0d\x0a"
 			"\x0d\x0a"
 		);
 		libwebsocket_write(wsi, (unsigned char *)buf, p - buf,
 								LWS_WRITE_HTTP);
-
 		return -1;
 	}
 

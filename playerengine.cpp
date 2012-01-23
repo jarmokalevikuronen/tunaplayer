@@ -229,7 +229,7 @@ void TPPlayerProxy::playbackPositionChanged(int secs)
 
     if (currentTrack)
     {
-        qDebug() << "playbackPositionChanged: " << secs << "/" << currentTrack->getLen();
+//        qDebug() << "playbackPositionChanged: " << secs << "/" << currentTrack->getLen();
         emit currentPlaybackPositionChanged(currentTrack, secs);
     }
 }

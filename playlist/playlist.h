@@ -60,6 +60,9 @@ public:
 
     //! @brief Removes track from playlist and if removed, will decrease its reference count by one.
     void remove(TPTrack *track);
+    void removeArtist(const QString &id);
+    void removeAlbum(const QString &id);
+
     bool hasTrack(const TPTrack *track);
 
     void shuffle();
