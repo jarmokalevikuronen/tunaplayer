@@ -1,0 +1,336 @@
+
+
+_TUNA_BEGIN_TEMPLATE
+<div id="artist_shortcutbar">
+  <% if (this.leftVisible) { %>
+  <div class="artist_shortcut" onclick="seekActiveArtistShortcutPage(-1);">&lt;</div>
+  <% } else { %>
+  <div class="artist_shortcut artist_shortcut_disabled"></div>
+  <% } %>
+    
+  <% for (var i=0;i<this.items.length;i++) { %>
+  <div class="artist_shortcut <%= this.selectedIndex == i ? "artist_shortcut_hili" : " " %>" data-shortcut-index="<%=this.items[i]['index']%>" onclick="selectArtistShortcut(this);"> <%=this.items[i]["key"]%>
+    <div class="artist_shortcut_hili_small_text"></div>
+  </div>
+  <% } %>
+  <% if (this.rightVisible) { %>
+  <div class="artist_shortcut" onclick="seekActiveArtistShortcutPage(+1);">&gt;</div>
+  <% } else { %>
+  <div class="artist_shortcut artist_shortcut_disabled"></div>
+  <% } %>
+  </div>
+
+  <div class="shortcut_button close_button" onclick="closeView();">
+    <div class="shortcut_button_inner">
+      <center>&#x21d0;</center>
+    </div>
+  </div>
+  <div class="shortcut_button home_button" onclick="closeAllViews();">
+    <div class="shortcut_button_inner">
+      <center>&#x21da;</center>
+    </div>
+</div>
+_TUNA_END_TEMPLATE=tmpl_artist_shortcutbar
+
+
+_TUNA_BEGIN_TEMPLATE
+  <div id="artist_listbox_container">
+    <div id="artist_listbox">
+
+    <% for (var i=0;i<this.items.length;i++) { 
+         var visible = true;
+         if (i < this.topIndex)
+           visible = false;
+         if (i > this.bottomIndex)
+             visible = false; %>
+         <div class="artist_list_item <%= visible ? "" : "artist_list_item_hidden"%> " data-artist-id="<%=this.items[i]["id"]%>" onclick="openView('artists_container','artists_albums_container',this);"><center><p class="artist_list_item_text"><%=this.items[i]["name"]%>&nbsp;(<%=this.items[i]["alcnt"]%>)</p></center>
+         </div>
+    <% } %>      
+    </div>
+  </div>
+_TUNA_END_TEMPLATE=tmpl_artist_listbox
+
+
+_TUNA_BEGIN_TEMPLATE
+  <div class="artist_albums_page">
+    
+    <div class="artist_albums_header"><%= this.items[0]["artist.name"].toLowerCase()%>
+    </div>
+
+    <div class="button artist_albums_button_play" data-artist-id="<%=this.items[0]['artist.id']%>" onclick="artistCommand('play', this, 'artist_albums_container');">
+      <div class="artist_albums_button_inner">
+        <center><b>&#x25b7;</b></center>
+      </div>
+    </div>  
+
+    <div class="button artist_albums_button_queue" data-artist-id="<%=this.items[0]['artist.id']%>" onclick="artistCommand('queue', this);">
+      <div class="artist_albums_button_inner">
+        <center><b>+</b></center>
+      </div>
+    </div>  
+
+    <div class="artist_albums_container">
+    <% for (var i=this.firstVisible;i<this.items.length && i<this.lastVisible;i++) { %>
+      <div class="artist_albums_container_item" data-album-index="<%=i%>" data-artist-id="<%=this.items[i]['artist.id']%>" data-album-id="<%=this.items[i]['id']%>" onclick="openView('artists_albums_container', 'artist_single_album_container', this);" onmousedown="startWaitLongMousePress(this); return false;" onmouseup="stopWaitLongMousePress(this); return false;">
+        <img class="artist_albums_container_item_image" data-album-id="<%=this.items[i]['id']%>" <% if (this.items[i]['album.arts'] != undefined) { %>src="<%=this.items[i]['album.arts']%>" <% } else { %> alt="(No album art)" <% }  %> />
+        <center><p class="artist_albums_container_item_name"><%=this.items[i]['name']%></p></center>
+      </div>
+    <% } %>
+    </div>
+
+  <% if (this.rotatePossible) { %>
+    <div class="artist_albums_container_rotate" onclick="rotateAlbums(this);"></div>
+  <% } %>
+
+    <div class="shortcut_button close_button" onclick="closeView();">
+      <div class="shortcut_button_inner">
+        <center>&#x21d0;</center>
+      </div>
+    </div>
+
+    <div class="shortcut_button home_button" onclick="closeAllViews();">
+      <div class="shortcut_button_inner">
+        <center>&#x21da;</center>
+      </div>
+    </div>
+  </div>
+_TUNA_END_TEMPLATE=tmpl_artist_albums
+
+
+
+_TUNA_BEGIN_TEMPLATE
+ <div class="artist_single_album_page">
+   <div class="artist_single_album_header_artist"><%=this.items[0]['album.artist.name'].toLowerCase()%> - <small><%=this.items[0]['album.name'].toLowerCase()%></small></div>
+
+   <div id="artist_single_album_image_container">
+     <% var im = undefined;
+        if (this.album != undefined) {
+          im = this.album['album.artl']; 
+          if (im == undefined || im.length < 1) {
+            im = this.album['album.arts']; 
+          }
+        } %>
+     <img id="artist_single_album_image" <% if (im != undefined) { %> src="<%=im%>" <% } %> alt="(Press to search albumart)" data-album-id="<%=this.items[0]['album.id']%>" onclick="searchAlbumArt(this, 'artist_single_album_container');"/>
+   </div>
+
+   <div class="button artist_single_album_button_play" data-album-id="<%=this.items[0]['album.id']%>" onclick="albumCommand('play', this, 'artist_single_album_container');">
+     <div class="artist_single_album_button_inner">
+       <center><b>&#x25b7</b></center>
+     </div>
+   </div>
+   <div class="button artist_single_album_button_queue" data-album-id="<%=this.items[0]['album.id']%>" onclick="albumCommand('queue', this);">
+     <div class="artist_single_album_button_inner">
+       <center><b>+</b></center>
+     </div>
+   </div>
+
+   <div id=artist_single_album_tracklist class="artist_single_album_tracks">
+     <%= this.tracklisthtml %>
+   </div>
+   <% if (this.rotatePossible) { %>
+     <div class="artist_single_album_tracks_rotate" onclick="rotateTracks(this);"></div>
+   <% } %>
+ </div>
+   <div class="shortcut_button close_button" onclick="closeView();">
+     <div class="shortcut_button_inner">
+       <center>&#x21d0;</center>
+     </div>
+   </div>
+   <div class="shortcut_button home_button" onclick="closeAllViews();">
+     <div class="shortcut_button_inner">
+       <center>&#x21da;</center>
+     </div>
+   </div>
+_TUNA_END_TEMPLATE=tmpl_artist_single_album
+
+_TUNA_BEGIN_TEMPLATE
+   <% if (this.lastTrack >= this.items.length) { 
+        this.lastTrack = this.items.length - 1;
+      } %>
+
+   <% for (var i=0;i<this.items.length;i++) { %>
+     <% var visible = true; %>
+     <% if (i<this.firstTrack || i>=this.lastTrack) { visible = false; } %>
+       <% if (visible) { %>
+         <div class="artist_single_album_track" data-track-id="<%=this.items[i]['id']%>" onclick="trackClicked(this);"><%=this.items[i]['idx']%>. <%=this.items[i]['name'].toLowerCase()%></div> 
+       <% } else { %>
+         <div class="artist_single_album_track" style="display: none;" data-track-id="<%=this.items[i]['id']%>" onclick="trackClicked(this);"><%=this.items[i]['idx']%>. <%=this.items[i]['name'].toLowerCase()%></div> 
+       <% } %>
+   <% } %> 
+_TUNA_END_TEMPLATE=tmpl_artist_single_album_tracklist_content
+
+
+_TUNA_BEGIN_TEMPLATE
+  <div id="player_page">
+   <div id="player_playing_track" data-track-id=""></div>
+   <div id="player_playing_artist_album"></div>
+   <div id="player_playing_album_image_container">
+     <img alt="(Press to search albumart)" id="player_playing_album_image" onclick="openAlbum(this, 'player_container');"/>
+   </div>
+
+   <div id="player_playback_position_container">
+     <div id="player_playback_position_container_inner">
+       <div id="player_playback_position_text"></div>
+       <input type="range" min="0" max="100" value="23" id="player_playback_position" onchange="player_playback_position_changed(this);"/>
+     </div>
+   </div>
+
+   <div id="player_volume_up" onmousedown="playerVolumePressed('up');" onmouseup="playerVolumeReleased('up');"><div id="player_volume_up_inner"><center>+</center></div></div>
+   <div id="player_volume_container">
+     <div id="player_volbar_0" onclick="playerSetVolume(0);" class="player_volbar player_volbar_hidden"></div>
+     <div id="player_volbar_1" onclick="playerSetVolume(1);" class="player_volbar player_volbar_hidden"></div>
+     <div id="player_volbar_2" onclick="playerSetVolume(2);" class="player_volbar player_volbar_hidden"></div>
+     <div id="player_volbar_3" onclick="playerSetVolume(3);" class="player_volbar player_volbar_hidden"></div>
+     <div id="player_volbar_4" onclick="playerSetVolume(4);" class="player_volbar player_volbar_hidden"></div>
+     <div id="player_volbar_5" onclick="playerSetVolume(5);" class="player_volbar player_volbar_hidden"></div>
+     <div id="player_volbar_6" onclick="playerSetVolume(6);" class="player_volbar player_volbar_hidden"></div>
+     <div id="player_volbar_7" onclick="playerSetVolume(7);" class="player_volbar player_volbar_hidden"></div>
+     <div id="player_volbar_8" onclick="playerSetVolume(8);" class="player_volbar player_volbar_hidden"></div>
+     <div id="player_volbar_9" onclick="playerSetVolume(9);" class="player_volbar player_volbar_hidden"></div>
+   </div>
+   <div id="player_volume_down" onmousedown="playerVolumePressed('down');" onmouseup="playerVolumeReleased('down');"><div id="player_volume_down_inner"><center>-</center></div></div>
+
+   <div class="button" id="player_button_playstop" onclick="playerControl('playstop', this);">
+     <div id="player_button_playstop_inner">
+       <center></center>
+     </div>
+   </div>
+   <div class="button" id="player_button_next" onclick="playerControl('next', this);">
+     <div id="player_button_next_inner">
+       <center><b>&#x25b7;|</b></center>
+     </div>
+   </div>
+
+   <div class="shortcut_button close_button" onclick="closeView();">
+     <div class="shortcut_button_inner">
+       <center>&#x21d0;</center>
+     </div>
+   </div>
+   <div class="shortcut_button home_button" onclick="closeAllViews();">
+     <div class="shortcut_button_inner">
+       <center>&#x21da;</center>
+     </div>
+   </div>
+   <div class="shortcut_button forward_button" onclick="openView('player_container', 'player_current_playlist', this);">
+     <div class="shortcut_button_inner">
+       <center>&#x27a0;</center>
+     </div>
+   </div>
+
+  </div>
+_TUNA_END_TEMPLATE=tmpl_player_content
+
+_TUNA_BEGIN_TEMPLATE
+  <div id="player_current_playlist_page">
+
+    <!-- Shuffle playlist button - unicode arrow as indicator -->
+    <div class="shortcut_button player_current_playlist_shuffle" data-playlist-id="" onclick="playerPlaylistShuffle(this);">
+      <div class="playlist_shuffle_button_inner">
+        <center>&#x21B7;</center>
+      </div>
+    </div>
+
+    <!-- Clear playlist button - unicode character 'X' as indicator -->
+    <div class="shortcut_button player_current_playlist_clear" data-playlist-id="" onclick="playerPlaylistClear(this);">
+      <div class="playlist_clear_button_inner">
+        <center>&#x2716;</center>
+      </div>
+    </div>
+
+    <div id="player_current_playlist_items" data-playlist-id="">
+      <% for (var i=0;i<this.items.length;i++) { %>
+        <% var visible = (i >= this.firstItem && i < this.lastItem); %>
+        <% if (visible) { console.log("object: " + JSON.stringify(this));%>
+          <div class="player_current_playlist_item_container" data-track-id="<%=this.items[i]['id']%>">
+            <div class="player_current_playlist_item_names">
+              <div class="player_current_playlist_item_track_name" onmousedown="playlistTrackMouseDown(this);" onmouseup="playlistTrackMouseUp(this);" data-track-id="<%=this.items[i]['id']%>"><%=i+1%>. <%=this.items[i]['name'].toLowerCase()%></div>
+              <% artistName = this.items[i]['album.artist.name']; if (artistName == undefined) artistName = ""; else artistName += " - "; %>
+              <% albumName = this.items[i]['album.name']; if (albumName == undefined) albumName = ""; %>
+              <div class="player_current_playlist_item_artistalbum_name" onmousedown="playlistTrackMouseDown(this);" onmouseup="playlistTrackMouseUp(this);" data-track-id="<%=this.items[i]['id']%>"><%=artistName.toLowerCase()%><%=albumName.toLowerCase()%></div>
+            </div>
+            <div class="player_current_playlist_item_buttons">
+<!-- &#x2719; plussa -->
+              <div class="shortcut_button player_current_playlist_item_button_remove" data-track-id="<%=this.items[i]['id']%>"><div class="playlist_clear_button_inner" data-track-id="<%=this.items[i]['id']%>" onclick="playerPlaylistRemove(this);"><center>&#x2716;</center></div></div>
+            </div>
+          </div>
+        <% } %>
+      <% } %>
+    </div>
+    <% if (this.rotatePossible) { %>
+      <div class="player_current_playlist_tracks_rotate" onclick="rotatePlaylistTracks(this);"></div>
+    <% } %>
+
+   <div class="shortcut_button close_button" onclick="closeView();">
+     <div class="shortcut_button_inner">
+       <center>&#x21d0;</center>
+     </div>
+   </div>
+   <div class="shortcut_button home_button" onclick="closeAllViews();">
+     <div class="shortcut_button_inner">
+       <center>&#x21da;</center>
+     </div>
+   </div>
+
+  </div>  
+_TUNA_END_TEMPLATE=tmpl_player_current_playlist
+
+
+
+
+_TUNA_BEGIN_TEMPLATE
+ <div id="radiostations_page">
+
+    <div id="radiostations_container">
+    <% for (var i=this.firstVisible;i<this.items.length && i<this.lastVisible;i++) { %>
+      <% var art = this.items[i]['arts']; %>
+      <% if (art == undefined) { art = this.items[i]['artl']; } %>
+      <% if (art == undefined) { art = ""; } %>
+      <div class="radiostation_item" data-playlist-id="<%=this.items[i]['id']%>" onclick="listenRadio(this)";">
+        <img class="radiostation_item_image" data-playlist-id="<%=this.items[i]['id']%>" src="<%=art%>" alt="(No Album Art)" />
+        <center><p class="radiostation_item_name"><%=this.items[i]['name']%></p></center>
+     </div>
+    <% } %>
+    </div>
+  <% if (this.rotatePossible) { %>
+  <div id="radiostations_rotate" onclick="rotateRadioStations(this);">
+    <div id="radiostations_rotate_text"><center><b>&nbsp;&gt;&gt;</b></center></div>
+  </div>
+  <% } %>
+  <div class="shortcut_button close_button" onclick="closeView();">
+    <div class="shortcut_button_inner">
+      <center>&#x21d0;</center>
+    </div>
+  </div>
+  <div class="shortcut_button home_button" onclick="closeAllViews();">
+    <div class="shortcut_button_inner">
+      <center>&#x21da;</center>
+    </div>
+  </div>
+ </div>
+_TUNA_END_TEMPLATE=tmpl_radio_stations
+
+
+_TUNA_BEGIN_TEMPLATE
+ <div id="search_album_arts_page">
+  <div id="search_album_arts_status">searching..</div>
+  <div id="search_album_arts_result_container">
+   <% for (var i=0;i<this.items.length && i<6;i++) { 
+     var link = this.items[i]['art']; var id = this.items[i]['id']; %>
+     <div class="search_album_arts_result_item">
+       <img class="search_album_arts_result_image" src="<%=link%>" data-album-id="<%=this.albumid%>" data-albumart-id="<%=id%>" onclick="searchAlbumArtSelect(this);"/>
+     </div>
+   <% } %>
+  </div>  
+   <div class="shortcut_button close_button" onclick="closeView();">
+     <div class="shortcut_button_inner">
+       <center>&#x21d0;</center>
+     </div>
+   </div>
+   <div class="shortcut_button home_button" onclick="closeAllViews();">
+     <div class="shortcut_button_inner">
+       <center>&#x21da;</center>
+     </div>
+   </div>
+ </div>
+_TUNA_END_TEMPLATE=tmpl_album_art_search
+

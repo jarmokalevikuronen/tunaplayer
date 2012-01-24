@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="tunaplayer.css" />
+    <meta charset="utf-8">
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+    <meta name="viewport" content="width=800; height=480; initial-scale=1.0; maximum-scale=1.0; user-scalable=1;" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  </head>
+
+  <script type="text/javascript" src="jquery.min.js"></script>
+  <script type="text/javascript" src="jquery.jqote2.min.js"></script>
+  <script type="text/javascript" src="tunaplayerdaemon.js"></script>
+
+  <script type="text/javascript">
+
+/* Contains a precompiled qjote templates index by name */
+var templates = {};
+
+/* Amount of tracks visible in playlist view at a time */
+var playlistVisibleItems = 6;
+/* Currently visible top index, increased in granularity of playlistVisibleItems */
+var playlistVisibleTopIndex = 0;
+
+
+var currentTrackIndex = 0;
+var visibleTracks = 8;
+
+
+/* Initialize test content */
+var artistShortcutVisibleItems = 6;
+
+var allArtists   = null;
+var allArtists_shadow = null;
+var artistShortcuts = null;
+var artistShortcuts_shadow = null;
+
+var artistAlbums = null;
+var currentAlbum = null;
+var currentAlbumTracks = null; 
+var radioStations = null;
+var radioStations_shadow = null;
+var currentPlaylist = null;
+
+/* This specifies the index of the item that is currently on left within the shortcut array, generally 0,7,14,.. */
+var artistShortcutLPos = 0;
+var artistShortcutOffset = 0;
+
+var pageStack = new Array;
+
+var ignore_position_reports_timer = null;
+var playback_position_delay_active = false;
+var report_playback_position_timer = null;
+
+/* Start index of leftmost visible art int artist albums view. Basically
+ increases in granularity of xx */
+var artistAlbumArtVisibleIndex = 0;
+
+var playlistLongPressTimer = null;
+var playerVolumeUpLongPressTimer = null;
+var longPressTimer = null;
+
+/* Amount of visible items in radio stations page */
+var radioVisibleCount = 6;
+/* Currently visible item in radio stations page */
+var radioVisibleStart = 0;
+
+function playlistPlayTrackNow(id) {
+  console.log("playlistPlayTrackNow: " + id);
+  playlistLongPressTimer = null;
+  playlistMoveTrackToTop(id);
+  tunaPlayer.play(function(json) {
+    if (json["status"] != "OK") {
+      tunaPlayer.next();
+    }
+    closeView();
+  });
+}
+
+function playlistMoveTrackToTop(id) {
+  console.log("playlistMoveTrackToTop: " + id);
+  tunaPlayer.removeFromPlaylist(id, function(json) {
+    if (json["status"] == "OK") { 
+      tunaPlayer.addToPlaylistFront(id);
+    }
+  });
+}
+
+function playlistTrackMouseDown(object) {
+  var id = object.getAttribute("data-track-id");
+
+  if (!id || id.length < 1) {
+    return;
+  }
+
+  if (playlistLongPressTimer) {
+    clearTimeout(playlistLongPressTimer);
+    playlistLongPressTimer = null;
+  }
+  playlistLongPressTimer = setTimeout(function() { playlistPlayTrackNow(id); }, 1000);
+}
+
+function playlistTrackMouseUp(object) {
+  var id = object.getAttribute("data-track-id");
+
+  if (!id || id.length < 1) {
+    return;
+  }
+  if (playlistLongPressTimer) {
+    clearTimeout(playlistLongPressTimer);
+    playlistLongPressTimer = null;
+    playlistMoveTrackToTop(id);
+  }
+}
+
+function playerControl(command, object) {
+  if (command == "next") {
+    tunaPlayer.next();
+  } else if (command == "stop") {
+    tunaPlayer.stop();
+    playerUpdatePlaybackPosition({percents: 0});
+  } else {
+      mode = $("#player_button_playstop").attr("data-mode");
+      if (mode == "play") {
+        tunaPlayer.play();
+      } else {
+        tunaPlayer.stop();
+        playerUpdatePlaybackPosition({percents: 0});
+      }
+  }
+}
+
+function playerVolumePressed(dir) {
+  if (playerVolumeUpLongPressTimer) {
+    clearTimeout(playerVolumeUpLongPressTimer);
+    playerVolumeUpLongPressTimer = null;
+  }
+
+  playerVolumeUpLongPressTimer = setTimeout(function() { 
+    playerVolumeAdjust(dir);
+    playerVolumePressed(dir); 
+    }, 500);
+}
+
+function playerVolumeReleased(dir) {
+  clearTimeout(playerVolumeUpLongPressTimer);
+  playerVolumeUpLongPressTimer = null;
+  playerVolumeAdjust(dir);
+}
+
+
+
+/**
+* Album Art searching functionality
+*/
+function searchAlbumArtSelect(object) {
+  var id = object.getAttribute("data-albumart-id");
+  if (id != undefined && id.length > 0) {
+    tunaPlayer.selectAlbumArt(id);
+  }
+  /* Close the search view after selection is made. */
+  closeView();
+}
+
+function handleSearchAlbumArtComplete() {
+  console.log("handleSearchAlbumArtComplete");
+  $("#search_album_arts_status").html("search complete");
+}
+
+
+function openAlbum(object, openedByWindow) {
+  var id = object.getAttribute("data-album-id");
+  if (id != undefined && id.length > 0) {
+    var src = object.getAttribute("src");
+    if (src == undefined || src.length < 1) {
+      searchAlbumArt(object, openedByWindow); 
+    } else {  
+      tunaPlayer.getAlbum(id, function(json) { 
+        if (json["args"]["items"].length > 0) {
+          currentAlbum = json["args"]["items"][0];
+          openView(openedByWindow, "artist_single_album_container", object);
+        }
+      });
+    }
+  }
+}
+
+/**
+* Radio page methods
+*/
+function listenRadio(object) {
+  var id = object.getAttribute("data-playlist-id");
+  if (id != undefined && id.length) {
+    tunaPlayer.addToPlaylistFront(id, function(json) {
+      if (json["status"] == "OK") {
+        tunaPlayer.play(function(json) {
+          if (json["status"] != "OK") {
+            tunaPlayer.next();
+          }
+        });
+        openView('radio_container', 'player_container');
+      }
+    });
+  }
+}
+
+/**
+* Rotates radio stations within the radio stations page.
+*/
+function rotateRadioStations() {
+  radioVisibleStart += radioVisibleCount;
+  if (radioVisibleStart >= radioStations.length)
+    radioVisibleStart = 0;
+
+  renderPageContent("radio_container");
+}
+
+
+/**
+* Player/current playlist page methods.
+*/
+function playerPlaylistRemove(object) {
+  var id = object.getAttribute("data-track-id");
+  if (id && id.length > 0) {
+    console.log("removeFromPlaylist: " + id);
+    tunaPlayer.removeFromPlaylist(id, function(json) {
+      if (json["status"] == "OK") {
+        // TODO: If playlist is empty -> closeView
+      }
+    });
+  }
+}
+
+function playerPlaylistShuffle(object) {
+  tunaPlayer.shufflePlaylist();
+}
+
+function playerPlaylistClear(object) {
+  tunaPlayer.clearPlaylist();
+  closeView();
+}
+
+/**
+* Player page methods.
+*/
+function playerOpened() {
+  var elem = document.getElementById("player_page");  
+  if (elem == undefined) {
+    return false;
+  }
+  return true;
+}
+
+function isTrue(object) {
+  if (typeof object == "boolean")
+    return object;
+  if (typeof object == "string")
+    return (object.toLowerCase() == "true");
+  return false;
+}
+
+function isFalse(object) {
+  if (isTrue(object))
+    return false;
+  return true;
+}
+
+
+function playerUpdateButtonsFromCache() {
+  if (tunaPlayer.cachedPlaybackControls) {
+    playerUpdateButtons(tunaPlayer.cachedPlaybackControls);
+  }
+}
+
+function playerUpdateButtons(json) {
+  console.log("PLAYER: update_buttons: " + JSON.stringify(json));
+
+  if (!playerOpened()) {
+    return;
+  }
+
+  /* JSON contains a map like: 
+    ---------
+    {"mute":false,"next":false,"pause":false,"play":false,"seek":false,"stop":false,"unmute":false}
+  */
+  var playstopText;
+  $("#player_button_playstop").addClass("button_disabled");
+  if (isTrue(json.play) && isFalse(json.stop)) {
+    playstopText = "&#x25b7;";
+    $("#player_button_playstop").removeClass("button_disabled");
+    $("#player_button_playstop").attr("data-mode", "play");
+  }
+  if (isFalse(json.play) && isTrue(json.stop)) {
+    playstopText = "&#x25A2;";
+    $("#player_button_playstop").removeClass("button_disabled");
+    $("#player_button_playstop").attr("data-mode", "stop");
+  }
+  if (isFalse(json.play) && isFalse(json.pause)) {
+    $("#player_button_playstop").attr("data-mode", "");
+    playstopText = "";
+  }
+  $("#player_button_playstop_inner").html("<center><b>" + playstopText + "</b></center>");
+
+  if (isTrue(json.next)) {
+    $("#player_button_next").removeClass("button_disabled");
+  } else {
+    $("#player_button_next").addClass("button_disabled");
+  }
+}
+
+function playerUpdatePlaybackPosition(json) {
+  if (ignore_position_reports_timer != null)
+    return;
+
+  var position_ctrl = document.getElementById("player_playback_position_text");
+  var position = parseInt(json.position);
+  if (position_ctrl != undefined && json.position != undefined) {
+    var mins;
+    var secs;
+
+    mins = Math.floor(position / 60);
+    secs = position % 60;
+
+    if (secs < 10)
+      secs = "0" + secs;
+
+    if (position != undefined) {
+      position_ctrl.innerHTML = mins + ":" + secs;
+    } else {
+      position_ctrl.innerHTML = "";
+    }
+  } else if (position_ctrl != undefined) {
+    position_ctrl.innerHTML = "";
+  }
+
+  var seek_ctrl = document.getElementById("player_playback_position");
+  if (seek_ctrl != undefined) {
+    seek_ctrl.value = parseInt(json["percents"]);
+  }
+}
+
+function playerUpdateCurrentPlaylist(json) {
+  var playlist_page = document.getElementById("player_current_playlist_page");
+  if (playlist_page != undefined) {
+    currentPlaylist = json;
+
+    if (playlistVisibleTopIndex >= currentPlaylist["args"]["items"].length) {
+      playlistVisibleTopIndex = 0;
+    }
+
+    renderPageContent("player_current_playlist");
+  }
+}
+
+function startWaitLongMousePress(object) {
+  longPressTimer = setTimeout(function() { 
+    longPressTimer = null;
+    albumCommand("play", object, 'artists_albums_container'); 
+    }, 750);
+}
+
+function stopWaitLongMousePress(object) {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+  }
+}
+
+function searchAlbumArt(object, caller_page) {
+  var albumId = $(object).attr("data-album-id");
+  if (albumId != undefined && albumId.length > 0 && caller_page != undefined && caller_page.length > 0) {
+
+    resetDownloadedAlbumArtItems();
+
+    console.log("Starting album art search");
+
+    tunaPlayer.searchAlbumArt(albumId, function(json) {
+      if (json["status"] != "OK") { 
+        closeView();
+      }
+    });
+
+    /* Open the window that will show the results.. */
+    openView(caller_page, 'search_album_arts', albumId);
+  } else {
+    console.log("Failed to start albumart search. No Id");
+  }
+}
+
+
+
+function clear_ignore_position_reports() {
+  ignore_position_reports_timer = null;
+}
+
+function control_playback_position(object) {
+  tunaPlayer.seekPercents(object.value);
+  report_playback_position_timer = null;
+}
+
+function player_playback_position_changed(object) {
+
+  if (ignore_position_reports_timer != null) {
+    clearTimeout(ignore_position_reports_timer);
+    ignore_position_reports_timer = null;
+  }
+
+  if (report_playback_position_timer != null) {
+    clearTimeout(report_playback_position_timer);
+    report_playback_position_timer = null; 
+  }
+  report_playback_position_timer = setTimeout(function() { control_playback_position(object) }, 250);
+
+  ignore_position_reports_timer = setTimeout(clear_ignore_position_reports, 500);
+}
+
+function playerUpdatePlaybackTrackFromCache() {
+  playerUpdatePlaybackTrack(tunaPlayer.cachedPlaybackTrack);
+}
+
+function playerUpdatePlaybackAlbumFromCache() {
+  playerUpdatePlaybackAlbum(tunaPlayer.cachedPlaybackAlbum);
+}
+
+function playerUpdatePlaybackAlbum(json) {
+  console.log("playerUpdatePlaybackAlbum: " + JSON.stringify(json));
+
+  if (!playerOpened()) {
+    return;
+  }
+
+  if (!json || json == undefined) {
+    img = document.getElementById("player_playing_album_image");
+    if (img) {
+      img.setAttribute("src", "");
+    }
+
+    $("#player_playing_track").html("");
+    $("#player_playing_artist_album").html("");
+
+    return;
+  }
+   
+
+  var albumart = json["album.artl"];
+  if (!albumart)
+    albumart = json["album.arts"];
+  if (albumart) {
+    img = document.getElementById("player_playing_album_image");
+    if (img) {
+      img.setAttribute("src", albumart);
+    }
+  }
+
+  if (json["id"]) {
+    $("#player_playing_album_image").attr("data-album-id", json["id"]);
+  }
+  if (json["artist.id"]) {
+    $("#player_playing_album_image").attr("data-artist-id", json["artist.id"]);
+  }
+}
+
+function playerUpdatePlaybackTrack(json) {
+  console.log("playerUpdatePlaybackTrack: " + JSON.stringify(json));
+
+  if (!json)
+    return;
+
+  if (!playerOpened()) {
+    console.log("player not available");
+    return;
+  }
+  $("#player_playing_track").attr("data-track-id", (json.id != undefined ? json.id : ""));
+  $("#player_playing_track").html((json.name != undefined ? json.name.toLowerCase() : ""));
+
+  var len = parseInt(json["len"]);
+  if (len < 1) {
+    console.log("TODO: Hide the progress indicator");
+  }
+  
+  var albumartist = "";
+ 
+  if (json["album.artist.name"])
+    albumartist += json["album.artist.name"];
+  if (json["album.name"]) {
+    if (albumartist.length) 
+      albumartist += " - ";
+    albumartist += json["album.name"]
+  }
+    
+  $("#player_playing_artist_album").html(albumartist.toLowerCase());
+  
+  var albumart = json["album.artl"];
+  if (albumart != undefined && albumart.length > 0) {
+    $("#player_playing_album_image").attr("src", albumart);
+  }
+  $("#player_playing_album_image").attr("data-album-id", json["album.id"]);
+}
+
+function trackClicked(trackDiv) {
+  var trackId = trackDiv.getAttribute("data-track-id");
+  console.log("track: " + trackId + " clicked");
+
+  if ($(trackDiv).hasClass("artist_single_album_track_selected"))
+    $(trackDiv).removeClass("artist_single_album_track_selected");
+  else
+    $(trackDiv).addClass("artist_single_album_track_selected");
+}
+
+function rotateTracks(callerObject) {
+
+  if (currentAlbumTracks["items"].length <= visibleTracks)
+    return;
+
+  currentTrackIndex += visibleTracks;
+  if (currentTrackIndex >= currentAlbumTracks["items"].length)
+    currentTrackIndex = 0;
+
+  var visibleFirst = currentTrackIndex;
+  var visibleLast = currentTrackIndex + visibleTracks;
+
+  console.log("rotateTracks: visible-range " + visibleFirst + " -> " + visibleLast);
+
+  $(".artist_single_album_track").each(function(index, object) {
+    if (index >= visibleFirst && index < visibleLast) {
+      $(object).css("display", "block");
+    } else {
+      $(object).css("display", "none");
+    }
+  });
+}
+
+function albumCommand(command, div, caller) {
+  var albumId = div.getAttribute("data-album-id");
+
+  var selectedTracks = new Array;
+
+  $(".artist_single_album_track_selected").each(function(index, object) {
+    selectedTracks.push(object.getAttribute("data-track-id"));
+  });
+
+  // If nothing selected -> assume one likes to give
+  if (selectedTracks.length == 0) {
+    if (command == "queue") {
+      tunaPlayer.addToPlaylist(albumId);
+    } else {
+      /* Firstly, make sure all tracks in given album does not exists in playlist anymore */
+      tunaPlayer.removeFromPlaylist(albumId);
+      tunaPlayer.addToPlaylistFront(albumId);
+      tunaPlayer.play(function(json) {
+        if (json["status"] != "OK") {
+          // NOK -> Already playing, just move first newly added track.
+          tunaPlayer.next();
+        }
+      });
+      if (caller != undefined) {
+        openView(caller, 'player_container');
+      }
+    }
+  } else {
+    if (command == "queue") {
+      for (var i=0;i<selectedTracks.length;i++) {
+        tunaPlayer.addToPlaylist(selectedTracks[i]);
+      }
+    } else {
+      /* In reverse order as items are put in front of the playlist one-by-one. */
+      for (var i=selectedTracks.length-1;i>=0;i--) {
+        tunaPlayer.removeFromPlaylist(selectedTracks[i]);
+        tunaPlayer.addToPlaylistFront(selectedTracks[i]);
+      }
+      tunaPlayer.play(function(json) {
+        if (json["status"] != "OK") {
+          // NOK -> Already playing, just move to this track.
+          tunaPlayer.next();
+        }
+      });
+    }
+  }
+
+  // Once completed -> remove selections
+  $(".artist_single_album_track").each(function(index, object) {
+    $(object).removeClass("artist_single_album_track_selected");
+  });
+}
+
+function artistCommand(command, div, caller) {
+  var artistId = div.getAttribute("data-artist-id");
+  console.log("artistCommand: " + command + " " + artistId);
+  if (artistId != undefined && artistId.length > 0) {
+    if (command == "queue") {
+      tunaPlayer.addToPlaylist(artistId);
+    } else if (command == "play") {
+      tunaPlayer.removeFromPlaylist(artistId);
+      tunaPlayer.addToPlaylistFront(artistId);
+      tunaPlayer.play(function(json) {
+        if (json["status"] != "OK") {
+          // Play fails if already playing a track. On that case the
+	  // newly interested artist is first track in playlist.
+          tunaPlayer.next();
+        }
+      });
+
+      if (caller != undefined) {
+        openView(caller, 'player_container');
+      }
+    }
+  }
+}
+
+function rotateAlbums(object) {
+
+  var index = artistAlbumArtVisibleIndex + 6;
+  index = index % artistAlbums.length;
+  if (index < 6)
+    index = 0;
+  artistAlbumArtVisibleIndex = index;
+
+  console.log("-> rotateAlbums: " + index);
+
+  renderPageContent('artists_albums_container');
+}
+
+function seekActiveArtistShortcutPage(offset) {
+  artistShortcutOffset = 0;
+
+  offset = fixOffset(offset);
+  console.log("### seekActiveArtistShortcutPage: " + offset);
+
+  if (offset < 0) {
+    artistShortcutLPos -= artistShortcutVisibleItems;
+    if (artistShortcutLPos < 0)
+      artistShortcutLPos = 0;
+  } else if (offset > 0) {
+    var rightmostIndex = artistShortcutLPos + artistShortcutVisibleItems;
+    if (getArtistShortcutCount() > rightmostIndex)
+      artistShortcutLPos = rightmostIndex;
+    else
+      return;
+  }
+
+  console.log("### artistShortcutLPos -> " + artistShortcutLPos);
+
+  renderPageContent("artists_container");
+}
+
+
+
+function __printPageStack(info) {
+
+  console.log("-------------------------------------------");
+  console.log("-- PAGESTACK after " + info);
+  for (var i=0;i<pageStack.length/2;i++) {
+    console.log(" " + pageStack[i*2] + " -> " + pageStack[i*2+1]);
+  }
+  console.log("-------------------------------------------");
+}
+
+function pageStackPush(pageId) {
+  pageStack.push(pageId);
+  __printPageStack("push");
+}
+
+function pageStackPop() {
+  return pageStack.pop();
+  __printPAgeStack("pop");
+}
+
+function currentShortcutIndex() {
+  return artistShortcutLPos + artistShortcutOffset;
+}
+
+
+/*
+ NOTE: This might adjust the LPos eventually.
+*/
+function createArtistShortcutBar() {
+
+  var initData = {};
+
+  initData["selectedIndex"] = artistShortcutOffset;
+  initData["leftVisible"] = artistShortcutLPos == 0 ? false : true;
+  initData["items"] = new Array();
+
+  var artistShortcutCount = getArtistShortcutCount();
+  var visibleItems = artistShortcutVisibleItems;
+  for (var i=artistShortcutLPos;i<artistShortcutCount && visibleItems > 0;i++) {
+    var ch = artistShortcuts[i][0]["name"].charAt(0).toLowerCase();
+    var item = {"index": i, "key": ch };
+    initData["items"].push(item);
+    --visibleItems;
+  }
+
+  initData["rightVisible"] = (artistShortcutCount - artistShortcutVisibleItems) > artistShortcutLPos ? true : false;
+
+  var html = $.jqote(templates.tmpl_artist_shortcutbar, initData);
+
+  return html;
+}
+
+
+function createArtistListbox() {
+
+  if (!allArtists || allArtists.length < 1) {
+    return "<p>No items</p>";
+  }
+
+  var initData = {};
+
+  var itemsToShow = 6;
+  var uiTopIndex = getArtistShortcutUiIndex(currentShortcutIndex());
+  var uiBottomIndex = uiTopIndex + itemsToShow - 1;
+
+  initData["topIndex"] = uiTopIndex;
+  initData["bottomIndex"] = uiBottomIndex;
+  initData["items"] = getShortcutArtists(currentShortcutIndex());
+
+  var html = $.jqote(templates.tmpl_artist_listbox, initData);
+
+  return html;
+}
+
+
+function createArtistsPageContent(rootElement) {
+
+  var shortcutBarHtml = createArtistShortcutBar();
+  var separatorHtml = '<div style="clear: both;"></div>';
+  var listboxHtml = createArtistListbox();
+
+  var html = shortcutBarHtml + separatorHtml + listboxHtml;
+
+  return html;
+}  
+
+
+function createArtistAlbumsPageContent(rootElement) {
+  if (artistAlbums == null || artistAlbums == undefined) {
+    console.log("artistAlbums not ready yet -> leaving");
+    return;
+  }
+
+  var initData = {};
+  var imagesToShow = 6;
+
+  initData["items"] = artistAlbums;
+  initData["firstVisible"] = artistAlbumArtVisibleIndex;
+  initData["lastVisible"] = artistAlbumArtVisibleIndex + imagesToShow;
+  initData["rotatePossible"] = artistAlbums.length > imagesToShow;
+
+  var html = $.jqote(templates.tmpl_artist_albums, initData);
+
+  return html;
+}
+
+function createArtistSingleAlbumPageContent(albumId) {
+  var initData = {};
+
+  initData["firstTrack"] = currentTrackIndex;
+  initData["lastTrack"] = currentTrackIndex + visibleTracks;
+  initData["items"] = currentAlbumTracks["items"];
+  initData["tracklisthtml"] = createArtistSingleAlbumTrackList();
+  initData["rotatePossible"] = currentAlbumTracks["items"].length > visibleTracks;
+  initData["album"] = currentAlbum;
+
+  var html = $.jqote(templates.tmpl_artist_single_album, initData);
+  
+  return html;
+}
+
+function createArtistSingleAlbumTrackList() {
+  var initData = {};
+  initData["firstTrack"] = currentTrackIndex;
+  initData["lastTrack"] = currentTrackIndex + visibleTracks;
+  initData["items"] = currentAlbumTracks["items"];
+
+  var html = $.jqote(templates.tmpl_artist_single_album_tracklist_content, initData);
+
+  return html;
+}
+
+function createPlayerPageContent() {
+  var initData = {};
+
+  var html = $.jqote(templates.tmpl_player_content, initData);
+
+  return html;
+}
+
+function createPlayerCurrentPlaylistPageContent() {
+  var initData = {};
+  
+  initData["items"] = currentPlaylist["args"]["items"];
+  initData["firstItem"] = playlistVisibleTopIndex;
+  initData["lastItem"] = playlistVisibleTopIndex + playlistVisibleItems;
+  initData["rotatePossible"] = currentPlaylist["args"]["items"].length > playlistVisibleItems;
+
+  var html = $.jqote(templates.tmpl_player_current_playlist, initData);
+
+  return html;
+}
+
+function rotatePlaylistTracks() {
+  playlistVisibleTopIndex += playlistVisibleItems;
+  if (playlistVisibleTopIndex >= currentPlaylist["args"]["items"].length)
+    playlistVisibleTopIndex = 0;
+
+  renderPageContent("player_current_playlist");
+}
+
+function createRadioPageContent() {
+
+  var initData = {};
+  initData["items"] = radioStations;
+  initData["firstVisible"] = radioVisibleStart;
+  initData["lastVisible"] = radioVisibleStart + radioVisibleCount;
+  initData["rotatePossible"] = (radioStations.length > radioVisibleCount);
+
+  var html = $.jqote(templates.tmpl_radio_stations, initData);
+
+  return html;
+}
+
+var downloadedAlbumArtItems = null;
+
+function resetDownloadedAlbumArtItems() {
+  downloadedAlbumArtItems = new Array;
+}
+
+function handleAlbumArtDownloaded(json, norender) {
+  if (!downloadedAlbumArtItems) {
+    console.log("ERROR: Not expecting to receive album art download response");
+    return;
+  }
+
+  console.log("ALBUMART-ITEM: " + JSON.stringify(json));
+
+  downloadedAlbumArtItems.push(json);
+  if (norender == undefined) {
+    console.log("rendering page");
+    renderPageContent('search_album_arts');
+  }
+}
+
+function createSearchAlbumArtsPageContent() {
+  var initData = {};
+
+  initData["items"] = downloadedAlbumArtItems;
+
+  var html = $.jqote(templates.tmpl_album_art_search, initData);
+
+  return html;
+}
+
+function renderPageContent(pageId, renderHint, renderContext) {
+  var targetObject = document.getElementById(pageId);
+  if (pageId == "artists_container") { 
+    if (renderHint == "artistlistOnly") {
+      var lbContainer = document.getElementById("artist_listbox_container");
+      if (lbContainer != undefined) {
+        lbContainer.innerHTML = createArtistListbox();
+      } else {
+        tile.innerHTML = createArtistsPageContent(tile);
+      }
+    } else {
+      targetObject.innerHTML = createArtistsPageContent();
+    }
+  } else if (pageId == "artists_albums_container") {
+    targetObject.innerHTML = createArtistAlbumsPageContent();
+  } else if (pageId == "artist_single_album_container") {
+    if (renderHint == "tracklistOnly") {
+      var tlContainer = document.getElementById("artist_single_album_tracklist");
+      if (tlContainer != undefined) {
+        tlContainer.innerHTML = createArtistSingleAlbumTrackList();
+      } else {
+        targetObject.innerHTML = createArtistSingleAlbumPageContent(renderContext.getAttribute('data-album-id'));
+      }
+    } else {
+      targetObject.innerHTML = createArtistSingleAlbumPageContent(renderContext.getAttribute('data-album-id'));
+    }
+  } else if (pageId == "radio_container") {
+    targetObject.innerHTML = createRadioPageContent();
+  } else if (pageId == "player_container") {
+    targetObject.innerHTML = createPlayerPageContent();
+    playerUpdateButtonsFromCache();
+    playerUpdatePlaybackTrackFromCache();
+    playerUpdatePlaybackAlbumFromCache();
+    processVolumeChanged();
+  } else if (pageId == "player_current_playlist") {
+    targetObject.innerHTML = createPlayerCurrentPlaylistPageContent();
+  } else if (pageId == "search_album_arts") {
+    targetObject.innerHTML = createSearchAlbumArtsPageContent();
+  }
+}
+
+/**
+* oldId: Identifier of the "page" where transition begins
+* newId: Identifier of the "page" where to the transition ends.
+* initData: Possible context specific data to be passed for the renderer.
+*/
+function openView(oldId, newId, initData) {
+
+  console.log("OPEN " + newId + " from " + oldId);
+
+  $("#" + oldId).addClass("div_hidden");
+  $("#" + oldId).removeClass("tile_opened");
+
+  $("#" + newId).removeClass("div_hidden");
+  $("#" + newId).addClass("tile_opened");
+
+  var timeout = 500;
+  if (oldId == "root")
+    timeout = 500;
+
+  start_preload_data(oldId, newId, initData, function() { renderPageContent(newId, "nohint", initData); });
+
+  setTimeout(function() { renderPageContent(newId, "nohint", initData ); }, timeout);
+
+  /* Page stack holds pairs. -> Thus when popping we get first the page to close and then the page to open */
+  pageStackPush(oldId);
+  pageStackPush(newId);
+}
+
+function closeAllViews() {
+  var more = false;
+
+  do {
+    more = closeView();
+  } while (more);
+}
+
+function closeView() {
+  var closeId = pageStackPop();
+  var openId = pageStackPop();
+
+  if (closeId == undefined || openId == undefined) {
+    return false;
+  }
+
+  console.log("CLOSE " + closeId + " in order to OPEN " + openId);
+
+  if (openId != undefined) {
+    var object = document.getElementById(openId);
+    if (object) {
+      $(object).removeClass("div_hidden");
+      $(object).addClass("tile_opened");
+    }
+  }
+  if (closeId != undefined) {
+    var object = document.getElementById(closeId);
+    if (object != undefined) {
+      object.innerHTML = ""; /* Clear the contents of the page to be closed so that it wont affect */
+      $(object).addClass("div_hidden");
+      $(object).removeClass("tile_opened");
+    }
+  } 
+
+  return true;
+}
+
+
+function load_artist_albums(object, renderer) {
+  var id = object.getAttribute("data-artist-id");
+  if (id != undefined && id.length > 0) {
+    tunaPlayer.getArtistAlbums(id, function(json) {
+      console.log("All artist " + id + " albums loaded");
+      if (json["status"] == "OK") {
+        artistAlbums = json["args"]["items"];
+        if (renderer) renderer();
+      } else {
+        alert("Failed to load artist albums");
+      }
+    });
+  } else {
+    console.log("ERROR: load_artist_albums no ID");
+  }
+}
+
+function start_preload_data(oldid, newid, initData, renderer) {
+  console.log("PRELOAD DATA to OPEN " + newid + " from " + oldid);
+
+  if (newid == 'artist_single_album_container' || oldid == 'search_album_arts') {
+    if (newid == 'artist_single_album_container') {
+      var id = null;
+      var index = $(initData).attr("data-album-index");
+      if (index != undefined) {
+        index = parseInt(index);
+        if (index >= 0 && index < artistAlbums.length) {
+          currentAlbum = artistAlbums[index];
+        }
+      } else {
+        id = $(initData).attr("data-album-id");
+      }
+    }
+    if (!id) {
+      id = initData.getAttribute("data-album-id");
+    }
+    if (oldid == "player_container")
+      currentTrackIndex = 0;
+
+    tunaPlayer.getAlbumTracks(id, function(json) {
+      if (json["status"] == "OK") {
+        currentAlbumTracks = json["args"];
+        if (renderer != undefined) {
+          renderer();
+        }
+      } else {
+        alert("Failed to load album tracks");
+      }
+    });
+  }
+  if (newid == "artist_single_album_container" && oldid == "artists_albums_container") {
+    currentTrackIndex = 0;
+  }
+  if (newid == "player_current_playlist") {
+    tunaPlayer.getCurrentPlaylist(function(json) {
+      if (json["status"] == "OK") {
+        currentPlaylist = json;
+        if (renderer) {
+          renderer();
+        }
+      } else { 
+        console.log("ERROR: Failed to get playlist: " + JSON.stringify(json));
+      }
+    });
+  }
+  if (newid == 'artists_albums_container') {
+    artistAlbumArtVisibleIndex = 0;
+    load_artist_albums(initData, renderer);
+  }
+  if (newid == "artists_container") {
+    upgradeDatabase();
+  }
+  if (newid == "radio_container") {
+    upgradeDatabase();
+  }
+}
+
+function upgradeDatabase() {
+  if (allArtists_shadow && artistShortcuts_shadow && radioStations_shadow) {
+
+    console.log("Taking new database into use");
+
+    allArtists = allArtists_shadow;
+    allArtists_shadow = null;
+
+    artistShortcuts = artistShortcuts_shadow;
+    artistShortcuts_shadow = null;
+
+    radioStations = radioStations_shadow;
+    radioStations_shadow = null;
+  }
+}
+
+function handleKeyPress(e) {
+  if (e.charCode == 113 /* q */) {
+    closeView();
+  }
+}
+
+String.prototype.trim = function() {
+  return this.replace(/^\s*/, "").replace(/\s*$/, "");
+}
+
+function filterArtistName(str) {
+  var lc = str.trim().toLowerCase();
+	
+/*
+  if (lc.substring(0, 4) == "the ")
+    return lc.substring(4);
+  if (lc.substring(0, 2) == "a ")
+    return lc.substring(2);*/
+
+  return lc;
+}
+
+function initArtistShortcuts(list, inittype) {
+  for (var i=0;i<list.length;i++)
+    list[i]["name"] = filterArtistName(list[i]["name"]);
+
+  var prevFc = null;
+
+  for (var i=0;i<list.length;i++) {
+    var name = list[i]["name"];
+    var fc = name.charAt(0);
+    if (fc != undefined) { 
+      if (fc != prevFc) {
+        if (inittype == "shadow") {
+          if (!artistShortcuts_shadow) {
+            artistShortcuts_shadow = new Array();
+          }
+          artistShortcuts_shadow.push(new Array());
+          artistShortcuts_shadow[artistShortcuts_shadow.length-1]['_ui_index'] = 0;
+        } else {
+          if (!artistShortcuts) {
+            artistShortcuts = new Array();
+          }
+          artistShortcuts.push(new Array());
+          artistShortcuts[artistShortcuts.length-1]['_ui_index'] = 0;
+        }
+        prevFc = fc;
+      } 
+      if (inittype == "shadow") {
+        artistShortcuts_shadow[artistShortcuts_shadow.length-1].push(list[i]);
+      } else {
+        artistShortcuts[artistShortcuts.length-1].push(list[i]);
+      }
+    }
+  }
+
+  list = null;
+}
+
+
+function adjustArtistShortcutPosition(offset) {
+  artistShortcutLeftPosition += offset;
+
+  if (artistShortcutLeftPosition < 0)
+    artistShortcutLeftPosition = 0;
+}
+
+function getArtistShortcutCharacter(offsetToCurrentPosition) {
+  return getArtistName(fixOffset(offsetToCurrentPosition)).substring(0,1).toLowerCase();
+}
+
+function getArtistShortcutCount() {
+  return artistShortcuts ? artistShortcuts.length : 0;
+}
+
+function getShortcutArtists(index) {
+  return artistShortcuts ? artistShortcuts[index] : null;
+}
+
+function getArtistShortcutUiIndex(index) {
+  if (!artistShortcuts) {
+    return 0;
+  }
+
+  if (index == undefined) {
+    index = currentShortcutIndex();
+  }
+  var index = fixOffset(index);
+
+  var shortcutArray = artistShortcuts[index];
+  if (shortcutArray == undefined) {
+    console.log("ERROR: object is undefined");
+    return 0;
+  }
+  var obj = shortcutArray['_ui_index'];
+  if (obj == undefined) {
+    console.log("ERROR: object is undefined");
+    return 0;
+  }
+
+  return obj;
+}
+
+/**
+* Makes sure the offset is valid number. Defaults to zero (0).
+*/
+function fixOffset(offset) {
+  if (offset == undefined || offset == null)
+    return 0;
+
+  return parseInt(offset);
+}
+
+function getArtistCount(index) {
+  if (index == undefined) {
+    index = currentShortcutIndex();
+  }
+  return artistShortcuts[fixOffset(index)].length;
+}
+
+function getArtist(offsetToCurrentPosition, artistIndex) {
+  artistIndex = fixOffset(artistIndex);
+  offsetToCurrentPosition = fixOffset(offsetToCurrentPosition);
+
+  var index = artistShortcutLPos + offsetToCurrentPosition;
+
+  return artistShortcuts[index][artistIndex];
+}
+
+function getArtistName(offsetToCurrentPosition, artistIndex) {
+  return getArtist(offsetToCurrentPosition, artistIndex)["name"];
+}
+
+function getArtistId(offsetToCurrentPosition, artistIndex) {
+  return getArtist(offsetToCurrentPosition, artistIndex)["id"];
+}
+
+function renderArtistPage(renderHint) {
+  renderPage(document.getElementById("artists_tile"), renderHint);
+}
+
+function renderAlbumPage(renderHint) {
+  renderPage(document.getElementById("artist_albums_page"), renderHint);
+}
+
+function rotateArtistList() {
+  var curIdx = currentShortcutIndex();
+
+  var uiIndex = getArtistShortcutUiIndex(); 
+  uiIndex += 6; // TODO: Use DEFINE
+
+  var rounded = parseInt(uiIndex - getArtistCount(curIdx));
+  if (rounded >= 0)
+    uiIndex = 0;
+  
+  artistShortcuts[curIdx]['_ui_index'] = uiIndex;
+  renderPageContent("artists_container", "artistlistOnly");
+}
+
+function updateShortcutVisiblePageText(object) {
+  var totalArtists = getArtistCount();
+  var currentArtistIndex = getArtistShortcutUiIndex();
+
+  if (totalArtists > 6) {
+    var totalPages = Math.ceil(totalArtists / 6);
+    var currentPage = (currentArtistIndex / 6) + 1;
+    var textObject = $(object).children(".artist_shortcut_hili_small_text")[0];
+    if (textObject != undefined) {
+      $(textObject).css("display", "block");
+      textObject.innerHTML = "<b>" + currentPage + "</b> / " + totalPages;
+    }
+  }
+}
+
+function selectArtistShortcut(object) {
+  var index = parseInt(object.getAttribute("data-shortcut-index"));
+
+  $(".artist_shortcut_hili_small_text").css("display", "none");
+
+  if ($(object).hasClass("artist_shortcut_hili")) {
+    rotateArtistList();
+  } else {
+    $(".artist_shortcut").removeClass("artist_shortcut_hili");
+    $(object).addClass("artist_shortcut_hili");
+    artistShortcutOffset = index % artistShortcutVisibleItems; 
+    renderPageContent("artists_container", "artistlistOnly");
+  }
+  updateShortcutVisiblePageText(object); 
+}
+
+function tunaDaemonConnectionEstablished() {
+  /* TODO: Do something here, altough the daemon is at this time the active party */
+}
+
+function tunaDaemonConnectionClosed() {
+  $("#connectionlost").removeClass("hidden");
+}
+
+function processStartupProgress(percents, loadtype) {
+
+  console.log("STARTUP-PROGRESS: " + percents);
+
+  percens = parseInt(percents);
+
+  if (percents >= 100) {
+    tunaPlayer.getAllArtists(function(json) {
+      if (json["status"] == "OK") {
+        $("#waitamoment").addClass("hidden"); 
+        if (loadtype == "shadow") {
+          allArtists_shadow = json["args"]["items"];
+          initArtistShortcuts(allArtists_shadow, loadtype); 
+        } else {
+          allArtists = json["args"]["items"];
+          initArtistShortcuts(allArtists, loadtype);
+        }
+      } else {
+        $("#indexingstatus").html("<center>Sorry. Error occured.</center>");
+        alert("Failed to get artists -> quitting.");
+      }
+    });
+
+    tunaPlayer.getRadioStations(function(json) {
+      if (json["status"] == "OK") {
+        if (loadtype == "shadow") {
+          radioStations_shadow = json["args"]["items"];
+        } else {
+          radioStations = json["args"]["items"];
+        }
+      } else {
+        radioStations = new Array();
+      }
+    });
+  } else { 
+    var opacity_value = 1.4 - percents / 99;
+    if (opacity_value > 1.0) opacity_value = 1.0;
+    $("#waitamoment").css("opacity", opacity_value);
+    $("#indexingstatus").html("<center>indexing.." + percents + "\%" + "</center>");
+  }
+}
+
+function reloadInitialData() {
+  console.log("reload_initial_data -> DB Changed?");
+  startup_progress(100, "shadow");
+}
+
+function updateChangedAlbumToLocalCache(json) {
+  var albumId = json["id"];
+  if (albumId == undefined)
+    return;
+
+  /* Update the cached artist albums.. */
+  if (artistAlbums != undefined && artistAlbums != null && artistAlbums.length > 0) {
+    if (artistAlbums[0]["artist.id"] != json["artist.id"]) {
+      console.log("change in non-visible artist " + json["artist.id"] + " (Your: " + artistAlbums[0]["artist.id"] + ")");
+      return;
+    }
+    
+    for (var i=0;i<artistAlbums.length;i++) {
+      if (artistAlbums[i]["id"] == albumId) {
+        console.log("Updated to local cache");
+        artistAlbums[i] = json;
+      }
+    }
+  }
+  /* Update the currently playing album if equals */
+  if (currentAlbum != undefined && currentAlbum != null) {
+    if (currentAlbum["id"] == albumId) {
+      currentAlbum = json;
+    }
+  }
+}
+
+
+function processAlbumChanged(json) {
+  /* Update locally cached album object */
+  updateChangedAlbumToLocalCache(json);
+
+  /* Update also UI directly, in case it is visible at this moment already */
+  var art = json["album.artl"] != undefined ? json["album.artl"] : json["album.arts"];
+  var id = json["id"];
+  if (art != undefined && art.length > 0 && id != undefined && id.length > 0) {
+    console.log("Updating UI for album " + id + " to have image " + art);
+    /* Update the single album page to contain the "up-to-date" albumart */
+    $("img").each(function(index, object) {
+      myid = $(object).attr("data-album-id");
+      if (myid == id) {
+        $(object).attr("src", art);
+      }
+    });
+  }
+}
+
+
+function compileTemplates() {
+  $.get("tunaplayer.tmpl", function(document) {
+
+    var tls = document.split("_TUNA_BEGIN_TEMPLATE");
+    for (var i=0;i<tls.length;i++) {
+      var contentAndName = tls[i].trim().split("_TUNA_END_TEMPLATE=");
+      if (contentAndName.length == 2) {
+        var content = contentAndName[0].trim();
+        var name = contentAndName[1].trim();
+        if (name.length > 0 && content.length > 0) {
+          try {
+            templates[name] = $.jqotec(content);
+            console.log("COMPILED TEMPLATE: " + name);
+          } catch (e) {
+            console.log("COMPILATION ERROR: " + name);
+            console.log("Exception: " + e.toString());
+            console.log("SOURCE: " + content);
+          }
+        }
+      }
+    }
+  });
+}
+
+function connectToDaemon() {
+  window.resizeTo(808,508);
+
+  tunaPlayer.onOpened = tunaDaemonConnectionEstablished;
+  tunaPlayer.onClosed = tunaDaemonConnectionClosed;
+
+  tunaPlayer.onAlbumArtSearchItem = handleAlbumArtDownloaded;
+  tunaPlayer.onAlbumArtSearchComplete = handleSearchAlbumArtComplete;
+
+  tunaPlayer.onPlaybackControlsChanged = playerUpdateButtons;
+  tunaPlayer.onPlaybackTrackChanged = playerUpdatePlaybackTrack;
+  tunaPlayer.onPlaybackAlbumChanged = playerUpdatePlaybackAlbum;
+  tunaPlayer.onPlaybackPositionChanged = playerUpdatePlaybackPosition;
+
+  tunaPlayer.onCurrentPlaylistChanged = playerUpdateCurrentPlaylist;
+
+  tunaPlayer.onStartupProgress = processStartupProgress;
+
+  tunaPlayer.onAlbumChanged = processAlbumChanged;
+
+  tunaPlayer.onVolumeChanged = processVolumeChanged;
+
+  tunaPlayer.onDatabaseChanged = reloadInitialData;
+
+  tunaPlayer.open(document.URL);
+
+  compileTemplates();
+}
+
+function processVolumeChanged(percents) {
+  if (percents == undefined || percents == null) {
+    percents = tunaPlayer.cachedVolumeLevel;
+    if (percents == undefined || percents == null) {
+      return;
+    }
+  }
+  console.log("process_volume_changed: " + percents);
+  playerUpdateVolumeLevel(percents);
+}
+
+function playerSetVolume(level) {
+  tunaPlayer.setVolume((level+1) * 10);
+}
+
+function playerVolumeAdjust(dir) {
+  percents = parseInt(tunaPlayer.cachedVolumeLevel);
+  if (percents < 0) {
+    return;
+  }
+  if (dir == "up")
+    percents += 10;
+  else
+    percents -= 10;
+
+  console.log("Setting volume to: " + percents);
+  tunaPlayer.setVolume(percents);
+}
+
+function playerUpdateVolumeLevel(volume) {
+  if (!playerOpened()) {
+    return;
+  }
+
+  volume = parseInt(volume);
+  volume = Math.floor(volume / 10);
+  console.log("volume: " + volume);
+  for (var i=0;i<10;i++) {
+    var id = "#player_volbar_" + i;
+    if (i < volume) {
+      $(id).removeClass("player_volbar_hidden");
+      $(id).addClass("player_volbar_visible");
+    } else {
+      $(id).addClass("player_volbar_hidden");
+    }
+  }
+}
+
+</script>	  
+
+  <body onload="connectToDaemon();" onkeypress="handleKeyPress(event);" style="background: black; z-index:1;">		
+    <div class="playercontainer" id="root">
+
+      <div id=radio_launcher class="tile_1 tile_base tile_closed tile_yellow"  onclick="openView('root', 'radio_container');">
+        <div class="tile_closed_inner"><center>radio</center></div>
+      </div>
+
+      <div id=artists_launcher class="tile_2 tile_base tile_closed tile_red tile_bkg_gray"  onclick="openView('root', 'artists_container');">
+        <div class="tile_closed_inner"><center>music</center></div>
+      </div>
+
+      <div id=player_launcher class="tile_3 tile_base tile_closed tile_blue tile_bkg_gray"  onclick="openView('root', 'player_container');">
+        <div class="tile_closed_inner"><center>player</center></div>
+      </div>
+
+      <div id="radio_container" class="topleft tile_base tile_bkg_gray div_hidden tile_yellow">
+      </div>
+
+      <div id=artists_container class="topleft tile_base tile_bkg_gray div_hidden tile_red">              
+      </div>
+
+      <div id=artists_albums_container data-cache="1" class="topleft tile_base tile_bkg_gray div_hidden tile_red">
+      </div>
+
+      <div id="search_album_arts" class="topleft tile_base tile_bkg_gray div_hidden tile_red">
+      </div>
+
+      <div id="artist_single_album_container" class="topleft tile_base tile_bkg_gray div_hidden tile_red">
+      </div>
+
+      <div id="player_container" class="topleft tile_base tile_bkg_gray div_hidden tile_blue">
+      </div>
+
+      <div id="player_current_playlist" class="topleft tile_base tile_bkg_gray div_hidden tile_blue">
+      </div>
+
+    </div>
+
+    <div id=waitamoment onclick=";"><br>
+      <p id=tunaversion>
+        <center>tunaPlayer - 0.0.1</center>
+      </p>
+      <p id=indexingstatus></p>
+    </div>
+
+    <div id=connectionlost class="hidden" onclick=";"><br>
+     <p><center>connection closed</center></p>
+    </div>
+
+  </body>
+</html>
+
