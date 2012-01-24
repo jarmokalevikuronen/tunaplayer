@@ -19,6 +19,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "tpplaylistrunner.h"
 
+//
+// TODO: Modify so that currentTrack also affects on playlist stuff.
+//
+
 // In this mode -> the playlist is continously repeated
 static const QString modeRepeat = "repeat";
 // In this mode -> the playlist is played exactly once and
@@ -76,11 +80,13 @@ TPTrack* TPPlaylistRunner::nextTrackInternal(bool *peek)
     {
         if (peek)
             *peek = false;
-
-        // Get rid of empty playlist if exists.
-        if (playlist)
-            playlist->dec();
-        playlist = NULL;
+        else
+        {
+            // Get rid of empty playlist if exists.
+            if (playlist)
+                playlist->dec();
+            playlist = NULL;
+        }
 
         return NULL;
     }

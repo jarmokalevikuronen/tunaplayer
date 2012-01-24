@@ -42,7 +42,6 @@ TPPlayerProxy::~TPPlayerProxy()
     delete playlistRunner;
 }
 
-//bool TPPlayerProxy::Execute(Command cmd, bool ignoreCheck)
 bool TPPlayerProxy::Execute(const QString &command, bool ignoreCheck)
 {
     bool result = false;
