@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpwebsocketprotocol.h"
 #include "tpsettings.h"
 #include "tpclargs.h"
+#include "tpsignalhandler.h"
 
 int main(int argc, char *argv[])
 {
@@ -49,10 +50,15 @@ int main(int argc, char *argv[])
 
     TPMusicPlayerCore *player = new TPMusicPlayerCore(protocol);
 
+    TPSignalHandler *sh = new TPSignalHandler(0);
+
+    QObject::connect(sh, SIGNAL(quit()), &a, SLOT(quit()));
+
     player->start();
 
     int ret = a.exec();
 
+    delete sh;
     delete player;
     delete protocol;
     delete server;

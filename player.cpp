@@ -201,6 +201,7 @@ void PlayerBackend_MPlayer::processFinished(int exitCode, QProcess::ExitStatus e
 
     Q_UNUSED(exitCode);
     Q_UNUSED(exitStatus);
+    changeToState(Playing);
     changeToState(Stopped);
 }
 
@@ -247,6 +248,8 @@ bool PlayerBackend_MPlayer::play(TPTrack *track)
 
         if (status)
             kickWatchdog();
+        else
+            ERROR() << "PLAYER: Failed to start playback\n";
 
         if (status && muted)
             mute(true);

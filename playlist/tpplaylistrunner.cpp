@@ -41,6 +41,7 @@ TPPlaylistRunner::TPPlaylistRunner()
 
 TPPlaylistRunner::~TPPlaylistRunner()
 {
+    DEBUG() << "PLAYLIST: ~TPPlaylistRunner";
     reset();
 }
 
@@ -165,7 +166,6 @@ TPTrack* TPPlaylistRunner::nextTrackQueue(bool *peek)
             currentTrack->inc();
         else
         {
-            // We have no use for an empty playlist..
             if (playlist)
             {
                 playlist->dec();

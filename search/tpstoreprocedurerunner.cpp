@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpstoreprocedurerunner.h"
 #include "tpsearchfilterevalargs.h"
 #include "tpsearchresults.h"
+#include "tplog.h"
 #include <QTime>
 
 static const QString keyResultCount("result-count");
@@ -74,8 +75,9 @@ TPSearchResults* TPStoredProcedureRunner::execute(QVariantMap &args, TPStoredPro
     // Limit the result set to requested amount.
     results->limitTo(maxResultCount);
 
-    qDebug() << "QueryExec: " << begin.elapsed() << "ms";
+    DEBUG() << "TSP: QueryExec: " << begin.elapsed() << "ms";
 
+    delete arguments;
     return results;
 }
 

@@ -227,12 +227,6 @@ void TPFileScanner::processFinalTasks()
     dbs->getArtistDB()->save();
 
     //
-    // Do create playlists here.. just instantiating
-    // the class should do it
-    //
-    dbs->getPlaylistDB();
-
-    //
     // Feeds are not to be touched here.
     //
     dbs->moveToThread(parentThread);

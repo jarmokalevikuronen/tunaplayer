@@ -62,6 +62,8 @@ public:
         setString(feedItemAttrEnclosure, _url);
     }
 
+    ~TPFeedItem();
+
     inline void setTitle(const QString _title)
     {
         setString(objectAttrName, _title);

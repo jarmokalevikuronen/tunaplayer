@@ -17,23 +17,45 @@ License along with this software; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef TPALSAVOLUME_H
-#define TPALSAVOLUME_H
+#ifndef TPSIGNALHANDLER_H
+#define TPSIGNALHANDLER_H
 
-#include <alsa/asoundlib.h>
+#include <QObject>
+#include <QSocketNotifier>
 
-//! @class TPALSAVolume
-//! @brief Simple class used to get/set volume level.
-class TPALSAVolume
+class TPSignalHandler : public QObject
 {
+    Q_OBJECT
 public:
 
-    explicit TPALSAVolume();
-    ~TPALSAVolume();
+    explicit TPSignalHandler(QObject *parent = 0);
+    ~TPSignalHandler();
 
-    //! @brief Sets a volume to specified percents.
-    bool setVolume(int percents);
-    bool getVolume(int *percents);
+private:
+
+    static void termHandler(int unused);
+    static void intHandler(int unused);
+
+signals:
+
+    void quit();
+    
+private slots:
+
+    void handleTerm();
+    void handleInt();
+
+private:
+
+    Q_DISABLE_COPY(TPSignalHandler);
+
+    static int termFd[2];
+    static int intFd[2];
+
+    QSocketNotifier *termN;
+    QSocketNotifier *intN;
 };
 
-#endif // TPALSAVOLUME_H
+#endif
+
+

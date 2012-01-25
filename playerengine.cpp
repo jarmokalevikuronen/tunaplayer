@@ -39,6 +39,7 @@ TPPlayerProxy::TPPlayerProxy(PlayerBackend_MPlayer *_player, QObject *parent) :
 
 TPPlayerProxy::~TPPlayerProxy()
 {
+    DEBUG() << "PLAYER ~ TPPlayerProxy";
     delete playlistRunner;
 }
 

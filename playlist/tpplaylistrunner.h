@@ -40,12 +40,7 @@ public:
 
     inline TPTrack* setPlaylist(TPPlaylist *_playlist)
     {
-        if (playlist)
-        {
-            playlist->dec();
-            playlist = NULL;
-            reset();
-        }
+        reset();
 
         playlist = _playlist;
         if (playlist)
@@ -59,7 +54,7 @@ public:
         if (currentTrack)
         {
             currentTrack->dec();
-            currentTrack = NULL;
+            currentTrack = 0;
         }
     }
 
@@ -83,13 +78,16 @@ public:
 
     void reset()
     {
-        for (int i=0;i<playedTracks.count();++i)
-            playedTracks.at(i)->dec();
-
+        TPDecForAll(playedTracks);
         playedTracks.clear();
+
         if (currentTrack)
             currentTrack->dec();
-        currentTrack = NULL;
+        currentTrack = 0;
+
+        if (playlist)
+            playlist->dec();
+        playlist = 0;
     }
 
 private:
@@ -104,6 +102,8 @@ private: // Data
 
     //! Current operation mode if any.
     QString mode;
+
+    //! Actual playlist implementation that is "runned".
     TPPlaylist *playlist;
 
     //! Here, we will effectively follow the tracks.

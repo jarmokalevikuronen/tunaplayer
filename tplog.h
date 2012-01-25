@@ -21,13 +21,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define TPLOG_H
 
 #include <QDebug>
-
+#include <QThread>
 /*static int logFlags = 1|2|4|8|16;*/
 
 #define PERF()          qDebug() << "16: "
 #define STATE()         qDebug() << "8: "
 
-#define DEBUG()         qDebug() << "4: "
+#define DEBUG()         qDebug() << "4: " << QThread::currentThreadId() << " "
 #define WARN()          qDebug() << "2: "
 #define ERROR()         qDebug() << "1: "
 

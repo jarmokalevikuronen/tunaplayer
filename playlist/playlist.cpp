@@ -38,11 +38,12 @@ TPPlaylist::TPPlaylist() : TPIdBase(schemePlaylist, "currentlyplayed")
 
 TPPlaylist::~TPPlaylist()
 {
+//    DEBUG() << "PLAYLIST: " << "~TPPlaylist (tracks: " << tracks.count() << ")";
+
     if (clonedFrom)
         clonedFrom->dec();
 
-    for (int i=0;i<tracks.count();++i)
-        tracks.at(i)->dec();
+    TPDecForAll(tracks)
     tracks.clear();
 }
 
@@ -94,13 +95,14 @@ bool TPPlaylist::moveAfter(TPTrack *trackToMove, TPTrack* afterToMove)
 
 void TPPlaylist::add(const QString url, bool toBack)
 {
-    TPAlbum *album = new TPAlbum(url);
-    TPTrack *track = new TPTrack(album);
-    album->dec();
+    TPAlbum *album = new TPAlbum(url); // album:ref => 1
+    TPTrack *track = new TPTrack(album); // album:ref => 2, track:ref => 2
+    album->dec(); // album:ref => 1
+    track->dec(); // track:ref => 1
     track->setString(trackAttrFilename, url);
     track->setString(objectAttrName, url);
-    add(track, toBack);
-    track->dec();
+    add(track, toBack); // track:ref => 2
+    track->dec(); // track:ref => 1
 }
 
 void TPPlaylist::add(TPFeedItem *feedItem, bool toBack)
@@ -110,13 +112,13 @@ void TPPlaylist::add(TPFeedItem *feedItem, bool toBack)
     TPAlbum *album = new TPAlbum(feedItem->getTitle());
     TPTrack *track = new TPTrack(album);
     album->dec();
+    track->dec(); // see above.
 
     track->setActingAsDelegateOf(TPObjectDelegate(feedItem, feedItem));
-
     track->setString(trackAttrFilename, feedItem->getEnclosure());
     track->setString(objectAttrName, feedItem->getDescription());
+
     add(track, toBack);
-    // Playlist now owns the track.
     track->dec();
 }
 
@@ -142,6 +144,10 @@ void TPPlaylist::add(TPTrack *track, bool toBack)
             tracks.append(track);
         else
             tracks.insert(0, track);
+    }
+    else
+    {
+        ERROR() << "PLAYLIST: " << "duplicate track -> not inserted";
     }
 }
 

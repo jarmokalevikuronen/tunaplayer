@@ -24,16 +24,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpgenre.h"
 #include "tpalbum.h"
 #include "tpschemes.h"
+#include "tplog.h"
+
+int TPTrack::instanceCount = 0;
 
 TPTrack::TPTrack(TPAlbum *_album, TPAssociativeDBItem *_item)
     : TPAssociativeObject(_item), TPIdBase(schemeTrack)
 {
+    ++instanceCount;
+
+//    DEBUG() << "BASICTYPES: " << "TPTrack (instances now: " << instanceCount << ", object=" << this << ")";
+
     idGenerated = false;
 
     Q_ASSERT(_album);
     Q_ASSERT(_item);
 
-    // TODO: In case some caching needed -> do it here.
     album = _album;
     album->inc();
     album->addTrack(this);
@@ -43,6 +49,10 @@ TPTrack::TPTrack(TPAlbum *_album, TPAssociativeDBItem *_item)
 
 TPTrack::TPTrack(TPAlbum *_album) : TPIdBase(schemeTrack)
 {
+    ++instanceCount;
+
+//    DEBUG() << "BASICTYPES: " << "TPTrack (instances now: " << instanceCount << ", object=" << this << ")";
+
     idGenerated = false;
 
     Q_ASSERT(_album);
@@ -56,6 +66,10 @@ TPTrack::TPTrack(TPAlbum *_album) : TPIdBase(schemeTrack)
 
 TPTrack::~TPTrack()
 {
+    --instanceCount;
+
+//    DEBUG() << "BASICTYPES: " << "~TPTrack (instances remain: " << instanceCount << ")";
+
     detachFromAlbum();
 
     // If we are acting as a delegate (for example
@@ -82,11 +96,13 @@ void TPTrack::detachFromAlbum()
 void TPTrack::inc()
 {
     TPReferenceCounted::inc();
+//    DEBUG() << "BASICTYPES: Track " << this << " references++: " << counter;
 }
 
 void TPTrack::dec()
 {
     TPReferenceCounted::dec();
+//    DEBUG() << "BASICTYPES: Track " << this << " references--: " << counter;
 }
 #endif
 

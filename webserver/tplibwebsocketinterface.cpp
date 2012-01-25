@@ -28,17 +28,29 @@ struct libwebsocket_protocols TPWebSocketServer::protocols[] =
     {
         "http",
         TPWebSocketServer::callback_http,
+        0,
+        0,
+        0,
+        0,
         0
     }
     ,
     {
         "tp-json",
         TPWebSocketServer::callback_tp_json_protocol,
+        0,
+        0,
+        0,
+        0,
         0
     },
     {
         NULL,
         NULL,
+        0,
+        0,
+        0,
+        0,
         0
     }
 };

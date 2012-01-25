@@ -53,8 +53,8 @@ TPMusicPlayerCore::TPMusicPlayerCore(TPWebSocketProtocol *_protocol) : QObject(N
     sob = NULL;
     maintainScanner = 0;
     startupProgressPercents = 0;
-
-    volumeCtrl = new TPALSAVolume(this);
+    currentlyPlayingAlbum = 0;
+    volumeCtrl = new TPALSAVolume;
 
     createMaintainTask();
 }
@@ -63,6 +63,8 @@ TPMusicPlayerCore::~TPMusicPlayerCore()
 {
     if (currentArtDownloadAlbum)
         currentArtDownloadAlbum->dec();
+    if (currentlyPlayingAlbum)
+        currentlyPlayingAlbum->dec();
 
     delete volumeCtrl;
     delete spMgr;
@@ -72,6 +74,11 @@ TPMusicPlayerCore::~TPMusicPlayerCore()
     {
         scanner->terminate();
         delete scanner;
+    }
+    if (maintainScanner)
+    {
+        maintainScanner->terminate();
+        delete maintainScanner;
     }
     delete db;
     delete sob;
@@ -167,6 +174,7 @@ void TPMusicPlayerCore::mediaScannerStateChanged(TPFileScanner::State state)
     switch (state)
     {
         case TPFileScanner::MediaScannerUnknown:
+        case TPFileScanner::MediaScannerMaintainScanComplete:
         break;
 
         case TPFileScanner::MediaScannerFullScanDisk:
@@ -202,8 +210,8 @@ void TPMusicPlayerCore::mediaScannerComplete(TPDatabases *_db)
     {
         db = _db;
 
-        // TODO: We should do this in parallel with the local content indexing!
         db->getFeedDB();
+        db->getPlaylistDB();
     }
 
     Q_ASSERT(db == _db);
@@ -441,8 +449,11 @@ bool TPMusicPlayerCore::addToPlaylist(QVariant aObject, const QString &position)
     }
 
     if (player->getPlaylist() != pl)
-        // -> New playlist was created -> do set it to player (=The music source) and playlist model (=UI Model)
+    {
+        // NOTE: Player takes the ownership of the new playlist.
         player->setPlaylist(pl);
+        pl->dec();
+    }
 
     // This will emit signal about the potentially changed pbk operations.
     playbackOperationsChanged();
@@ -643,7 +654,13 @@ void TPMusicPlayerCore::currentTrackChanged(TPTrack *track)
 
     if (currentlyPlayingAlbum != newAlbum)
     {
+        if (currentlyPlayingAlbum)
+            currentlyPlayingAlbum->dec();
+
         currentlyPlayingAlbum = newAlbum;
+        if (currentlyPlayingAlbum)
+            currentlyPlayingAlbum->inc();
+
         emit playingAlbumChanged();
         protocolReportEvent(protocolEventPlaybackAlbumChanged);
     }

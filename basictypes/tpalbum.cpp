@@ -19,10 +19,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "tpalbum.h"
 #include "tpschemes.h"
+#include "tplog.h"
 
+int TPAlbum::instanceCount = 0;
 
 TPAlbum::TPAlbum(TPArtist *_artist, QString _name, TPAssociativeDBItem *dbItem) : TPAssociativeObject(dbItem), TPIdBase(schemeAlbum)
 {
+    ++instanceCount;
+//    DEBUG() << "BASICTYPES: TPAlbum (instances now: " << instanceCount << ", object=" << this << ")";
+
     Q_ASSERT(_artist);
     artist = _artist;
     setString(objectAttrName, _name);
@@ -36,6 +41,9 @@ TPAlbum::TPAlbum(TPArtist *_artist, QString _name, TPAssociativeDBItem *dbItem) 
 
 TPAlbum::TPAlbum(QString _name, TPAssociativeDBItem *dbItem) : TPAssociativeObject(dbItem), TPIdBase(schemeAlbum)
 {
+    ++instanceCount;
+ //   DEBUG() << "BASICTYPES: TPAlbum (instances now: " << instanceCount << ", object=" << this << ")";
+
     artist = NULL;
     year = AlbumYearNotResolved;
     setString(objectAttrName, _name);
@@ -45,6 +53,9 @@ TPAlbum::TPAlbum(QString _name, TPAssociativeDBItem *dbItem) : TPAssociativeObje
 
 TPAlbum::TPAlbum(QString _name) : TPAssociativeObject(_name), TPIdBase(schemeAlbum)
 {
+    ++instanceCount;
+//    DEBUG() << "BASICTYPES: TPAlbum (instances now: " << instanceCount << ", object=" << this << ")";
+
     artist = NULL;
     year = AlbumYearNotResolved;
     setString(objectAttrName, _name);
@@ -54,6 +65,9 @@ TPAlbum::TPAlbum(QString _name) : TPAssociativeObject(_name), TPIdBase(schemeAlb
 
 TPAlbum::~TPAlbum()
 {
+    --instanceCount;
+ //   DEBUG() << "BASICTYPES: " << "~TPAlbum (instances remain: " << instanceCount << ", object=" << this << ")";
+
     // Dereference from all the possible tracks we are currently referencing.
     QList<TPTrack *>::iterator it = tracks.begin();
     while (it != tracks.end())
@@ -214,11 +228,14 @@ int TPAlbum::getYear() const
 void TPAlbum::inc()
 {
     TPReferenceCounted::inc();
+//    DEBUG() << "BASICTYPES: TPAlbum " << this << " references++: " << counter;
+
 }
 
 void TPAlbum::dec()
 {
     TPReferenceCounted::dec();
+ //   DEBUG() << "BASICTYPES: TPAlbum " << this << " references--: " << counter;
 }
 #endif
 

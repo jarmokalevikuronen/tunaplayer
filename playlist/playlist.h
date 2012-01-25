@@ -34,6 +34,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpidbasemap.h"
 #include "tpassociative.h"
 #include "tpassociativemeta.h"
+#include "tplog.h"
+
 
 class TPPlaylist : public TPIdBase, public TPAssociativeObject, public TPReferenceCounted
 {
@@ -42,6 +44,18 @@ public:
     TPPlaylist(const QString name, TPAssociativeDB *db, const QString filename);
     TPPlaylist();
     ~TPPlaylist();
+
+    void dec()
+    {
+//        DEBUG() << "PLAYLIST: references-- " << counter-1;
+        TPReferenceCounted::dec();
+    }
+
+    void inc()
+    {
+//        DEBUG() << "PLAYLIST: " << getName() << " references++ " << counter+1;
+        TPReferenceCounted::inc();
+    }
 
     //! @brief moves a specified track to be after a specific track.
     bool moveAfter(TPTrack *trackToMove, TPTrack *trackToMoveAfter);
@@ -172,7 +186,11 @@ public:
     inline TPTrack* takeNext()
     {
         if (tracks.count())
-            return tracks.takeFirst();
+        {
+            TPTrack *track = tracks.takeFirst();
+            track->dec();
+            return track;
+        }
 
         return NULL;
     }
@@ -216,6 +234,8 @@ public:
 
     const QString getString(const QString key, const QString defaultValue = "") const;
     QVariantMap toMap(QStringList *filteredKeys);
+
+
 
 private:
     //! All contained tracks.

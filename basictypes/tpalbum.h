@@ -44,6 +44,10 @@ class TPAlbum :
         public TPAssociativeObject,
         public TPIdBase
 {
+private:
+
+    static int instanceCount;
+
 public:
 
     enum ArtType

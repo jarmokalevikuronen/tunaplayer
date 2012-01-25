@@ -136,7 +136,7 @@ public:
 
     TPPlaylist* createEmptyPlaylist()
     {
-        return new TPPlaylist();
+        return new TPPlaylist;
     }
 
     TPPlaylist* createPlaylist(const QString uniqueName)

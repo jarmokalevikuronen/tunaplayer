@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpalbum.h"
 #include <QListIterator>
 #include "tpschemes.h"
+#include "tplog.h"
 
 TPArtist::TPArtist(QString _name, TPAssociativeDBItem *dbItem) : TPAssociativeObject(dbItem), TPIdBase(schemeArtist)
 {
@@ -31,6 +32,7 @@ TPArtist::TPArtist(QString _name, TPAssociativeDBItem *dbItem) : TPAssociativeOb
 
 TPArtist::~TPArtist()
 {
+    DEBUG() << "BASICTYPES: " << "~TPArtist";
     // Dereference all the albums and thus allow albums to be restroyed
     // if when required..
     QList<TPAlbum *>::iterator it = albums.begin();

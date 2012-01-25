@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpassociative.h"
 #include "tpassociativemeta.h"
 #include "tputils.h"
+#include "tplog.h"
 
 template <class Type>
 class TPDBBase

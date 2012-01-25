@@ -49,6 +49,10 @@ class TPTrack :
         public TPAssociativeObject,
         public TPIdBase
 {
+private:
+
+    static int instanceCount;
+
 public:
 
     TPTrack(TPAlbum *_album);

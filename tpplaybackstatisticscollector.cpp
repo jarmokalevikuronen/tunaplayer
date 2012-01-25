@@ -59,7 +59,7 @@ void TPPlaybackStatisticsCollector::currentTrackChanged(TPTrack *track)
             }
 
             currTrack->dec();
-            currTrack = NULL;
+            currTrack = 0;
         }
     }
     else

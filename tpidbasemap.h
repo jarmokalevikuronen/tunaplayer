@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QMap>
 #include <QVector>
 #include <QByteArray>
+#include "tplog.h"
 
 template <class Type>
 class TPIdBasedContainer
@@ -41,13 +42,18 @@ public:
         return objectArray.count();
     }
 
-    void insertObject(Type object)
+    bool insertObject(Type object)
     {
-        if (getObject(object->identifier(false)))
-            return;
+        Type existing = getObject(object->identifier(false));
+        if (existing)
+        {
+            return false;
+        }
 
         objectMap.insert(object->identifier(false), object);
         objectArray.append(object);
+
+        return true;
     }
 
     Type takeLast()
@@ -87,8 +93,8 @@ public:
 
     Type getObject(const QByteArray id) const
     {
-        citer it = objectMap.find(id);
-        if (it == objectMap.end())
+        citer it = objectMap.constFind(id);
+        if (it == objectMap.constEnd())
             return NULL;
 
         return it.value();

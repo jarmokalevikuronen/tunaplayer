@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tppathutils.h"
 #include "db/tpdbtemplate.h"
 #include "tpfeed.h"
+#include "tplog.h"
 
 TPFeedMgr::TPFeedMgr(int refreshIntervalSeconds, QObject *parent) :
     QObject(parent),
@@ -42,13 +43,18 @@ TPFeedMgr::TPFeedMgr(int refreshIntervalSeconds, QObject *parent) :
 
 TPFeedMgr::~TPFeedMgr()
 {
+    DEBUG() << "~TPFeedMgr";
+
     decAllObjects();
     delete feedDownloader;
 }
 
 void TPFeedMgr::visitAssociativeDBItem(TPAssociativeDBItem *item)
 {
-    objects.insertObject(new TPFeed(item, this));
+    TPFeed *feed = new TPFeed(item, this);
+
+    if (!objects.insertObject(feed))
+        delete feed;
 }
 
 void TPFeedMgr::createFeedObjects()
@@ -65,7 +71,14 @@ void TPFeedMgr::createFeedObjects()
             if (TPUtils::webAddress(line))
             {
                 if (!objects.getObject(lineUtf8))
-                    objects.insertObject(new TPFeed(line, db, this));
+                {
+                    TPFeed *feed = new TPFeed(line, db, this);
+                    if (!objects.insertObject(feed))
+                    {
+                        ERROR() << "FEED: " << "duplicate item not added: " << line;
+                        delete feed;
+                    }
+                }
             }
         }
         f.close();

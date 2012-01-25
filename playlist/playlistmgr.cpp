@@ -32,7 +32,8 @@ TPPlaylistMgr::TPPlaylistMgr(QObject *parent) :
 
 TPPlaylistMgr::~TPPlaylistMgr()
 {
-    // Unreferences all contained playlist container(s).
+    DEBUG() << "PLAYLIST: " << "~TPPlaylistMgr";
+
     decAllObjects();
 }
 
@@ -137,7 +138,6 @@ void TPPlaylistMgr::addPlaylist(TPPlaylist *playlist)
     }
 
     objects.insertObject(playlist);
-    playlist->inc();
 }
 
 void TPPlaylistMgr::cleanupPlaylists()

@@ -20,7 +20,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpfeed.h"
 #include "tppathutils.h"
 #include <QDebug>
+#include "tplog.h"
 
+TPFeedItem::~TPFeedItem()
+{
+//    DEBUG() << "FEED: ~TPFeedItem";
+}
 
 const QString TPFeedItem::getString(const QString key, const QString defaultValue) const
 {
@@ -48,6 +53,8 @@ QVariantMap TPFeedItem::toMap(QStringList *filteredKeys)
 }
 
 
+
+
 QDebug operator<<(QDebug dbg, const TPFeed &feed)
 {
     dbg.nospace() << "TPFeed  { items=" << feed.count() << " url=" << feed.getUrl().toString() << " }";
@@ -71,6 +78,8 @@ TPFeed::TPFeed(TPAssociativeDBItem *dbItem, QObject *parent) :
     TPAssociativeObject(dbItem),
     TPDBBase<TPFeedItem *>(parent, TPPathUtils::getFeedItemsSettingsDbFilename(), schemeFeedItem)
 {
+//    DEBUG() << "FEED: TPFeed";
+
     // OK, we kind of can assume
     // scheme and other stuff is properly set up fro the dbItem here.
     internalContentChanged = false;
@@ -80,6 +89,7 @@ TPFeed::TPFeed(TPAssociativeDBItem *dbItem, QObject *parent) :
 
 TPFeed::~TPFeed()
 {
+//    DEBUG() << "FEED: ~TPFeed";
     decAllObjects();
 }
 

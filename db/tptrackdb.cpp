@@ -23,8 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpartist.h"
 #include "tpalbum.h"
 #include "tpmediafilemetaextractor.h"
-
-#include <QDebug>
+#include "tplog.h"
 
 TPTrackDB::TPTrackDB(QObject *parent) :
     QObject(parent),
@@ -46,6 +45,8 @@ TPTrackDB::TPTrackDB(QObject *parent) :
 
 TPTrackDB::~TPTrackDB()
 {
+    DEBUG() << "DB: ~TPTrackDB";
+
     // Not really needed..
     delete artistDB;
     delete albumDB;
@@ -82,7 +83,7 @@ void TPTrackDB::visitAssociativeDBItem(TPAssociativeDBItem *item)
 
     if (!filename.length())
     {
-        qDebug() << "TPTrackDB: Empty filename?";
+        ERROR() << "DB: Track has empty filename";
         return;
     }
 
@@ -90,7 +91,7 @@ void TPTrackDB::visitAssociativeDBItem(TPAssociativeDBItem *item)
     if (!f.exists())
     {
         removedItems.append(item);
-        qDebug() << "TPTrackDB: Track \"" << filename << "\" removed";
+        DEBUG() << "DB: Track \"" << filename << "\" removed";
     }
     else
     {
@@ -159,5 +160,4 @@ QStringList* TPTrackDB::getTrackFilenames() const
     return result;
 }
 
-// TODO: TPTrackDB::processDbItems(..)
 

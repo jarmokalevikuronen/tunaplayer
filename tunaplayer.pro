@@ -4,6 +4,7 @@
 
 CONFIG += console
 CONFIG -= app_bundle
+CONFIG += warn_on
 INCLUDEPATH += ./playlist ./feed ./webserver ./webserver/libwebsocket ./albumart/util ./albumart/fetch ./basictypes ./search ./alsa
 
 # TAGLIB
@@ -72,7 +73,8 @@ SOURCES += player.cpp \
     tpgenre.cpp \
     basictypes/tptrack.cpp \
     tpclargs.cpp \
-    alsa\tpalsavolume.cpp
+    alsa\tpalsavolume.cpp \
+    tpsignalhandler.cpp
 
 HEADERS += player.h \
     tpreferencecounted.h \
@@ -137,7 +139,8 @@ HEADERS += player.h \
     webserver/tpprotocoldefines.h \
     tplog.h \
     tpclargs.h \
-    alsa\tpalsavolume.h
+    alsa\tpalsavolume.h \
+    tpsignalhandler.h
 ##### END PLAYER
 
 ##### BEGIN JSON
@@ -221,4 +224,3 @@ else {
 TARGET.path = /usr/bin
 
 INSTALLS += TARGET
-
