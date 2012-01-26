@@ -17,11 +17,13 @@ License along with this software; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <QtCore/QCoreApplication>
+#include <QCoreApplication>
+#include <QtGlobal>
 #include <QDebug>
 #include <QTimer>
+#include <QDateTime>
+#include <QDir>
 #include "musicplayercore.h"
-#include <QCoreApplication>
 #include "tppathutils.h"
 #include "tplibwebsocketinterface.h"
 #include "tpwebsocketvirtualfolder.h"
@@ -29,22 +31,106 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpsettings.h"
 #include "tpclargs.h"
 #include "tpsignalhandler.h"
+#include "tplog.h"
+
+static int lock_fd = -1;
+
+static bool takeLock()
+{
+    lock_fd = open("/tmp/tunaplayer.lock", O_CREAT|O_RDWR, 0666);
+    if (lock_fd < 0)
+        return false;
+
+    if (lockf(lock_fd, F_TLOCK, 0) != 0)
+        return false;
+
+    return true;
+}
+
+static void releaseLock()
+{
+    if (lock_fd >= 0)
+        close(lock_fd);
+    lock_fd = -1;
+}
+
+static void copyAllFiles(const QString fromFolder, const QString toFolder)
+{
+    DEBUG() << "INIT: " << "ProcessFolder: " << fromFolder;
+    QDir source(fromFolder);
+    QDir target(toFolder);
+
+    QStringList sourceFiles = source.entryList(QDir::Files);
+    QString sourceFile;
+    foreach(sourceFile, sourceFiles)
+    {
+        QFileInfo sourceFi(QString("%1%2").arg(fromFolder + QDir::separator()).arg(sourceFile));
+        QFileInfo targetFi(QString("%1%2").arg(toFolder + QDir::separator()).arg(sourceFile));
+
+        //
+        // Check do we need to copy ..
+        //
+        if (!sourceFi.isSymLink() && !sourceFi.isDir() && sourceFi.isFile())
+        {
+            if (!targetFi.exists())
+            {
+                bool ok = QFile::copy(sourceFi.absoluteFilePath(), targetFi.absoluteFilePath());
+                if (!ok)
+                    ERROR() << "INIT: Failed Copying " << sourceFi.absoluteFilePath() << " to " << targetFi.absoluteFilePath();
+                else
+                    DEBUG() << "INIT: Copied " << sourceFi.absoluteFilePath() << " to " << targetFi.absoluteFilePath();
+
+
+            }
+        }
+    }
+}
+
+static void copyDefaultsToHome()
+{
+    copyAllFiles(TPPathUtils::getPlaylistFolderRo(), TPPathUtils::getPlaylistFolder());
+    copyAllFiles(TPPathUtils::getPlaylistArtFolderRo(), TPPathUtils::getPlaylistArtFolder());
+    copyAllFiles(TPPathUtils::getWebServerRootFolderRo(), TPPathUtils::getWebServerRootFolder());
+}
 
 int main(int argc, char *argv[])
 {
+    if (!takeLock())
+    {
+        fprintf(stderr, "Only one instance can be run at a time\n");
+        fflush(stderr);
+        return 1;
+    }
+
     QCoreApplication a(argc, argv);
+
+    qInstallMsgHandler(tpMessageOutput);
 
     // Initialize command line argument parser
     TPCLArgs::initialize(a.arguments());
+
+    // Init debug logging functionality.
+    initDebugLogging();
+
+    // Copy default playlists etc. from the
+    // /usr/share/tunaplayer/* to the $HOME/.tunaplayer/*
+    // copying only if not done so already
+    copyDefaultsToHome();
 
     // Initialize more permanent settings.
     TPSettings::initialize(TPPathUtils::getSettingsFilename());
 
     // Create Web Server and a virtual directory handler/mapper
-    TPWebSocketVirtualFolder *virtualFolder =
-            new TPWebSocketVirtualFolder(TPPathUtils::getWebServerRootFolder(), "topsecret");
-    TPWebSocketServer *server =
-            new TPWebSocketServer(virtualFolder);
+    TPWebSocketVirtualFolder *virtualFolderAccount =
+            new TPWebSocketVirtualFolder(TPPathUtils::getWebServerRootFolder(),
+                                         TPCLArgs::instance().arg(TPCLArgs::cliArgSecret, "topsecret").toString());
+    TPWebSocketVirtualFolder *virtualFolderGlobal =
+            new TPWebSocketVirtualFolder(TPPathUtils::getWebServerRootFolderRo(),
+                                         TPCLArgs::instance().arg(TPCLArgs::cliArgSecret, "topsecret").toString());
+    TPWebSocketServer *server = new TPWebSocketServer();
+    server->addVirtualFolder(virtualFolderGlobal);
+    server->addVirtualFolder(virtualFolderAccount);
+
     TPWebSocketProtocol *protocol =
             new TPWebSocketProtocol(server);
 
@@ -62,10 +148,13 @@ int main(int argc, char *argv[])
     delete player;
     delete protocol;
     delete server;
-    delete virtualFolder;
+    delete virtualFolderGlobal;
+    delete virtualFolderAccount;
 
     TPSettings::release();
     TPCLArgs::release();
+
+    releaseLock();
 
     return ret;
 }

@@ -71,8 +71,9 @@ SOURCES += player.cpp \
     tpgenre.cpp \
     basictypes/tptrack.cpp \
     tpclargs.cpp \
-    alsa\tpalsavolume.cpp \
-    tpsignalhandler.cpp
+    alsa/tpalsavolume.cpp \
+    tpsignalhandler.cpp \
+    tplog.cpp
 
 HEADERS += player.h \
     tpreferencecounted.h \
@@ -131,13 +132,12 @@ HEADERS += player.h \
     tpaudioutils.h \
     tpfilescanner.h \
     basictypes/tpalbum.h \
-    tpplayerif.h \
     tpgenre.h \
     basictypes/tptrack.h \
     webserver/tpprotocoldefines.h \
     tplog.h \
     tpclargs.h \
-    alsa\tpalsavolume.h \
+    alsa/tpalsavolume.h \
     tpsignalhandler.h
 ##### END PLAYER
 
@@ -200,12 +200,9 @@ SOURCES += ./playlist/playlistutils.cpp \
 DEPENDPATH += ./basictypes
 #### END BASIC TYPES
 
-
-
 SOURCES += main.cpp
 
-
-TARGET = tunaplayer
+target = tunaplayer
 CONFIG(debug, debug|release) { 
     message("Debug build of tunaPlayer")
     CONFIG += -DDEBUG -D_DEBUG
@@ -219,6 +216,36 @@ else {
 }
 
 
-TARGET.path = /usr/bin
+target.path = $$PREFIX/usr/bin
+sources.files = $$SOURCES $$HEADERS tunaplayer.pro
+sources.path = $$[QT_INSTALL_EXAMPLES]/tutorials/tutorial/tunaplayer
+INSTALLS += target
 
-INSTALLS += TARGET
+#
+# HTML UI
+#
+html.files += webui/jquery.min.js
+html.files += webui/jquery.jqote2.min.js
+html.files += webui/tunaplayer.css
+html.files += webui/tunaplayerdaemon.js
+html.files += webui/tunaplayer.html
+html.files += webui/tunaplayer.tmpl
+html.path = $$PREFIX/usr/share/tunaplayer/
+INSTALLS += html
+
+#
+# Tunaplayer Stored Procedures for queries
+#
+tsp.files += rt-environment/tsp/*
+tsp.path = $$PREFIX/usr/share/tunaplayer/tsp
+INSTALLS += tsp
+
+#
+# Hardcoded playlists + their icons
+#
+playlist.files += rt-environment/playlists/*.m3u
+playlist.path = $$PREFIX/usr/share/tunaplayer/playlists
+playlist_icons.files += rt-environment/playlists/icons/*
+playlist_icons.path = $$PREFIX/usr/share/tunaplayer/playlists/icons
+INSTALLS += playlist
+INSTALLS += playlist_icons

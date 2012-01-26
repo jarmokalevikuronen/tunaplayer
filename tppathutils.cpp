@@ -20,8 +20,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tppathutils.h"
 #include "tputils.h"
 #include "tpclargs.h"
+#include "tplog.h"
 
-
+#define TP_BASE_RO_PATH                 "/usr/share/tunaplayer/"
 #define TP_DATA_FOLDER                  ".tunaplayer"
 #define TP_MUSIC_DB_FILE                "track.db"
 #define TP_MUSIC_DB_TEMP_FOLDER         TP_MUSIC_DB_FILE "-tmp"
@@ -49,7 +50,10 @@ QString TPPathUtils::ensureBasePath(QString subdir)
     }
 
     QDir creator;
-    Q_ASSERT(creator.mkpath(home));
+    bool ok = creator.mkpath(home);
+    if (!ok)
+        ERROR() << "FILESYSTEM: " << "failed to create path: " << home;
+
     return home;
 }
 
@@ -102,12 +106,26 @@ QString TPPathUtils::getPlaylistFolder()
     return ensureBasePath("playlists");
 }
 
+QString TPPathUtils::getPlaylistFolderRo()
+{
+    return QString(TP_BASE_RO_PATH "playlists/");
+}
+
 QString TPPathUtils::getPlaylistArtFolder()
 {
     (void)getPlaylistFolder();
-    QString subdir = QString("playlists") + QDir::separator() + QString("icons");
+    QString subdir = QString("playlists") + QDir::separator() + QString("icons/");
 
     return ensureBasePath(subdir);
+}
+
+QString TPPathUtils::getPlaylistArtFolderRo()
+{
+    QString folder = getPlaylistFolderRo();
+    folder += QDir::separator();
+    folder += "icons/";
+
+    return folder;
 }
 
 QString TPPathUtils::getRootPath()
@@ -151,6 +169,12 @@ QString TPPathUtils::getWebServerRootFolder()
     return ensureBasePath();
 }
 
+QString TPPathUtils::getWebServerRootFolderRo()
+{
+    QString dir = TP_BASE_RO_PATH;
+    return dir;
+}
+
 QString TPPathUtils::getNormalizedPathForWebServer(const QString fullPathToObject)
 {
     QString webServerRootPath = getWebServerRootFolder();
@@ -185,7 +209,7 @@ QString TPPathUtils::getSettingsFilename()
 
 QString TPPathUtils::getTspFolder()
 {
-    return ensureBasePath("tsp");
+    return QString(TP_BASE_RO_PATH "/tsp/");
 }
 
 

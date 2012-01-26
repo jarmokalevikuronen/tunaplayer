@@ -4,7 +4,7 @@
     "filterkeys":["_pk_", "scheme", "fn"],
     "filters":{
       "and":{
-         "!equals"  :["object://category", "value://radio"],
+         "!equals" :["object://category", "value://radio"],
          "!equals" :["object://deleted", "value://1"]
       }
     },

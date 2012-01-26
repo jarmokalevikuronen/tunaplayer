@@ -22,13 +22,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <QDebug>
 #include <QThread>
-/*static int logFlags = 1|2|4|8|16;*/
 
-#define PERF()          qDebug() << "16: "
-#define STATE()         qDebug() << "8: "
+#define PERF()          qDebug()        << "PERF    "
+#define STATE()         qDebug()        << "STATE   "
+#define DEBUG()         qDebug()        << "DEBUG   "
+#define WARN()          qWarning()      << "WARNING "
+#define ERROR()         qCritical()     << "ERROR   "
 
-#define DEBUG()         qDebug() << "4: " << QThread::currentThreadId() << " "
-#define WARN()          qDebug() << "2: "
-#define ERROR()         qDebug() << "1: "
+extern void tpMessageOutput(QtMsgType type, const char *msg);
+extern void initDebugLogging();
 
 #endif // TPLOG_H

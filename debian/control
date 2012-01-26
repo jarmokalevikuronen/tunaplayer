@@ -1,0 +1,13 @@
+Source: tunaplayer
+Section: devel
+Priority: optional
+Maintainer: Jarmo Kuronen <jarmok@iki.fi>
+Build-Depends: debhelper (>= 7.0.50~), cdbs, libqt4-dev, libtag1-dev, zlib1g-dev
+Standards-Version: 3.9.1
+Homepage: http://code.google.com/p/tunaplayer/
+
+Package: tunaplayer
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Next generation music player with daemon and web frontend.
+ See description.

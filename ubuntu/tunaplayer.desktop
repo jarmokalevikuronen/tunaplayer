@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Name=Tunaplayer daemon
+Comment=Start the Tunaplayer music player daemon
+Exec=/usr/bin/tunaplayer
+Terminal=false
+Type=Daemon
+Categories=
+GenericName=
+NoDisplay=true
+X-GNOME-Autostart-Delay=0

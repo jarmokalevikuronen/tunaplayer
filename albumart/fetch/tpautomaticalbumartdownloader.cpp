@@ -70,9 +70,6 @@ void TPAutomaticAlbumArtDownloader::execute(TPAlbumDB *db)
 
             if (triesLeft > 0 && timeAllows)
             {
-                album->setInt(albumAttrAutomaticAlbumArtDownloadTries, triesLeft - 1);
-                album->setInt(albumAttrAutomaticAlbumArtLastTry, current);
-                album->save(10 * 10000);
                 albumsToDownload.append(album);
                 album->inc();
             }
@@ -142,16 +139,15 @@ bool TPAutomaticAlbumArtDownloader::startDownloadNextAlbum()
 
     DEBUG() << "startDownloadNextAlbum: remaining: " << albumsToDownload.count();
 
+    if (currentAlbum)
+        currentAlbum->dec();
+
     if (albumsToDownload.count() <= 0)
     {
-        if (currentAlbum)
-            currentAlbum->dec();
         currentAlbum = 0;
         return false;
     }
 
-    if (currentAlbum)
-        currentAlbum->dec();
     currentAlbum = albumsToDownload.takeFirst();
 
     // We will not do sort of busy downloads, but
@@ -164,6 +160,13 @@ void TPAutomaticAlbumArtDownloader::downloadNextAlbum()
 {
     Q_ASSERT(currentAlbum);
     Q_ASSERT(is);
+
+    //
+    // Here, lets mark the item count and the timestamp.
+    //
+    currentAlbum->setInt(albumAttrAutomaticAlbumArtDownloadTries, currentAlbum->getInt(albumAttrAutomaticAlbumArtDownloadTries, 3) - 1);
+    currentAlbum->setInt(albumAttrAutomaticAlbumArtLastTry, TPUtils::currentEpoch());
+    currentAlbum->save(10);
 
     is->startSearch(currentAlbum->getArtist()->getName(), currentAlbum->getName());
 }

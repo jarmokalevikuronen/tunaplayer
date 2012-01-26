@@ -1,13 +1,14 @@
 {
     "arguments":{
-      "id": ""
+      "artistid": ""
     },
     "schemes":["album://"],
-    "filterkeys": ["scheme","_pk_","aadltries","updt","crtt","len"],
+    "filterkeys": ["scheme","_pk_","artl","trcnt","len","plcnt","pllen","aadltries","updt","crtt","lastplt","len"],
     "filters":{
-      "equals": ["object://arid", "parameter://id"]
+        "equals":["object://artist.id", "parameter://artistid"]
     },
     "sorting":[
+	["ascending", "year"],
 	["ascending", "name"]
     ]
 }

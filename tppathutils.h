@@ -41,11 +41,14 @@ public:
     static QString getArtistDbFilename();
     static QString getAlbumDbFilename();
     static QString getPlaylistFolder();
+    static QString getPlaylistFolderRo();
     static QString getPlaylistArtFolder();
+    static QString getPlaylistArtFolderRo();
     static QString getAlbumArtFolder();
     static QString getMusicScannerRootPath();
     static QString getAlbumArtDownloadFolder();
     static QString getWebServerRootFolder();
+    static QString getWebServerRootFolderRo();
     static QString getNormalizedPathForWebServer(const QString fullPath);
     static QString getDefaultPlaylistFilename();
     static QString getPlaylistDbFilename();

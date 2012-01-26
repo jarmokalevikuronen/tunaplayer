@@ -36,6 +36,8 @@ public:
     static const char *cliArgAlsaCardName;
     static const char *cliArgAlsaControlName;
     static const char *cliArgMediaPath;
+    static const char *cliArgLogLevel;
+    static const char *cliArgSecret;
 
     static void initialize(QStringList cliArgs);
     static TPCLArgs& instance();

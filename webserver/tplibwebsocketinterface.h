@@ -20,7 +20,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef TPLIBWEBSOCKETINTERFACE_H
 #define TPLIBWEBSOCKETINTERFACE_H
 
-#include <QDebug>
+#include "tplog.h"
+#include <QVector>
 
 extern "C"
 {
@@ -67,8 +68,13 @@ class TPWebSocketServer : public QObject
 
 public:
 
-    TPWebSocketServer(TPWebSocketDataProviderInterface *dataProvider, QObject *parent = 0);
+    TPWebSocketServer(QObject *parent = 0);
     ~TPWebSocketServer();
+
+    void addVirtualFolder(TPWebSocketDataProviderInterface *dataProvider)
+    {
+        providers.append(dataProvider);
+    }
 
     TPWebSocketServerNotifier* notifierForFd(int fd)
     {
@@ -141,7 +147,7 @@ private:
 
     //! This is used to map web request paths to physical
     //! files within a disk.
-    TPWebSocketDataProviderInterface *provider;
+    QVector<TPWebSocketDataProviderInterface *> providers;
 };
 
 

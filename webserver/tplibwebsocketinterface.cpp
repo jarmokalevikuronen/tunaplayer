@@ -17,6 +17,7 @@ License along with this software; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include <QFile>
 #include "tplibwebsocketinterface.h"
 #include "tpsettings.h"
 #include "tpclargs.h"
@@ -55,10 +56,9 @@ struct libwebsocket_protocols TPWebSocketServer::protocols[] =
     }
 };
 
-TPWebSocketServer::TPWebSocketServer(TPWebSocketDataProviderInterface *dataProvider, QObject *parent) :
+TPWebSocketServer::TPWebSocketServer(QObject *parent) :
     QObject(parent)
 {
-    provider = dataProvider;
     clientCount = 0;
     gWebSocketServer = this;
 
@@ -142,20 +142,19 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
         const char *http_request_path = (const char *)in;
 
         QString filePath;
-
-        // TODO: Here, we should also deal the basic authentication for resource(s).
-        if (gWebSocketServer->provider)
-            filePath = gWebSocketServer->provider->objectToFile(http_request_path);
-        else
-            filePath = http_request_path ? http_request_path : "";
+        bool found = false;
+        for (int i=0;!found && i<gWebSocketServer->providers.count();++i)
+        {
+            filePath = gWebSocketServer->providers.at(i)->objectToFile(http_request_path);
+            if (QFile::exists(filePath))
+                found = true;
+        }
 
         QString contentType = gWebSocketServer->filenameToMime(filePath);
-
-        qDebug() << "HTTP: SERVE: file=" << filePath << " content:" << contentType;
-
+        DEBUG() << "HTTP: SERVE: file=" << filePath << " content:" << contentType;
         if (libwebsockets_serve_http_file(wsi, filePath.toUtf8().constData(), contentType.toUtf8().constData()))
         {
-            qDebug() << "ERROR: HTTP: SERVE:";
+            ERROR() << "HTTP: SERVE";
         }
     }
     break;
@@ -163,9 +162,6 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
     case LWS_CALLBACK_ADD_POLL_FD:
     {
         fd = (int)(long)user;
-
-//        qDebug() << "addPollFd: " << fd;
-
         TPWebSocketServerNotifier *notifier = new TPWebSocketServerNotifier(fd, wsi, gWebSocketServer);
         notifier->setEnabled(true);
         gWebSocketServer->notifiers.insert(fd, notifier);
@@ -176,10 +172,6 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
     case LWS_CALLBACK_DEL_POLL_FD:
     {
         fd = (int)(long)user;
-
-  //      qDebug() << "delPollFd: " << fd;
-
-
         TPWebSocketServerNotifier *notifier = gWebSocketServer->notifierForFd(fd);
         if (notifier)
         {
@@ -189,16 +181,6 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
         }
     }
     break;
-
-    case LWS_CALLBACK_SET_MODE_POLL_FD:
-        fd = (int)(long)user;
-//        qDebug() << "setPollMode fd=" << fd << " mode: " << (int)(long)len;
-        break;
-
-    case LWS_CALLBACK_CLEAR_MODE_POLL_FD:
-        fd = (int)(long)user;
- //       qDebug() << "clearPollMode fd=" << fd << " mode: " << (int)(long)len;
-        break;
 
     default:
         break;
