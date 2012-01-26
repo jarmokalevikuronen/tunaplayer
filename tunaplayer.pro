@@ -249,3 +249,11 @@ playlist_icons.files += rt-environment/playlists/icons/*
 playlist_icons.path = $$PREFIX/usr/share/tunaplayer/playlists/icons
 INSTALLS += playlist
 INSTALLS += playlist_icons
+
+
+#
+# Autostart
+#
+daemon_autostart.files += ubuntu/tunaplayer.desktop
+daemon_autostart.path = $$PREFIX/etc/xdg/autostart
+INSTALLS += daemon_autostart
