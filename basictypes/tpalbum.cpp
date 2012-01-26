@@ -66,6 +66,8 @@ TPAlbum::TPAlbum(QString _name) : TPAssociativeObject(_name), TPIdBase(schemeAlb
 TPAlbum::~TPAlbum()
 {
     --instanceCount;
+    if (!instanceCount)
+        DEBUG() << "BASICTYPES" << "Last Album Deleted";
  //   DEBUG() << "BASICTYPES: " << "~TPAlbum (instances remain: " << instanceCount << ", object=" << this << ")";
 
     // Dereference from all the possible tracks we are currently referencing.

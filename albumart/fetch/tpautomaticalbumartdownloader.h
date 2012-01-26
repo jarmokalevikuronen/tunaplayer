@@ -38,6 +38,7 @@ class TPAutomaticAlbumArtDownloader : public QObject
     Q_OBJECT
 public:
     explicit TPAutomaticAlbumArtDownloader(QObject *parent = 0);
+    ~TPAutomaticAlbumArtDownloader();
 
     void execute(TPAlbumDB *albumDB);
 

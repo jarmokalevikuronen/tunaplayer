@@ -23,8 +23,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpschemes.h"
 #include "tplog.h"
 
+int TPArtist::instanceCount = 0;
+
 TPArtist::TPArtist(QString _name, TPAssociativeDBItem *dbItem) : TPAssociativeObject(dbItem), TPIdBase(schemeArtist)
 {
+    ++instanceCount;
+
     setString(objectAttrName, _name);
     setString(objectAttrScheme, schemeArtist);
     addIdSource(_name);
@@ -32,7 +36,12 @@ TPArtist::TPArtist(QString _name, TPAssociativeDBItem *dbItem) : TPAssociativeOb
 
 TPArtist::~TPArtist()
 {
-    DEBUG() << "BASICTYPES: " << "~TPArtist";
+    --instanceCount;
+
+    if (!instanceCount)
+        DEBUG() << "BASICTYPES: " << "Last Artist Deleted";
+
+//    DEBUG() << "BASICTYPES: " << "~TPArtist";
     // Dereference all the albums and thus allow albums to be restroyed
     // if when required..
     QList<TPAlbum *>::iterator it = albums.begin();

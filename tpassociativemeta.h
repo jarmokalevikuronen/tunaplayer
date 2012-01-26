@@ -66,6 +66,7 @@ static const QString albumAttrArtSmall("album.arts");
 static const QString albumAttrArtLarge("album.artl");
 static const QString albumAttrCountTracks("trcnt");
 static const QString albumAttrAutomaticAlbumArtDownloadTries("aadltries");
+static const QString albumAttrAutomaticAlbumArtLastTry("aadllast");
 static const QString albumAttrArtistName("artist.name");
 static const QString albumAttrArtistId("artist.id");
 static const QString albumAttrArtist("artist.");

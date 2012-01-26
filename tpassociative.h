@@ -38,9 +38,15 @@ class QTimer;
 //! is constructed from name-value pairs.
 class TPAssociativeDBItem : public TPMapModel
 {
+private:
+
+    static int instanceCount;
+
 public:
 
     explicit TPAssociativeDBItem(const QString primaryKeyValue, TPAssociativeDB *_db = 0);
+    ~TPAssociativeDBItem();
+
     const QString primaryKey() const;
 
     void setValue(const QString key, const QVariant value);

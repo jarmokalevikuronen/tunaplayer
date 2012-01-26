@@ -38,7 +38,7 @@ bool TPALSAVolume::setVolume(int percents)
     cli += QString::number(percents);
     cli += " \"" + TPCLArgs::instance().arg(TPCLArgs::cliArgAlsaCardName, "default").toString() + "\"";
     cli += " \"" + TPCLArgs::instance().arg(TPCLArgs::cliArgAlsaControlName, "Master").toString() + "\"";
-DEBUG() << "Executing: " << cli;
+
     FILE *f = popen(cli.toUtf8().constData(), "r");
     if (!f)
         return false;

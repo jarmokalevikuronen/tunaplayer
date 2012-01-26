@@ -25,6 +25,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tppathutils.h"
 #include "tplog.h"
 
+// Every third day max.
+#define AUTOMATIC_ALBUM_ART_DOWNLOAD_INTERVAL   (60 * 60 * 24 * 3)
+
+
 TPAutomaticAlbumArtDownloader::TPAutomaticAlbumArtDownloader(QObject *parent) :
     QObject(parent)
 {
@@ -32,6 +36,16 @@ TPAutomaticAlbumArtDownloader::TPAutomaticAlbumArtDownloader(QObject *parent) :
     delayTimer = new QTimer(this);
     delayTimer->setSingleShot(true);
     connect(delayTimer, SIGNAL(timeout()), this, SLOT(downloadNextAlbum()));
+}
+
+TPAutomaticAlbumArtDownloader::~TPAutomaticAlbumArtDownloader()
+{
+    TPDecForAll(albumsToDownload);
+
+    if (currentAlbum)
+        currentAlbum->dec();
+
+    delete is;
 }
 
 void TPAutomaticAlbumArtDownloader::execute(TPAlbumDB *db)
@@ -43,12 +57,21 @@ void TPAutomaticAlbumArtDownloader::execute(TPAlbumDB *db)
         TPAlbum *album = db->at(i);
         if (!album->hasAlbumArt(TPAlbum::ESmallArt))
         {
+            bool timeAllows = false;
             // We will try max. 5 times to download a specific album art.
             int triesLeft = album->getInt(albumAttrAutomaticAlbumArtDownloadTries, 3);
 
-            if (triesLeft > 0)
+            int lastTry = album->getInt(albumAttrAutomaticAlbumArtLastTry, 0);
+            int current = TPUtils::currentEpoch();
+            int diff = current - lastTry;
+
+            if (diff < 0 || diff > AUTOMATIC_ALBUM_ART_DOWNLOAD_INTERVAL)
+                timeAllows = true;
+
+            if (triesLeft > 0 && timeAllows)
             {
                 album->setInt(albumAttrAutomaticAlbumArtDownloadTries, triesLeft - 1);
+                album->setInt(albumAttrAutomaticAlbumArtLastTry, current);
                 album->save(10 * 10000);
                 albumsToDownload.append(album);
                 album->inc();
@@ -104,13 +127,11 @@ void TPAutomaticAlbumArtDownloader::complete(QObject */*caller*/)
 {
     Q_ASSERT(is);
 
-
-
     if (!startDownloadNextAlbum())
     {
         if (is)
             is->deleteLater();
-        is = NULL;
+        is = 0;
         emit complete();
     }
 }
@@ -122,11 +143,15 @@ bool TPAutomaticAlbumArtDownloader::startDownloadNextAlbum()
     DEBUG() << "startDownloadNextAlbum: remaining: " << albumsToDownload.count();
 
     if (albumsToDownload.count() <= 0)
+    {
+        if (currentAlbum)
+            currentAlbum->dec();
+        currentAlbum = 0;
         return false;
+    }
 
     if (currentAlbum)
         currentAlbum->dec();
-
     currentAlbum = albumsToDownload.takeFirst();
 
     // We will not do sort of busy downloads, but

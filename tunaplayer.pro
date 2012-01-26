@@ -9,8 +9,6 @@ INCLUDEPATH += ./playlist ./feed ./webserver ./webserver/libwebsocket ./albumart
 
 # TAGLIB
 LIBS += -L/usr/lib/ -ltag
-# ALSA
-LIBS += -L/usr/lib/ -lasound
 
 QT += gui
 QT += network

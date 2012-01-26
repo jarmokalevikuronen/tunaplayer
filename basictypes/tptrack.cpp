@@ -68,6 +68,8 @@ TPTrack::~TPTrack()
 {
     --instanceCount;
 
+    if (!instanceCount)
+        DEBUG() << "BASICTYPES: " << "Last Track Deleted";
 //    DEBUG() << "BASICTYPES: " << "~TPTrack (instances remain: " << instanceCount << ")";
 
     detachFromAlbum();

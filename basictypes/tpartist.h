@@ -35,6 +35,10 @@ class TPArtist :
         public TPAssociativeObject,
         public TPIdBase
 {
+private:
+
+    static int instanceCount;
+
 public:
 
     TPArtist(QString name, TPAssociativeDBItem *dbItem = 0);

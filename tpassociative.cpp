@@ -17,21 +17,34 @@ License along with this software; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "tpassociative.h"
-#include "tpassociativemeta.h"
-#include "tppathutils.h"
 #include <QTimer>
 #include <QDebug>
 #include <QThread>
 #include <QVariant>
+#include "tpassociative.h"
+#include "tpassociativemeta.h"
+#include "tppathutils.h"
+#include "tplog.h"
+
 static const QString __primaryKey("_pk_");
+int TPAssociativeDBItem::instanceCount = 0;
 
 TPAssociativeDBItem::TPAssociativeDBItem(const QString primaryKeyValue, TPAssociativeDB *_db)
 {
+    ++instanceCount;
+
     db = _db;
 
     Q_ASSERT(primaryKeyValue.length() > 0);
     insert(__primaryKey, QVariant(primaryKeyValue));
+}
+
+TPAssociativeDBItem::~TPAssociativeDBItem()
+{
+    --instanceCount;
+
+    if (!instanceCount)
+        DEBUG() << "ASSOCIATIVE: " << " Last DBItem Deleted";
 }
 
 const QString TPAssociativeDBItem::primaryKey() const
