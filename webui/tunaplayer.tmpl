@@ -128,7 +128,7 @@ _TUNA_BEGIN_TEMPLATE
      <%= this.tracklisthtml %>
    </div>
    <% if (this.rotatePossible) { %>
-     <div class="artist_single_album_tracks_rotate" onclick="rotateTracks(this);"></div>
+     <div id="artist_single_album_tracks_rotate" onclick="rotateTracks(this);"></div>
    <% } %>
  </div>
    <div class="shortcut_button close_button" onclick="closeView();">
@@ -293,7 +293,7 @@ _TUNA_BEGIN_TEMPLATE
     </div>
   <% if (this.rotatePossible) { %>
   <div id="radiostations_rotate" onclick="rotateRadioStations(this);">
-    <div id="radiostations_rotate_text"><center><b>&nbsp;&gt;&gt;</b></center></div>
+    <div id="radiostations_rotate_text"></div>
   </div>
   <% } %>
   <div class="shortcut_button close_button" onclick="closeView();">
