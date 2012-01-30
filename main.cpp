@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
     // Initialize command line argument parser
     if (TPCLArgs::initialize(a.arguments()).usageRequested())
     {
-        fprintf(stdout, TPCLArgs::instance().getUsageText().toUtf8().constData());
+        fprintf(stdout, "%s\n\n", TPCLArgs::instance().getUsageText().toUtf8().constData());
         fflush(stdout);
         return 2;
     }

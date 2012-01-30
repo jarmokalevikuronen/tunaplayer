@@ -25,7 +25,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tppathutils.h"
 #include "tplog.h"
 
-// Every third day max.
+// Every third day a album art of a specific albums gets
+// downloaded. Max three times.
 #define AUTOMATIC_ALBUM_ART_DOWNLOAD_INTERVAL   (60 * 60 * 24 * 3)
 
 
@@ -50,7 +51,11 @@ TPAutomaticAlbumArtDownloader::~TPAutomaticAlbumArtDownloader()
 
 void TPAutomaticAlbumArtDownloader::execute(TPAlbumDB *db)
 {
-    TPDecForAll(albumsToDownload);
+    if (albumsToDownload.count() > 0)
+    {
+        ERROR() << "ALBUMART: Automatic album art loader busy\n";
+        return;
+    }
 
     for (int i=0;i<db->count();++i)
     {

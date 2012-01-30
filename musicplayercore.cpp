@@ -99,27 +99,6 @@ void TPMusicPlayerCore::applyDefaultSettings()
         sett.set(settingPlayPlaylistCmd, MPLAYER_PLAY_PLAYLIST);
 }
 
-void TPMusicPlayerCore::addMediaPath(const QString mediaPath)
-{
-    if (!mediaPaths.contains(mediaPath))
-        mediaPaths.append(mediaPath);
-}
-
-void TPMusicPlayerCore::addMediaPaths(const QStringList _mediaPaths)
-{
-    QStringList::const_iterator it = _mediaPaths.constBegin();
-    while (it != _mediaPaths.constEnd())
-    {
-        addMediaPath(*it);
-        ++it;
-    }
-}
-
-const QStringList TPMusicPlayerCore::getMediaPaths()
-{
-    return mediaPaths;
-}
-
 bool TPMusicPlayerCore::start()
 {
     if (scanner)
@@ -289,111 +268,6 @@ void TPMusicPlayerCore::createSearchObjectProvider()
     sob->addProvider(new TPSearchFacadeCurrentTrackDataProvider(*this->player));
     sob->addProvider(new TPSearchFacadeCurrentAlbumDataProvider(*this->player));
     sob->addProvider(new TPSearchFacadeCurrentArtistDataProvider(*this->player));
-}
-
-QVariant TPMusicPlayerCore::currentTrackId() const
-{
-    Q_ASSERT(player);
-
-    TPTrack *track = player->getCurrentTrack();
-    if (track)
-        return db->getTrackDB()->idOf(track);
-
-    return QVariant();
-}
-
-QVariant TPMusicPlayerCore::currentAlbumId() const
-{
-    Q_ASSERT(player);
-
-    TPTrack *track = player->getCurrentTrack();
-    if (track && track->getAlbum())
-        return db->getAlbumDB()->idOf(track->getAlbum());
-
-    return QVariant();
-}
-
-QVariant TPMusicPlayerCore::currentArtistId() const
-{
-    Q_ASSERT(player);
-
-    TPTrack *track = player->getCurrentTrack();
-    if (track && track->getAlbum() && track->getAlbum()->getArtist())
-        return db->getArtistDB()->idOf(track->getAlbum()->getArtist());
-
-    return QVariant();
-}
-
-QVariant TPMusicPlayerCore::currentPlaylistId() const
-{
-    Q_ASSERT(player);
-
-    TPPlaylist *pl = player->getPlaylist();
-    if (pl)
-        return db->getPlaylistDB()->idOf(pl);
-
-    return QVariant();
-}
-
-QVariant TPMusicPlayerCore::currentTrackName() const
-{
-    Q_ASSERT(player);
-
-    TPTrack *current = player->getCurrentTrack();
-    if (current && current->getName().length())
-        return QVariant(current->getName());
-    if (player->getPlaylist() && player->getPlaylist()->getName().length())
-        return QVariant(player->getPlaylist()->getName());
-
-    return QVariant();
-}
-
-Q_INVOKABLE QVariant TPMusicPlayerCore::currentArtistName() const
-{
-    Q_ASSERT(player);
-
-    TPTrack *current = player->getCurrentTrack();
-    if (current && current->getAlbum() && current->getAlbum()->getArtist())
-        return QVariant(current->getAlbum()->getArtist()->getName());
-
-    return QVariant();
-}
-
-Q_INVOKABLE QImage TPMusicPlayerCore::currentAlbumArt() const
-{
-    Q_ASSERT(player);
-
-    TPTrack *current = player->getCurrentTrack();
-    TPAlbum *album = current ? current->getAlbum() : NULL;
-
-    QImage image;
-
-    if (current && album)
-        image.load(TPPathUtils::getAlbumArtFolder() + album->getAlbumArtFilename(TPAlbum::ESmallArt));
-
-    return image;
-}
-
-Q_INVOKABLE QVariant TPMusicPlayerCore::currentAlbumName() const
-{
-    Q_ASSERT(player);
-
-    TPTrack *current = player->getCurrentTrack();
-    if (current && current->getAlbum())
-        return QVariant(current->getAlbum()->getName());
-
-    return QVariant();
-}
-
-Q_INVOKABLE QVariant TPMusicPlayerCore::currentTrackLength() const
-{
-    Q_ASSERT(player);
-
-    TPTrack *current = player->getCurrentTrack();
-    if (current)
-        return QVariant(current->getLen());
-
-    return QVariant((int)0);
 }
 
 bool TPMusicPlayerCore::addToPlaylist(QVariant aObject, const QString &position)
@@ -1126,6 +1000,16 @@ void TPMusicPlayerCore::maintainTaskState(TPFileScanner::State state)
 
 void TPMusicPlayerCore::startMaintainTask()
 {
+    if (autoArtLoader)
+    {
+        bool autoartDisabled = TPSettings::instance().get(settingDisableAutoArtLoader, false).toBool();
+        if (autoartDisabled)
+        {
+            DEBUG() << "CORE: Automatic album download started...\n";
+            autoArtLoader->execute(db->getAlbumDB());
+        }
+    }
+
     if (maintainScanner)
     {
         if (maintainScanner->getState() == TPFileScanner::MediaScannerMaintainScanComplete)
@@ -1163,6 +1047,54 @@ void TPMusicPlayerCore::startupProgress(int percents, bool force)
 
 
 
+bool TPMusicPlayerCore::searchAlbumArt(const QString id)
+{
+    Q_ASSERT(albumArtDownloader);
+
+    if (albumArtDownloader->busy())
+        return false;
+
+    TPAlbum *album = db->getAlbumDB()->getById(id);
+    if (!album)
+    {
+        TPTrack *track = db->getTrackDB()->getById(id);
+        if (track)
+            album = track->getAlbum();
+    }
+
+    if (!album)
+        return false;
+
+    albumArtDownloader->reset();
+
+    TPAlbumArtDownloadRequest *req = new TPAlbumArtDownloadRequest(album, 4, albumArtDownloader);
+
+    bool status = albumArtDownloader->exec(req);
+    if (status)
+    {
+        if (currentArtDownloadAlbum)
+            currentArtDownloadAlbum->dec();
+        currentArtDownloadAlbum = album;
+        currentArtDownloadAlbum->inc();
+    }
+    else
+        // Free the request if startup failed.
+        delete req;
+
+    return status;
+}
+
+void TPMusicPlayerCore::cancelSearchAlbumArt()
+{
+    Q_ASSERT(albumArtDownloader);
+
+    if (currentArtDownloadAlbum)
+    {
+        currentArtDownloadAlbum->dec();
+        currentArtDownloadAlbum = NULL;
+    }
+}
+
 bool TPMusicPlayerCore::selectSearchedAlbumArt(const QString id)
 {
     bool success = false;
@@ -1195,5 +1127,19 @@ bool TPMusicPlayerCore::selectSearchedAlbumArt(const QString id)
 void TPMusicPlayerCore::clearActivePlaylist()
 {
     setActivePlaylist(QString(""));
+}
+
+
+TPTrack* TPMusicPlayerCore::findTrack(const QString trackId)
+{
+    TPTrack *track = db->getTrackDB()->getById(trackId);
+    if (track)
+        return track;
+
+    // Try to search from playlists that might
+    // effectively contain "detached" tracks
+    // that are actually not part of the
+    // DB:s as such.
+    return db->getPlaylistDB()->findTrack(trackId);
 }
 

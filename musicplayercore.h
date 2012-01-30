@@ -44,35 +44,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 class TPMusicPlayerCore : public QObject
 {
     Q_OBJECT
+
 public:
 
     explicit TPMusicPlayerCore(TPWebSocketProtocol *_protocol);
     ~TPMusicPlayerCore();
 
+    //! @brief Starts the asynchrnous processing.
     bool start();
 
-    //
-    // TODO:
-    // 1. Need to be able to seek -> use common API available already -> [SEEK]123
-    // 2. Playlist manipulation
-    //   -> Seeking to specific track within a plays
-    //   -> Control the playlist operation mode, repeat
-    //   -> To be able to suffle -> must notify also playlist change stuff
-    // 4. Täytyy olla oma modeli albumeille -> tälle jo implementaatio osittain olemassa.
-    // 5. Täytyy miettiä kuinka ne albumi/artisti shortcutit voisi hoitaa, nythän ne indeksoi suoraan mutta voidaanko sitä käyttää sellaisenaa
-    // 6.  Paljon muitakin juttuja, mietitään kun keretään....
-    //
-    Q_INVOKABLE QVariant currentTrackName() const;
-    Q_INVOKABLE QVariant currentArtistName() const;
-    Q_INVOKABLE QVariant currentAlbumName() const;
-    Q_INVOKABLE QVariant currentTrackLength() const;
-    Q_INVOKABLE QImage currentAlbumArt() const;
-    QVariant currentTrackId() const;
-    QVariant currentAlbumId() const;
-    QVariant currentArtistId() const;
-    QVariant currentPlaylistId() const;
-    // Returns a relative path to art. Relative here means
- //   const QString relativePathToArt(const QString id);
+private: // PLAYLIST FUNCTIONALITY
 
     //! @brief Adds an object to playlist. At this point the object
     //! can be either a
@@ -91,38 +72,20 @@ public:
     //! @brief removes a specified track from the current playlist.
     bool removeFromPlaylist(const QString id);
 
+    //! @brief Clears the currently active playlist.
     void clearActivePlaylist();
 
-private slots:
-
-    void onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSocketProtocolMessage message);
-
-public:
-
-    /*
-playlist use caset:
-
-1. Tyhjennetään playlista
-2. Lisätään joku albumi playlistalle.
-
-
--> Pitää vähintään pystyä turaamaan niin, että homma hoituu.
-
-Olisiko kuitenkin niin, että playerillä voisi olla ihan oikeasti
-oma playlista, jota siis ei oikeasti ole tallennettu mihinkään. Jos sitten haluaa sen tallentaa, niin sitten siitä
-tehdään kopio ja sitä rataa!!!
-
-*/
-
-
+    //! @brief Changes the currently active playlist to something else
+    //! specified by the idOrName parameter (can be playlist name or id, as indicated).
     bool setActivePlaylist(const QString idOrName);
 
-    //! mode = "queue", "once", "repeat"
-    Q_INVOKABLE void setActivePlaylistMode(QVariant mode);
-    Q_INVOKABLE QVariant getActivePlaylistMode();
-
+    //! @brief Seeks to specified track within currently active playlist.
     bool seekToTrack(const QString trackId);
 
+    //! mode = "queue", "once", "repeat"
+    void setActivePlaylistMode(QVariant mode);
+
+    QVariant getActivePlaylistMode();
 
     //! @brief Saves the current (=Player) playlist with given name
     //! but if the name is not given, and the playlist was a cloned one,
@@ -131,98 +94,29 @@ tehdään kopio ja sitä rataa!!!
 
     bool removePlaylist(const QString id);
 
+private slots:
+
+    void onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSocketProtocolMessage message);
+
+public:
+
+private: // ALBUM ART SEARCH FUNCTIONALITY
+
     //! @brief Searches a album art from the supported
     //! services (lastfm, google image search)
     //! @param album or track identifier, E.g. album://a12321312ab.. or track://a1232342..
-    bool searchAlbumArt(const QString id)
-    {
-        Q_ASSERT(albumArtDownloader);
-
-        if (albumArtDownloader->busy())
-            return false;
-
-        TPAlbum *album = db->getAlbumDB()->getById(id);
-        if (!album)
-        {
-            TPTrack *track = db->getTrackDB()->getById(id);
-            if (track)
-                album = track->getAlbum();
-        }
-
-        if (!album)
-            return false;
-
-        albumArtDownloader->reset();
-
-        TPAlbumArtDownloadRequest *req = new TPAlbumArtDownloadRequest(album, 4, albumArtDownloader);
-
-        bool status = albumArtDownloader->exec(req);
-        if (status)
-        {
-            if (currentArtDownloadAlbum)
-                currentArtDownloadAlbum->dec();
-            currentArtDownloadAlbum = album;
-            currentArtDownloadAlbum->inc();
-        }
-        else
-            // Free the request if startup failed.
-            delete req;
-
-        return status;
-    }
-
-    void cancelSearchAlbumArt()
-    {
-        Q_ASSERT(albumArtDownloader);
-
-        if (currentArtDownloadAlbum)
-        {
-            currentArtDownloadAlbum->dec();
-            currentArtDownloadAlbum = NULL;
-        }
-    }
-
+    bool searchAlbumArt(const QString id);
+    void cancelSearchAlbumArt();
     bool selectSearchedAlbumArt(const QString id);
 
+
     bool executePlaybackOperation(const QString operation);
-
-
-    inline TPPlayerProxy* getPlayer() const
-    {
-        Q_ASSERT(player);
-        return player;        
-    }
-
-    void addMediaPath(const QString mediaPath);
-    void addMediaPaths(const QStringList _mediaPaths);
-    const QStringList getMediaPaths();
-
-    inline TPPlaylistMgr* getPlaylistsModel() const
-    {
-        return db->getPlaylistDB();
-    }
-
-    inline TPFeedMgr* getFeedsModel() const
-    {
-        return db->getFeedDB();
-    }
-
 
 signals:
 
     void playingTrackChanged();
     void playingAlbumChanged();
     void playbackPositionChanged(QVariant currentSeconds, QVariant totalSeconds, QVariant percents);
-
-    //!
-    //! @brief Emitted when possible player operations change.
-    //! @param stringOfTokens contains following strings depending whether they are possible
-    //! "[PLAY]" -> Playback is possible
-    //! "[STOP]" -> Stopping is possible
-    //! "[PAUSE]" -> Pausing is possible
-    //! "[RESUME]" -> Resuming is possible
-    //! "[NEXT]" -> Skip to next song is possible
-    void playbackControlStatusUpdate(QVariant stringOfValidTokens);
 
     //! emitted once previously started album art download
     //! request has fully completed.
@@ -237,21 +131,13 @@ private:
 
     //! @brief Tries find a track instance from track db, and also from
     //! playlists that might contain on-demand created tracks from feed items/urls and what so ever.
-    TPTrack* findTrack(const QString trackId)
-    {
-        TPTrack *track = db->getTrackDB()->getById(trackId);
-        if (track)
-            return track;
-        // Try to search from playlists that might
-        // effectively contain "detached" tracks
-        // that are actually not part of the
-        // DB:s as such.
-        return db->getPlaylistDB()->findTrack(trackId);
-    }
+    TPTrack* findTrack(const QString trackId);
 
     void applyDefaultSettings();
 
     void createSearchObjectProvider();
+
+private: // PROTOCOL IMPLEMENTATION
 
     //! @brief Responds with NAK code to received message.
     //! @param protocol protocol instance where to respond (="the wire")
@@ -266,12 +152,13 @@ private:
     //! @brief Generates a event that reports the current volume level
     bool protocolReportVolumeLevel();
 
+private:
+
     QVariantMap processSearchResults(TPSearchResults *searchResults, TPStoredProcedure *sp);
 
 public slots:
 
 private slots:
-
 
     // Triggered by the maintainTimer
     void startMaintainTask();
@@ -290,17 +177,7 @@ private slots:
     void playbackOperationsChanged();
     void activePlaylistChanged();
 
-
-
     void albumArtDownloaded(int index);
-    // From AlbumArtDownloader
-    void albumArtDownloadProgress(int percents, TPAlbumArtDownloadRequest *request, QImage image)
-    {
-        Q_UNUSED(request);
-        Q_UNUSED(image);
-        emit albumArtDownloadProgressed(percents < 0 ? 0 : percents >= 100 ? 99 : percents);
-    }
-
     void albumArtDownloadComplete();
 
     //! @brief Generates a event that tells what playback
@@ -313,8 +190,6 @@ private:
     void startupProgress(int percents, bool forceEvent = false);
 
 private:
-
-    QStringList mediaPaths;
 
     //! Scanner used to perform maintenance operation
     //! at runtime in order to find new results.
