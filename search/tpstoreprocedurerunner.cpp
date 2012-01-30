@@ -32,13 +32,13 @@ TPStoredProcedureRunner::TPStoredProcedureRunner()
 
 TPSearchResults* TPStoredProcedureRunner::execute(QVariantMap &args, TPStoredProcedure &sp, TPSearchObjectProvider &op)
 {
-    QTime begin; begin.start();
+  //  QTime begin; begin.start();
 
     // Returns 0 in case some argument that is expected is missing.
     TPStoredProcedureArgs *arguments = sp.createArguments(args);
     if (!arguments)
     {
-        qDebug() << "ERROR: SP: Invalid args";
+        ERROR() << "TSP: Invalid args";
         return 0;
     }
 
@@ -75,7 +75,7 @@ TPSearchResults* TPStoredProcedureRunner::execute(QVariantMap &args, TPStoredPro
     // Limit the result set to requested amount.
     results->limitTo(maxResultCount);
 
-    DEBUG() << "TSP: QueryExec: " << begin.elapsed() << "ms";
+//    DEBUG() << "TSP: QueryExec: " << begin.elapsed() << "ms";
 
     delete arguments;
     return results;

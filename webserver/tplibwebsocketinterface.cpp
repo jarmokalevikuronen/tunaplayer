@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tplibwebsocketinterface.h"
 #include "tpsettings.h"
 #include "tpclargs.h"
+#include "tplog.h"
 
 static TPWebSocketServer *gWebSocketServer = 0;
 
@@ -69,7 +70,10 @@ TPWebSocketServer::TPWebSocketServer(QObject *parent) :
     context = libwebsocket_create_context(port, NULL, protocols,
                     libwebsocket_internal_extensions,
                     NULL, NULL, -1, -1, 0);
+
     Q_ASSERT(context);
+
+    DEBUG() << "HTTP Serving at port: " << port;
 }
 
 TPWebSocketServer::~TPWebSocketServer()
@@ -88,25 +92,22 @@ int TPWebSocketServer::callback_tp_json_protocol(struct libwebsocket_context *co
     Q_UNUSED(context);
     Q_UNUSED(user);
 
-//    qDebug() << "callback_tp_json_protocol: reason: " << reason;
-
 
     if (reason == LWS_CALLBACK_ESTABLISHED)
     {
         ++gWebSocketServer->clientCount;
         emit gWebSocketServer->clientConnected(wsi);
-        qDebug() << "SOCKET: ESTABLISHED: " << wsi;
+        DEBUG() << "WEBSOCKET: Connected. Total " << gWebSocketServer->clientCount << " clients";
     }
     else if (reason == LWS_CALLBACK_CLOSED)
     {
         --gWebSocketServer->clientCount;
         emit gWebSocketServer->clientDisconnected(wsi);
-        qDebug() << "SOCKET: CLOSED: " << wsi;
+        DEBUG() << "WEBSOCKET: Disconnected. Total " << gWebSocketServer->clientCount << " clients";
     }
     else if (reason == LWS_CALLBACK_RECEIVE)
     {
        QByteArray b((const char *)in, len);
-       qDebug() << "SOCKET: RECEIVED: " << b.left(92);
        emit gWebSocketServer->messageReceived(b, wsi);
     }
 
@@ -128,16 +129,14 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
     switch (reason)
     {
     case LWS_CALLBACK_CLIENT_WRITEABLE:
-//        qDebug() << "LWS_CALLBACK_CLIENT_WRITEABLE";
         break;
 
     case LWS_CALLBACK_SERVER_WRITEABLE:
-  //      qDebug() << "LWS_CALLBACK_SERVER_WRITEABLE";
         break;
 
     case LWS_CALLBACK_HTTP:
     {
-        qDebug() << "HTTP: SERVE: " << (char *)in;
+        DEBUG() << "HTTP: SERVE: " << (char *)in;
 
         const char *http_request_path = (const char *)in;
 

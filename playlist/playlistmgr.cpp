@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "playlistmgr.h"
 #include "playlistutils.h"
 #include "tppathutils.h"
+#include "tplog.h"
 
 TPPlaylistMgr::TPPlaylistMgr(QObject *parent) :
     QObject(parent),
@@ -150,7 +151,7 @@ void TPPlaylistMgr::cleanupPlaylists()
         {
             if (pl->getInt(objectAttrDeleted, 0) > 0)
             {
-                qDebug() << "PLAYLIST: REMOVE: " << pl->getName() << " [" << pl->getFilename() << "]";
+                DEBUG() << "PLAYLIST: REMOVE: " << pl->getName() << " [" << pl->getFilename() << "]";
                 objects.removeObject(pl);
                 QFile::remove(pl->getFilename());
                 pl->dec();

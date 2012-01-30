@@ -19,7 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "tpwebsocketvirtualfolder.h"
 #include <QDir>
-#include <QDebug>
+#include "tplog.h"
 
 TPWebSocketVirtualFolder::TPWebSocketVirtualFolder(const QString _rootFolder, const QString _secret)
 {
@@ -39,7 +39,7 @@ const QString TPWebSocketVirtualFolder::objectToFile(const char *objectPath)
     QString path = objectPath;
     if (path.contains(".."))
     {
-        qDebug() << "ERROR: HTTP: SERVE: dotdot found from url -> not accepted";
+        ERROR() << "HTTP: SERVE: dotdot found from url -> not accepted";
         return QString();
     }
 
@@ -47,7 +47,7 @@ const QString TPWebSocketVirtualFolder::objectToFile(const char *objectPath)
     {
         if (!path.startsWith(secretWithPathDelims))
         {
-            qDebug() << "ERROR: HTTP: SERVE: No secret passed -> not serving";
+            ERROR() << "HTTP: SERVE: No secret passed -> not serving";
             return QString();
         }
         path = path.mid(secretWithPathDelims.length());

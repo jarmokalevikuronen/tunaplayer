@@ -1268,7 +1268,7 @@ function processStartupProgress(percents, loadtype) {
         }
       } else {
         $("#indexingstatus").html("<center>Sorry. Error occured.</center>");
-        alert("Failed to get artists -> quitting.");
+        console.log("ERROR: Response: " + JSON.stringify(json));
       }
     });
 

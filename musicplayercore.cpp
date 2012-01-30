@@ -718,8 +718,6 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
     {
         QString msgId = message.id();
 
-        DEBUG() << "CORE: PROTOCOL: Received command: " << msgId;
-
         if (msgId == protocolCommandAddToPlaylist)
         {
             QVariantMap args = message.arguments();

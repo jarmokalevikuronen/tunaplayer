@@ -164,9 +164,9 @@ bool TPPlayerProxy::CanExecute(const QString &cmd)
     else if (cmd.startsWith(playerCmdSeek))
         can = player->canPause() && player->canStop();
     else
-        qDebug() << "PLAYER: Unsupported command: " << cmd;
+        ERROR() << "PLAYER: Unsupported command: " << cmd;
 
-    qDebug() << "PLAYBACK: CONTROL: " << cmd << (can ? " ENABLED" : "DISABLED");
+//    qDebug() << "PLAYBACK: CONTROL: " << cmd << (can ? " ENABLED" : "DISABLED");
 
     return can;
 }
@@ -195,13 +195,13 @@ void TPPlayerProxy::playerStateChanged(PlayerBackend_MPlayer::State state)
     switch (state)
     {
     case PlayerBackend_MPlayer::Stopped:
-        qDebug() << "PlayerEngine::Player::state = Stopped";
+        DEBUG() << "PLAYER: State = Stopped";
         playlistRunner->currentTrackEnded();
         Execute(playerCmdNext, true);
         break;
 
     case PlayerBackend_MPlayer::Paused:
-        qDebug() << "PlayerEngine::Player::state = Paused";
+        DEBUG() << "PLAYER: State = Paused";
         emit playbackOperationsChanged();
         break;
 
@@ -211,7 +211,7 @@ void TPPlayerProxy::playerStateChanged(PlayerBackend_MPlayer::State state)
 
         if (currentTrack)
         {
-            qDebug() << "PlayerEngine::Player::state = Playing";
+            DEBUG() << "PLAYER: State = Playing";
             emit currentTrackChanged(currentTrack);
             emit playbackOperationsChanged();
         }
@@ -219,7 +219,7 @@ void TPPlayerProxy::playerStateChanged(PlayerBackend_MPlayer::State state)
     break;
 
     default:
-        qDebug() << "ERROR: unsupported player state: " << state;
+        ERROR() << "Unsupported player state: " << state;
     }
 }
 
@@ -242,7 +242,7 @@ void TPPlayerProxy::playerMutingChanged(bool muted)
 
 void TPPlayerProxy::playbackStreamTitleChanged(const QString streamTitle)
 {
-    qDebug() << "playbackStreamTitleChanged: " << streamTitle;
+    DEBUG() << "PLAYER: StreamTitleChanged: " << streamTitle;
 }
 
 bool TPPlayerProxy::seekToTrack(const TPTrack *track)

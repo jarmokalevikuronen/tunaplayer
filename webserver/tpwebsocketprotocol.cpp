@@ -40,11 +40,11 @@ TPWebSocketProtocol::~TPWebSocketProtocol()
 
 void TPWebSocketProtocol::handleDataReceived(const QByteArray data, void *origin)
 {
-    qDebug() << "WEBSOCKET: RECEIVED-LENGTH: " << data.length();
-
     TPWebSocketProtocolMessage msg;
     msg.initializeFromSerialized(data);
     msg.setOrigin(origin);
+
+    DEBUG() << "PROTOCOL: RECEIVED: " << data;
 
     if (msg.isOk())
         emit protocolMessageReceived(this, msg);
@@ -88,9 +88,10 @@ void TPWebSocketProtocol::sendNow()
         server->sendMessage(response.serialize(), response.getOrigin(), 0);
     }
 
-    // Start sending in deferred manner.
+    // Start sending in deferred manner... give some time for sending in
+    // order not to choke on modest hardware.
     if (pendingResponses.count() || pendingEvents.count())
-        sendTimer->start(0);
-
-//    qDebug() << "WEBSOCKET: SEND: QUEUE: Responses=" << pendingResponses.count() << " Events=" << pendingEvents.count();
+        sendTimer->start(3);
 }
+
+
