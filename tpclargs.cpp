@@ -28,17 +28,38 @@ const char *TPCLArgs::cliArgAlsaControlName = "-volactrl";
 const char *TPCLArgs::cliArgMediaPath = "-media";
 const char *TPCLArgs::cliArgLogLevel = "-loglevel";
 const char *TPCLArgs::cliArgSecret = "-secret";
+const char *TPCLArgs::cliArgMaintainInterval = "-maintain";
 
-void TPCLArgs::initialize(QStringList cliArgs)
+static struct usage_item
+{
+    const char *key;
+    const char *description;
+}usageItems[] =
+{
+    {TPCLArgs::cliArgHttpPort, "Port to listen. (10088)."},
+    {TPCLArgs::cliArgAlsaCardName, "ALSA Card for volume control. (default)"},
+    {TPCLArgs::cliArgAlsaControlName, "ALSA Control for volume control. (Master)"},
+    {TPCLArgs::cliArgLogLevel, "Logging level - oneof {none,debug,warning,error} (none)"},
+    {TPCLArgs::cliArgMaintainInterval, "How often, in minutes, the filesystem is scanned to detect changes. (30)"},
+    {TPCLArgs::cliArgMediaPath, "Where to search for music content. Multiple paths can be given by separating those with \';\'. ($HOME)."},
+    {TPCLArgs::cliArgSecret, "Secret value for http server. (topsecret). Server will serve in http://ip:port/<secret>/tunaplayer.html"},
+    {0, 0}
+};
+
+TPCLArgs& TPCLArgs::initialize(QStringList cliArgs)
 {
     DEBUG() << "INIT: === CLI ARGUMENTS ===";
 
     if (_instance)
-        return;
-    _instance = new TPCLArgs;
-    if (!_instance)
-        return;
+        return *_instance;
 
+    _instance = new TPCLArgs;
+    Q_ASSERT(_instance);
+
+    _instance->usage = false;
+    if (cliArgs.count() == 2 && (cliArgs.at(1) == "-help" || cliArgs.at(1) == "--help" || cliArgs.at(1) == "help" || cliArgs.at(1) == "-?" || cliArgs.at(1) == "?"))
+        _instance->usage = true;
+    else
     for (int i=1;i<cliArgs.count();i++)
     {
         QString argKey = cliArgs.at(i);
@@ -57,6 +78,7 @@ void TPCLArgs::initialize(QStringList cliArgs)
     }
 
     DEBUG() << "INIT: =====================";
+    return *_instance;
 }
 
 TPCLArgs& TPCLArgs::instance()
@@ -80,4 +102,29 @@ QVariant TPCLArgs::arg(const char *key, QVariant def)
         return def;
 
     return args[_key];
+}
+
+bool TPCLArgs::usageRequested()
+{
+    return usage;
+}
+
+QString TPCLArgs::getUsageText()
+{
+    QString text = "Usage:\n\n";
+    int i = 0;
+    while (usageItems[i].key)
+    {
+        QString line;
+        line += "  ";
+        line += usageItems[i].key;
+        while (line.length() < 20)
+            line.append(" ");
+        line += usageItems[i].description;
+        line += "\n";
+        text += line;
+        ++i;
+    }
+
+    return text;
 }

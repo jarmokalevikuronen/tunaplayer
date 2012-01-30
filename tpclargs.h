@@ -38,14 +38,22 @@ public:
     static const char *cliArgMediaPath;
     static const char *cliArgLogLevel;
     static const char *cliArgSecret;
+    static const char *cliArgMaintainInterval;
 
-    static void initialize(QStringList cliArgs);
+    static TPCLArgs& initialize(QStringList cliArgs);
     static TPCLArgs& instance();
     static void release();
 
+    bool usageRequested();
+
     QVariant arg(const char *key, QVariant def = QVariant());
 
+    QString getUsageText();
+
 private:
+
+    //! Flags set to true if usage is requested
+    bool usage;
 
     //! List of command line arguments.
     QMap<QString, QVariant> args;

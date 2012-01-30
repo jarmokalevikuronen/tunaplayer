@@ -107,7 +107,12 @@ int main(int argc, char *argv[])
     qInstallMsgHandler(tpMessageOutput);
 
     // Initialize command line argument parser
-    TPCLArgs::initialize(a.arguments());
+    if (TPCLArgs::initialize(a.arguments()).usageRequested())
+    {
+        fprintf(stdout, TPCLArgs::instance().getUsageText().toUtf8().constData());
+        fflush(stdout);
+        return 2;
+    }
 
     // Init debug logging functionality.
     initDebugLogging();

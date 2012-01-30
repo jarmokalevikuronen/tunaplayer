@@ -69,7 +69,7 @@ TPWebSocketServer::TPWebSocketServer(QObject *parent) :
     context = libwebsocket_create_context(port, NULL, protocols,
                     libwebsocket_internal_extensions,
                     NULL, NULL, -1, -1, 0);
-
+    Q_ASSERT(context);
 }
 
 TPWebSocketServer::~TPWebSocketServer()

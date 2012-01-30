@@ -34,6 +34,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpstoreprocedurerunner.h"
 #include "tpprotocoldefines.h"
 #include "tpsettings.h"
+#include "tpclargs.h"
 
 TPMusicPlayerCore::TPMusicPlayerCore(TPWebSocketProtocol *_protocol) : QObject(NULL)
 {
@@ -1085,10 +1086,10 @@ void TPMusicPlayerCore::createMaintainTask()
 {
     connect(&maintainTimer, SIGNAL(timeout()), this, SLOT(startMaintainTask()));
     maintainTimer.setSingleShot(false);
-    // TODO: Increase the default maintain interval to some higher value.
-    int maintainInterval = TPSettings::instance().get(settingMaintainIntervalMinutes, 1).toInt();
-    maintainInterval = qMax(maintainInterval, 1);
+    int maintainInterval = TPCLArgs::instance().arg(TPCLArgs::cliArgMaintainInterval, 30).toInt();
+    maintainInterval = qMax(maintainInterval, 10);
     maintainInterval = qMin(maintainInterval, 60*24);
+
     // Start timer, do minute -> millisecond conversion.
     maintainTimer.start(maintainInterval * 60 * 1000);
 }
