@@ -21,25 +21,47 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QtGlobal>
 #include <QTime>
 
+//! Amount of items always available in random playlist.
+#define RANDOM_PLAYLIST_ITEMS 6
+
+void doRandomize()
+{
+    static bool randomized = false;
+    if (!randomized)
+    {
+        qsrand(QTime::currentTime().msec());
+        randomized = true;
+    }
+}
+
 TPPlaylist::TPPlaylist(const QString _name, TPAssociativeDB *db, const QString _filename)
     : TPIdBase(schemePlaylist, _filename), TPAssociativeObject(db->allocItem(_filename))
 {
     setString(objectAttrName, _name);
     setString(playlistAttrFilename, _filename);
     setString(objectAttrScheme, schemePlaylist);
-    clonedFrom = NULL;
+    clonedFrom = 0;
+    db = 0;
 }
 
 TPPlaylist::TPPlaylist() : TPIdBase(schemePlaylist, "currentlyplayed")
 {
     setString(objectAttrName, "(Not Saved)");
-    clonedFrom = NULL;
+    clonedFrom = 0;
+    db = 0;
+}
+
+TPPlaylist::TPPlaylist(TPTrackDB &_db) : TPIdBase(schemePlaylist, "randomized")
+{
+    db = &_db;
+    clonedFrom = 0;
+    setString(objectAttrName, "Randomized tracks");
+    setString(objectAttrScheme, schemePlaylist);
+    fill();
 }
 
 TPPlaylist::~TPPlaylist()
 {
-//    DEBUG() << "PLAYLIST: " << "~TPPlaylist (tracks: " << tracks.count() << ")";
-
     if (clonedFrom)
         clonedFrom->dec();
 
@@ -178,13 +200,7 @@ void TPPlaylist::add(TPPlaylist *playlist, bool toBack)
 
 void TPPlaylist::shuffle()
 {
-    static bool randomized = false;
-
-    if (!randomized)
-    {
-        qsrand(QTime::currentTime().msec());
-        randomized = true;
-    }
+    doRandomize();
 
     if (tracks.count() <= 1)
         return;
@@ -209,6 +225,7 @@ void TPPlaylist::remove(TPTrack *track)
         tracks.removeAt(index);
         track->dec();
     }
+    fill();
 }
 
 void TPPlaylist::cloneFrom(TPPlaylist *playlist)
@@ -270,5 +287,179 @@ QVariantMap TPPlaylist::toMap(QStringList *filteredKeys)
     return result;
 }
 
+void TPPlaylist::setFilename(const QString _filename)
+{
+    setString(playlistAttrFilename, _filename);
+}
 
+const QString TPPlaylist::getFilename() const
+{
+    if (clonedFrom)
+        return clonedFrom->getFilename();
 
+    return getString(playlistAttrFilename);
+}
+
+void TPPlaylist::setCategory(const QString _category)
+{
+    setString(playlistAttrCategory, _category);
+}
+
+void TPPlaylist::setName(const QString _name)
+{
+    setString(objectAttrName, _name);
+}
+
+void TPPlaylist::setSmallArtName(const QString _smallArtName)
+{
+    setString(playlistAttrArtSmall, _smallArtName);
+}
+
+const QString TPPlaylist::getSmallArtName() const
+{
+    if (clonedFrom)
+        return clonedFrom->getSmallArtName();
+
+    QString smallArtName = TPAssociativeObject::getString(playlistAttrArtSmall);
+
+    if (smallArtName.length() < 1)
+        return smallArtName;
+
+    QString fn = TPPathUtils::getPlaylistArtFolder() + smallArtName;
+    QFile f(fn);
+
+    return f.exists() ? TPPathUtils::getNormalizedPathForWebServer(fn) : QString("");
+}
+
+const QString TPPlaylist::getLargeArtName() const
+{
+    if (clonedFrom)
+        return clonedFrom->getLargeArtName();
+
+    QString largeArtName = TPAssociativeObject::getString(playlistAttrArtLarge);
+
+    if (largeArtName.length() < 1)
+        return largeArtName;
+
+    QString fn = TPPathUtils::getPlaylistArtFolder() + largeArtName;
+    QFile f(fn);
+
+    return f.exists() ? TPPathUtils::getNormalizedPathForWebServer(fn) : QString("");
+}
+
+void TPPlaylist::setLargeArtName(const QString _largeArtName)
+{
+    setString(playlistAttrArtLarge, _largeArtName);
+}
+
+int TPPlaylist::getLength() const
+{
+    int len = 0;
+
+    for (int i=0; i<count(); ++i)
+    {
+        int l = at(i)->getLen();
+        if (l > 0)
+           len += l;
+    }
+
+    return len;
+}
+
+int TPPlaylist::count() const
+{
+    return tracks.count();
+}
+
+TPTrack* TPPlaylist::findTrack(const QString id)
+{
+    for (int i=0;i<tracks.count();++i)
+        if (tracks.at(i)->identifier(true) == id)
+            return tracks.at(i);
+
+    return NULL;
+}
+
+TPTrack* TPPlaylist::at(int index) const
+{
+    return tracks.at(index);
+}
+
+TPTrack* TPPlaylist::takeNext()
+{
+    if (tracks.count())
+    {
+        TPTrack *track = tracks.takeFirst();
+        track->dec();
+        return track;
+    }
+
+    return NULL;
+}
+
+QString TPPlaylist::getName() const
+{
+    if (clonedFrom)
+        return clonedFrom->getName();
+
+    return getString(objectAttrName);
+}
+
+QString TPPlaylist::getCategory() const
+{
+    if (clonedFrom)
+        return clonedFrom->getCategory();
+
+    return getString(playlistAttrCategory);
+}
+
+int TPPlaylist::indexOf(TPTrack *track) const
+{
+    return tracks.indexOf(track);
+}
+
+bool TPPlaylist::isLastTrack(TPTrack *track) const
+{
+    int index = indexOf(track);
+    if (index < 0 || tracks.count() <= 0)
+        return false;
+    return index == (tracks.count() - 1);
+}
+
+TPPlaylist* TPPlaylist::getClonedFrom() const
+{
+    return clonedFrom;
+}
+
+TPTrack *TPPlaylist::getRandomTrackNotInList()
+{
+    int startPosition = (qrand() % db->count());
+    for (int i=0;i<db->count();i++)
+    {
+        TPTrack *track = db->at((i + startPosition) % db->count());
+        if (!hasTrack(track))
+            return track;
+    }
+
+    return 0;
+}
+
+void TPPlaylist::fill()
+{
+    if (!db)
+        return;
+
+    doRandomize();
+
+    while (tracks.count() < RANDOM_PLAYLIST_ITEMS)
+    {
+        TPTrack *track = getRandomTrackNotInList();
+        if (track)
+        {
+            track->inc();
+            tracks.append(track);
+        }
+        else
+            break;
+    }
+}

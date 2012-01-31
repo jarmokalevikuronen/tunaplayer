@@ -40,6 +40,11 @@ TPPlaylistMgr::~TPPlaylistMgr()
 
 void TPPlaylistMgr::scanPlaylists(TPTrackDB *trackDB, TPAlbumDB *albumDB)
 {
+    //
+    // Create a random playlist that shall always be available..
+    //
+    addPlaylist(new TPPlaylist(*trackDB));
+
     QStringList playlistFiles;
 
     listPlaylistFiles(TPPathUtils::getPlaylistFolder(), playlistFiles);

@@ -37,12 +37,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tplog.h"
 
 
+//! @class TPPlaylist
+//! @brief Playlist class that encapsulates various types of playlists
 class TPPlaylist : public TPIdBase, public TPAssociativeObject, public TPReferenceCounted
 {
 public:
 
+    //! @brief C++ constructor for playlist created from a m3u file.
     TPPlaylist(const QString name, TPAssociativeDB *db, const QString filename);
+
+    //! @brief C++ constructor - the default one used to create empty playlists
     TPPlaylist();
+
+    //! @brief C++ construct for randomly ordered playlists.
+    TPPlaylist(TPTrackDB &_db);
+
+    //! @brief C++ destructor
     ~TPPlaylist();
 
     void dec()
@@ -81,153 +91,41 @@ public:
 
     void shuffle();
 
-    inline void setFilename(const QString _filename)
-    {
-        setString(playlistAttrFilename, _filename);
-    }
+    void setFilename(const QString _filename);
 
-    inline const QString getFilename() const
-    {
-        if (clonedFrom)
-            return clonedFrom->getFilename();
+    const QString getFilename() const;
 
-        return getString(playlistAttrFilename);
-    }
+    void setCategory(const QString _category);
 
-    inline void setCategory(const QString _category)
-    {
-        setString(playlistAttrCategory, _category);
-    }
+    void setName(const QString _name);
 
-    inline void setName(const QString _name)
-    {
-        setString(objectAttrName, _name);
-    }
+    void setSmallArtName(const QString _smallArtName);
 
-    // TODO: getSmallArtName ja niin edelleen
-    // Ovat periaatteessa turhia metodeita, koska
-    // homma pitäisi käytännössä hoitaa toisella tavalla kokonaan!.
+    const QString getSmallArtName() const;
 
-    inline void setSmallArtName(const QString _smallArtName)
-    {
-        setString(playlistAttrArtSmall, _smallArtName);
-    }
+    const QString getLargeArtName() const;
 
-    inline const QString getSmallArtName() const
-    {
-        if (clonedFrom)
-            return clonedFrom->getSmallArtName();
+    void setLargeArtName(const QString _largeArtName);
 
-        QString smallArtName = TPAssociativeObject::getString(playlistAttrArtSmall);
+    int getLength() const;
 
-        if (smallArtName.length() < 1)
-            return smallArtName;
+    int count() const;
 
-        QString fn = TPPathUtils::getPlaylistArtFolder() + smallArtName;
-        QFile f(fn);
+    TPTrack* findTrack(const QString id);
 
-        return f.exists() ? TPPathUtils::getNormalizedPathForWebServer(fn) : QString("");
-    }
+    TPTrack* at(int index) const;
 
-    inline const QString getLargeArtName() const
-    {
-        if (clonedFrom)
-            return clonedFrom->getLargeArtName();
+    TPTrack* takeNext();
 
-        QString largeArtName = TPAssociativeObject::getString(playlistAttrArtLarge);
+    QString getName() const;
 
-        if (largeArtName.length() < 1)
-            return largeArtName;
+    QString getCategory() const;
 
-        QString fn = TPPathUtils::getPlaylistArtFolder() + largeArtName;
-        QFile f(fn);
+    int indexOf(TPTrack *track) const;
 
-        return f.exists() ? TPPathUtils::getNormalizedPathForWebServer(fn) : QString("");
-    }
+    bool isLastTrack(TPTrack *track) const;
 
-    inline void setLargeArtName(const QString _largeArtName)
-    {
-        setString(playlistAttrArtLarge, _largeArtName);
-    }
-
-    inline int getLength() const
-    {
-        int len = 0;
-
-        for (int i=0; i<count(); ++i)
-        {
-            int l = at(i)->getLen();
-            if (l > 0)
-               len += l;
-        }
-
-        return len;
-    }
-
-    inline int count() const
-    {
-        return tracks.count();
-    }
-
-    inline TPTrack* findTrack(const QString id)
-    {
-        for (int i=0;i<tracks.count();++i)
-            if (tracks.at(i)->identifier(true) == id)
-                return tracks.at(i);
-
-        return NULL;
-    }
-
-    inline TPTrack* at(int index) const
-    {
-        return tracks.at(index);
-    }
-
-    inline TPTrack* takeNext()
-    {
-        if (tracks.count())
-        {
-            TPTrack *track = tracks.takeFirst();
-            track->dec();
-            return track;
-        }
-
-        return NULL;
-    }
-
-    inline QString getName() const
-    {
-        if (clonedFrom)
-            return clonedFrom->getName();
-
-        return getString(objectAttrName);
-    }
-
-    inline QString getCategory() const
-    {
-        if (clonedFrom)
-            return clonedFrom->getCategory();
-
-        return getString(playlistAttrCategory);
-    }
-
-    inline int indexOf(TPTrack *track) const
-    {
-        return tracks.indexOf(track);
-    }
-
-    inline bool isLastTrack(TPTrack *track) const
-    {
-        int index = indexOf(track);
-        if (index < 0 || tracks.count() <= 0)
-            return false;
-        return index == (tracks.count() - 1);
-    }
-
-    inline TPPlaylist* getClonedFrom() const
-    {
-        return clonedFrom;
-    }
+    TPPlaylist* getClonedFrom() const;
 
     friend class PlaylistMgr;
     friend class PlaylistUtils;
@@ -235,9 +133,19 @@ public:
     const QString getString(const QString key, const QString defaultValue = "") const;
     QVariantMap toMap(QStringList *filteredKeys);
 
+private:
 
+    void fill();
+
+    //! @brief Gets a random track that is not in tracklist
+    TPTrack* getRandomTrackNotInList();
 
 private:
+
+    //! TrackdB. Optional and only viable for playlists
+    //! that are played on random order.
+    TPTrackDB *db;
+
     //! All contained tracks.
     QList<TPTrack *> tracks;
 
