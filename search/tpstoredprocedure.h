@@ -42,6 +42,8 @@ public:
     //! returns true if succeeded, false otherwise.
     bool compile(const QString _filename);
 
+    const QString getErrorDescription();
+
     inline QVariantList getSchemes() const
     {
         return schemes;

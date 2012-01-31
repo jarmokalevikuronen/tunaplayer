@@ -73,6 +73,11 @@ public:
     bool moveToTop(TPTrack *trackToMove);
     bool moveToBottom(TPTrack *trackToMove);
 
+    //! @brief Checks whether playlist can be used as such
+    //! or should it be cloned before using (so that its content
+    //! can be altered without being worried on not changing the original).
+    bool needToBeCloned();
+
     void cloneFrom(TPPlaylist *playlist);
     void add(TPPlaylist *playlist, bool toBack = true);
     void add(TPTrack *track, bool toBack = true);

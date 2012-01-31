@@ -1,17 +1,61 @@
 
 .tile_1 {
-  left: 38%;
-  top: 10%;
+  left: 28%;
+  top: 5%;
 }
 
 .tile_2 {
-  left: 38%;
-  top: 40%;
+  left: 28%;
+  top: 28%;
 }
 
 .tile_3 {
-  left: 38%;
-  top: 70%;
+  left: 28%;
+  top: 51%;
+}
+
+.tile_4 {
+  left: 28%;
+  top: 74%;
+}
+
+.tile_closed {
+  position: absolute;
+  z-index: 1;
+  width: 300px;
+  height: 90px;  
+  background: -webkit-gradient(linear, left top, left bottom, from(#fca51a), to(#5e3a10));
+  -webkit-box-shadow: 0 5px 10px #333; 
+  -webkit-border-radius: 30px;
+}
+
+.tile_closed_inner {
+  position: absolute;
+  left: 4%;
+  top: 5%;
+  width: 92%;
+  height: 90%;
+  background: -webkit-gradient(linear, left top, left bottom, from(#000000), to(#202020));
+  color: white;
+  font-size: 4em;
+  -webkit-border-radius: 30px;
+}
+
+.tile_closed_inner:active {
+  background: -webkit-gradient(linear, left top, left bottom, from(#202020), to(#404040)); 
+}
+
+.tile_opened {
+  overflow: hidden;
+  opacity: 1.0;
+  position: absolute;
+  z-index: 100;
+  left: 0px;
+  top: 0px;
+  width: 800px;
+  height: 480px;
+  background: black;
+  -webkit-border-radius: 0;
 }
 
 #artist_shortcutbar { 
@@ -231,44 +275,6 @@
   margin-left: 3%;
 }
 
-.tile_closed {
-  position: absolute;
-  z-index: 1;
-  width: 200px;
-  height: 90px;  
-  background: -webkit-gradient(linear, left top, left bottom, from(#fca51a), to(#5e3a10));
-  -webkit-box-shadow: 0 5px 10px #333; 
-  -webkit-border-radius: 30px;
-}
-
-.tile_closed_inner {
-  position: absolute;
-  left: 4%;
-  top: 5%;
-  width: 92%;
-  height: 90%;
-  background: -webkit-gradient(linear, left top, left bottom, from(#000000), to(#202020));
-  color: white;
-  font-size: 4em;
-  -webkit-border-radius: 30px;
-}
-
-.tile_closed_inner:active {
-  background: -webkit-gradient(linear, left top, left bottom, from(#202020), to(#404040)); 
-}
-
-.tile_opened {
-  overflow: hidden;
-  opacity: 1.0;
-  position: absolute;
-  z-index: 100;
-  left: 0px;
-  top: 0px;
-  width: 800px;
-  height: 480px;
-  background: black;
-  -webkit-border-radius: 0;
-}
 
 .div_hidden {
   width: 0px;

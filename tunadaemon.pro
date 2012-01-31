@@ -58,7 +58,6 @@ SOURCES += player.cpp \
     search/tpsearchfacadedataproviders.cpp \
     search/tpsearchobjectprovider.cpp \
     search/tpsearchresults.cpp \
-    search/tpstoredprocedurerequest.cpp \
     search/tpstoreprocedurerunner.cpp \
     db/tptrackdb.cpp \
     db/tpartistdb.cpp \
@@ -124,7 +123,6 @@ HEADERS += player.h \
     search/tpsearchfacadedataproviders.h \
     search/tpsearchobjectprovider.h \
     search/tpsearchresults.h \
-    search/tpstoredprocedurerequest.h \
     search/tpstoreprocedurerunner.h \
     db/tpdbtemplate.h \
     db/tptrackdb.h \
@@ -221,7 +219,6 @@ else {
     DESTDIR = ./tunaplayer-release
     OBJECTS_DIR = ./tunaplayer-release/objects
 }
-
 
 target.path = $$PREFIX/usr/bin
 sources.files = $$SOURCES $$HEADERS tunaplayer.pro

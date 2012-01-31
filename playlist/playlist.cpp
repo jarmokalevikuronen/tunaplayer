@@ -55,8 +55,9 @@ TPPlaylist::TPPlaylist(TPTrackDB &_db) : TPIdBase(schemePlaylist, "randomized")
 {
     db = &_db;
     clonedFrom = 0;
-    setString(objectAttrName, "Randomized tracks");
+    setString(objectAttrName, "Random tracks");
     setString(objectAttrScheme, schemePlaylist);
+    setInt(playlistAttrBuiltIn, 1); // This is a "built-in" playlist
     fill();
 }
 
@@ -228,6 +229,12 @@ void TPPlaylist::remove(TPTrack *track)
     fill();
 }
 
+
+bool TPPlaylist::needToBeCloned()
+{
+    return db ? false : true;
+}
+
 void TPPlaylist::cloneFrom(TPPlaylist *playlist)
 {
     if (clonedFrom)
@@ -391,6 +398,7 @@ TPTrack* TPPlaylist::takeNext()
     {
         TPTrack *track = tracks.takeFirst();
         track->dec();
+        fill();
         return track;
     }
 

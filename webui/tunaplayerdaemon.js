@@ -354,6 +354,18 @@ var tunaPlayer = {
   },
   reportVolume: function(callback) {
     this.callFunc("reportvolume", callback);
+  },
+  playPlaylist: function(name, callback) {
+    this.selectPlaylist(name, function(json) {
+      if (json["status"] == "OK") {
+        tunaPlayer.play(callback);
+      } else {
+        callback(json);
+      }
+    });
+  },
+  getBuiltInPlaylists: function(callback) {
+    this.callSP("get_builtin_playlists", callback);
   }
 };
 

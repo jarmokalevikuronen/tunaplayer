@@ -86,6 +86,7 @@ static const QString playlistAttrArtSmall("arts");
 static const QString playlistAttrArtLarge("artl");
 static const QString playlistAttrFilename("fn");
 static const QString playlistAttrCategory("category");
+static const QString playlistAttrBuiltIn("builtin");
 
 //
 // Feed Item specific meta information

@@ -446,12 +446,10 @@ function playerUpdatePlaybackAlbum(json) {
   var albumart = json["album.artl"];
   if (!albumart)
     albumart = json["album.arts"];
-  if (albumart) {
-    img = document.getElementById("player_playing_album_image");
-    if (img) {
-      img.setAttribute("src", albumart);
-    }
-  }
+  img = document.getElementById("player_playing_album_image");
+  if (img) {
+    img.setAttribute("src", albumart ? albumart : "");
+ }
 
   if (json["id"]) {
     $("#player_playing_album_image").attr("data-album-id", json["id"]);
@@ -851,8 +849,19 @@ function createSearchAlbumArtsPageContent() {
   return html;
 }
 
+function createPlaylistContainerPageContent() {
+//  tunaPlayer.getBuiltInPlaylists(function(json) { console.log("BUILTIN: " + JSON.stringify(json)); });
+  tunaPlayer.playPlaylist("Random tracks");
+  openView("root", "player_container");
+}
+
 function renderPageContent(pageId, renderHint, renderContext) {
   var targetObject = document.getElementById(pageId);
+  if (!targetObject) {
+    console.log("ERROR: Unable to locate object: " + pageId);
+    return;
+  }
+
   if (pageId == "artists_container") { 
     if (renderHint == "artistlistOnly") {
       var lbContainer = document.getElementById("artist_listbox_container");
@@ -889,6 +898,8 @@ function renderPageContent(pageId, renderHint, renderContext) {
     targetObject.innerHTML = createPlayerCurrentPlaylistPageContent();
   } else if (pageId == "search_album_arts") {
     targetObject.innerHTML = createSearchAlbumArtsPageContent();
+  } else if (pageId == "playlist_container") {
+    targetObject.innerHTML = createPlaylistContainerPageContent();    
   }
 }
 
@@ -907,17 +918,11 @@ function openView(oldId, newId, initData) {
   $("#" + newId).removeClass("div_hidden");
   $("#" + newId).addClass("tile_opened");
 
-  var timeout = 500;
-  if (oldId == "root")
-    timeout = 500;
-
-  start_preload_data(oldId, newId, initData, function() { renderPageContent(newId, "nohint", initData); });
-
-  setTimeout(function() { renderPageContent(newId, "nohint", initData ); }, timeout);
-
   /* Page stack holds pairs. -> Thus when popping we get first the page to close and then the page to open */
   pageStackPush(oldId);
   pageStackPush(newId);
+
+  startPreloadData(oldId, newId, initData, function() { renderPageContent(newId, "nohint", initData); });
 }
 
 function closeAllViews() {
@@ -958,7 +963,7 @@ function closeView() {
 }
 
 
-function load_artist_albums(object, renderer) {
+function loadArtistAlbums(object, renderer) {
   var id = object.getAttribute("data-artist-id");
   if (id != undefined && id.length > 0) {
     tunaPlayer.getArtistAlbums(id, function(json) {
@@ -971,12 +976,15 @@ function load_artist_albums(object, renderer) {
       }
     });
   } else {
-    console.log("ERROR: load_artist_albums no ID");
+    console.log("ERROR: loadArtistAlbums no ID");
   }
 }
 
-function start_preload_data(oldid, newid, initData, renderer) {
+function startPreloadData(oldid, newid, initData, renderer) {
+
   console.log("PRELOAD DATA to OPEN " + newid + " from " + oldid);
+
+  var delayedRender = false;
 
   if (newid == 'artist_single_album_container' || oldid == 'search_album_arts') {
     if (newid == 'artist_single_album_container') {
@@ -997,6 +1005,7 @@ function start_preload_data(oldid, newid, initData, renderer) {
     if (oldid == "player_container")
       currentTrackIndex = 0;
 
+    delayedRender = true;
     tunaPlayer.getAlbumTracks(id, function(json) {
       if (json["status"] == "OK") {
         currentAlbumTracks = json["args"];
@@ -1012,6 +1021,7 @@ function start_preload_data(oldid, newid, initData, renderer) {
     currentTrackIndex = 0;
   }
   if (newid == "player_current_playlist") {
+    delayedRender = true;
     tunaPlayer.getCurrentPlaylist(function(json) {
       if (json["status"] == "OK") {
         currentPlaylist = json;
@@ -1025,13 +1035,20 @@ function start_preload_data(oldid, newid, initData, renderer) {
   }
   if (newid == 'artists_albums_container') {
     artistAlbumArtVisibleIndex = 0;
-    load_artist_albums(initData, renderer);
+    loadArtistAlbums(initData, renderer);
+    delayedRender = true;
   }
   if (newid == "artists_container") {
     upgradeDatabase();
   }
   if (newid == "radio_container") {
     upgradeDatabase();
+  }
+
+  if (!delayedRender) {
+    if (renderer != undefined) {
+      renderer();
+    }
   }
 }
 
@@ -1450,37 +1467,44 @@ function playerUpdateVolumeLevel(volume) {
   <body onload="connectToDaemon();" onkeypress="handleKeyPress(event);" style="background: black; z-index:1;">		
     <div class="playercontainer" id="root">
 
-      <div id=radio_launcher class="tile_1 tile_base tile_closed tile_yellow"  onclick="openView('root', 'radio_container');">
+      <div id=radio_launcher class="tile_1 tile_closed"  onclick="openView('root', 'radio_container');">
         <div class="tile_closed_inner"><center>radio</center></div>
       </div>
 
-      <div id=artists_launcher class="tile_2 tile_base tile_closed tile_red tile_bkg_gray"  onclick="openView('root', 'artists_container');">
+      <div id=artists_launcher class="tile_2 tile_closed"  onclick="openView('root', 'artists_container');">
         <div class="tile_closed_inner"><center>music</center></div>
       </div>
 
-      <div id=player_launcher class="tile_3 tile_base tile_closed tile_blue tile_bkg_gray"  onclick="openView('root', 'player_container');">
+      <div id=player_launcher class="tile_3 tile_closed"  onclick="openView('root', 'player_container');">
         <div class="tile_closed_inner"><center>player</center></div>
       </div>
 
-      <div id="radio_container" class="topleft tile_base tile_bkg_gray div_hidden tile_yellow">
+      <div id=playlist_launcher class="tile_4 tile_closed"  onclick="tunaPlayer.playPlaylist('Random tracks'); openView('root', 'player_container'); /*openView('root', 'playlist_container');*/">
+        <div class="tile_closed_inner"><center>random</center></div>
       </div>
 
-      <div id=artists_container class="topleft tile_base tile_bkg_gray div_hidden tile_red">              
+      <div id="radio_container" class="topleft div_hidden">
       </div>
 
-      <div id=artists_albums_container data-cache="1" class="topleft tile_base tile_bkg_gray div_hidden tile_red">
+      <div id=artists_container class="topleft div_hidden">              
       </div>
 
-      <div id="search_album_arts" class="topleft tile_base tile_bkg_gray div_hidden tile_red">
+      <div id=artists_albums_container class="topleft div_hidden">
       </div>
 
-      <div id="artist_single_album_container" class="topleft tile_base tile_bkg_gray div_hidden tile_red">
+      <div id="search_album_arts" class="topleft div_hidden">
       </div>
 
-      <div id="player_container" class="topleft tile_base tile_bkg_gray div_hidden tile_blue">
+      <div id="artist_single_album_container" class="topleft div_hidden">
       </div>
 
-      <div id="player_current_playlist" class="topleft tile_base tile_bkg_gray div_hidden tile_blue">
+      <div id="player_container" class="topleft div_hidden">
+      </div>
+
+      <div id="player_current_playlist" class="topleft div_hidden">
+      </div>
+
+      <div id="playlist_container" class="topleft div_hidden">
       </div>
 
     </div>

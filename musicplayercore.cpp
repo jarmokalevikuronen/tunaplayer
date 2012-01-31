@@ -115,12 +115,11 @@ bool TPMusicPlayerCore::start()
     // Album art download functionality can be started immediately
     albumArtDownloader = new TPAlbumArtDownloader(this);
     connect(albumArtDownloader, SIGNAL(downloadComplete()), this, SLOT(albumArtDownloadComplete()));
-    connect(albumArtDownloader, SIGNAL(downloadProgress(int,TPAlbumArtDownloadRequest*,QImage)), this, SLOT(albumArtDownloadProgress(int,TPAlbumArtDownloadRequest*,QImage)));
     connect(albumArtDownloader, SIGNAL(albumArtDownloaded(int)), this, SLOT(albumArtDownloaded(int)));
 
     // Instantiate stored procedure manager that is responsible
     // of maintaining stored procedures if any.
-    spMgr = new TPStoredProcedureMgr(this);
+    spMgr = new TPStoredProcedureMgr();
 
     return true;
 }
@@ -435,11 +434,14 @@ bool TPMusicPlayerCore::setActivePlaylist(const QString nameOrId)
     // so that it can modify it as it wishes.
     if (playlist)
     {
-        TPPlaylist *tmp = db->getPlaylistDB()->createEmptyPlaylist();
-        if (tmp)
+        if (playlist->needToBeCloned())
         {
-            tmp->cloneFrom(playlist);
-            playlist = tmp;
+            TPPlaylist *tmp = db->getPlaylistDB()->createEmptyPlaylist();
+            if (tmp)
+            {
+                tmp->cloneFrom(playlist);
+                playlist = tmp;
+            }
         }
     }
 

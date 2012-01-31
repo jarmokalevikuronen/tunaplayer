@@ -20,11 +20,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpstoredproceduremgr.h"
 #include "tppathutils.h"
 #include <QDirIterator>
-#include <QDebug>
+#include "tplog.h"
 #include <QFileInfo>
 
-TPStoredProcedureMgr::TPStoredProcedureMgr(QObject *parent) :
-    QObject(parent)
+TPStoredProcedureMgr::TPStoredProcedureMgr()
 {
     createStoredProcedures();
 }
@@ -62,10 +61,12 @@ void TPStoredProcedureMgr::createStoredProcedures()
 
     for (int i=0;i<files.count();++i)
     {
-        qDebug() << "Processing TSP: " << files.at(i);
+        DEBUG() << "TSP: Processing file: " << files.at(i);
 
         TPStoredProcedure *tsp = new TPStoredProcedure;
-        Q_ASSERT(tsp);
+        if (!tsp)
+            continue;
+
         if (tsp->compile(files.at(i)))
         {
             QFileInfo fi(files.at(i));
@@ -73,7 +74,8 @@ void TPStoredProcedureMgr::createStoredProcedures()
         }
         else
         {
-            qDebug() << "Failed to create TSP from " << files.at(i);
+            ERROR() << "TSP: Failed to construct from " << files.at(i);
+            ERROR() << "TSP: ErrorDescription: " << tsp->getErrorDescription();
             delete tsp;
         }
     }

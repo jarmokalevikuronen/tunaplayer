@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpstoredprocedure.h"
 #include "sort/sorting.h"
 #include "json.h"
+#include "tplog.h"
 
 using namespace QtJson;
 
@@ -56,14 +57,14 @@ bool TPStoredProcedure::compile(const QString _filename)
     QFile f(filename);
     if (!f.open(QIODevice::ReadOnly))
     {
-        qWarning() << "Failed to open " << filename;
+        WARN() << "TSP: Failed to open " << filename;
         return false;
     }
     QByteArray fileContent = f.readAll();
 
     if (!fileContent.length())
     {
-        qWarning() << "Empty file: " << filename;
+        WARN() << "TSP: Empty file: " << filename;
         return false;
     }
 
@@ -72,7 +73,7 @@ bool TPStoredProcedure::compile(const QString _filename)
 
     if (!ok)
     {
-        qWarning() << "Failed to parse json from " << filename;
+        WARN() << "Failed to parse JSON from " << filename;
         return false;
     }
 
@@ -109,14 +110,14 @@ bool TPStoredProcedure::compile(const QString _filename)
         else if (it.key() == spGroupBy)
             groupBy = it.value().toString();
         else
-            qDebug() << "Unknown SP item: " << it.key() << "=" << it.value();
+            ERROR() << "TSP: Unk. item: " << it.key() << "=" << it.value();
 
         it++;
     }
 
     if (!success)
     {
-        qWarning() << "Failed to parse stored procedure from: " << filename;
+        ERROR() << "TSP: Failed to parse sp from: " << filename;
         return false;
     }
 
@@ -154,14 +155,12 @@ TPStoredProcedureArgs* TPStoredProcedure::createArguments(QVariantMap receivedOv
 bool TPStoredProcedure::processSchemes(QVariantList varList)
 {
     schemes = varList;
-    qDebug() << "schemes: " << schemes;
     return varList.count() > 0;
 }
 
 bool TPStoredProcedure::processArguments(QVariantMap varMap)
 {
     arguments = varMap;
-    qDebug() << "arguments: " << arguments;
     return true;
 }
 
@@ -222,8 +221,6 @@ bool TPStoredProcedure::parseMatchFilter(TPSearchFilterOpInterface *parent, cons
 
 bool TPStoredProcedure::processProviderSelectors(QVariantMap varMap)
 {
-    qDebug() << "ProviderSelectors = " << varMap;
-
     if (varMap.count() != 1)
     {
         errorDescription = "Expected only one root element for Filters";
@@ -245,8 +242,6 @@ bool TPStoredProcedure::processProviderSelectors(QVariantMap varMap)
 
 bool TPStoredProcedure::processFilters(QVariantMap varMap)
 {
-    qDebug() << "Filters = " << varMap;
-
     if (varMap.count() != 1)
     {
         errorDescription = "Expected only one root element for Filters";
@@ -295,4 +290,9 @@ bool TPStoredProcedure::processSorting(const QVariantList sortList)
     return true;
 }
 
-
+const QString TPStoredProcedure::getErrorDescription()
+{
+    QString err = errorDescription;
+    errorDescription.clear();
+    return err;
+}

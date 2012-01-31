@@ -25,20 +25,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "tpstoredprocedure.h"
 
-class TPStoredProcedureMgr : public QObject
+//! @class TPStoredProcedureMgr
+//! @brief Stored procedure manager.
+class TPStoredProcedureMgr
 {
-    Q_OBJECT
-
 public:
 
-    explicit TPStoredProcedureMgr(QObject *parent = 0);
+    explicit TPStoredProcedureMgr();
     ~TPStoredProcedureMgr();
 
     TPStoredProcedure* get(const QString name);
-
-signals:
-
-public slots:
 
 private: // Implementation
 
