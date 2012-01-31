@@ -66,7 +66,16 @@ var tunaPlayer = {
     u = u.split('/');
     var uri = protocol + u[0];
 
-    this.socket = new WebSocket(uri, "tp-json");
+    try {
+      this.socket = new WebSocket(uri, "tp-json");
+    } catch (e) {
+      console.log("Unable to create WebSocket, try MozWebSocket..");
+      try {
+        this.socket = new MozWebSocket(uri, "tp-json");
+      } catch (e) {
+        console.log("Unable to create MozWebSocket -> bailing out..");
+      }
+    }
 
     this.openTimeoutTimer = setTimeout(function() { 
       tunaPlayer.openTimeoutTimer = null;
