@@ -1162,6 +1162,19 @@
   opacity: .9;
 }
 
+#notsupported {
+  position: absolute;
+  width: 800px;
+  height: 480px;
+  font-size: 64px;
+  background-color: black;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  color: white;  
+  z-index:1002;
+  opacity: .9;
+}
+
 #waitamoment {
   position: absolute;
   width: 800px;

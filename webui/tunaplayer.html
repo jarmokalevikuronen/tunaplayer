@@ -1409,7 +1409,9 @@ function connectToDaemon() {
 
   tunaPlayer.onDatabaseChanged = reloadInitialData;
 
-  tunaPlayer.open(document.URL);
+  if (!tunaPlayer.open(document.URL)) {
+      $("#notsupported").removeClass("hidden");
+  }
 
   compileTemplates();
 }
@@ -1518,6 +1520,10 @@ function playerUpdateVolumeLevel(volume) {
 
     <div id=connectionlost class="hidden" onclick=";"><br>
      <p><center>connection closed</center></p>
+    </div>
+
+    <div id=notsupported class="hidden" onclick=";"><br>
+     <p><center>Your browser is not supported</center></p>
     </div>
 
   </body>

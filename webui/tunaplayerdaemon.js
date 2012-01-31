@@ -49,7 +49,7 @@ var tunaPlayer = {
 
   open: function(url) {
     if (this.socket != null) {
-      return;
+      return true;
     }
     var protocol;
     var u = url;
@@ -76,6 +76,9 @@ var tunaPlayer = {
         console.log("Unable to create MozWebSocket -> bailing out..");
       }
     }
+ 
+    if (!this.socket)
+      return false;
 
     this.openTimeoutTimer = setTimeout(function() { 
       tunaPlayer.openTimeoutTimer = null;
@@ -191,6 +194,8 @@ var tunaPlayer = {
         tunaPlayer.onClosed();
       }
     };
+
+    return true;
   },
   close: function() {
     if (this.socket != null) {
