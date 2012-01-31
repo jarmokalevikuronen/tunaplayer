@@ -5,7 +5,7 @@
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG += warn_on
-INCLUDEPATH += ./playlist ./feed ./webserver ./webserver/libwebsocket ./albumart/util ./albumart/fetch ./basictypes ./search ./alsa
+INCLUDEPATH += ./playlist ./feed ./webserver ./webserver/libwebsocket ./albumart/util ./albumart/fetch ./basictypes ./search ./alsa ./db
 
 # TAGLIB
 LIBS += -L/usr/lib/ -ltag
@@ -24,7 +24,9 @@ SOURCES += player.cpp \
     feed/tpfeedmgr.cpp \
     feed/tpfeed.cpp \
     feed/tpfeeddownloader.cpp \
-    tpassociative.cpp \
+    db/tpassociativedbitem.cpp \
+    db/tpassociativedb.cpp \
+    db/tpassociativeobject.cpp \
     tpmediafilemetaextractor.cpp \
     tpsettings.cpp \
     tppathutils.cpp \
@@ -82,7 +84,10 @@ HEADERS += player.h \
     feed/tpfeedmgr.h \
     feed/tpfeed.h \
     feed/tpfeeddownloader.h \
-    tpassociative.h \
+    db/tpassociative.h \
+    db/tpassociativedbitem.h \
+    db/tpassociativedb.h \
+    db/tpassociativeobject.h \
     tpassociativemeta.h \
     tpmediafilemetaextractor.h \
     tpsettings.h \
