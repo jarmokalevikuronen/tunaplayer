@@ -46,6 +46,8 @@ static const QString objectAttrPlayCount("plcnt");
 static const QString objectAttrPlayLength("pllen");
 static const QString objectAttrShortPlays("shortplays");
 static const QString objectAttrDeleted("deleted");
+static const QString objectAttrAge("age");
+
 //
 // TRACK SPECIFIC META INFORMATION KEYS
 //

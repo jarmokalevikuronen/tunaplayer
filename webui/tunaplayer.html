@@ -1260,6 +1260,9 @@ function selectArtistShortcut(object) {
 
 function tunaDaemonConnectionEstablished() {
   /* TODO: Do something here, altough the daemon is at this time the active party */
+
+  tunaPlayer.getMostPlayedTracks(10, function(json) {console.log("POPULARTRACKS: " + JSON.stringify(json)); });
+  tunaPlayer.getMostPlayedAlbums(10, function(json) {console.log("POPULARALBUMS: " + JSON.stringify(json)); });
 }
 
 function tunaDaemonConnectionClosed() {
@@ -1474,7 +1477,7 @@ function playerUpdateVolumeLevel(volume) {
       </div>
 
       <div id=artists_launcher class="tile_2 tile_closed"  onclick="openView('root', 'artists_container');">
-        <div class="tile_closed_inner"><center>music</center></div>
+        <div class="tile_closed_inner"><center>collection</center></div>
       </div>
 
       <div id=player_launcher class="tile_3 tile_closed"  onclick="openView('root', 'player_container');">

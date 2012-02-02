@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpassociativemeta.h"
 #include "tppathutils.h"
 #include "tplog.h"
+#include "tputils.h"
 
 #include "tpassociativedbitem.h"
 #include "tpassociativedb.h"
@@ -85,6 +86,27 @@ const QString TPAssociativeDBItem::stringValue(const QString key, const QString 
 
 const QVariant TPAssociativeDBItem::value(const QString key) const
 {
+    //
+    // Special attribute handling here - basically
+    // aggregated value calculated from
+    //
+    if (key == objectAttrAge)
+    {
+        int age = -1;
+        int created = intValue(objectAttrCreated, -1);
+        if (created > 0)
+        {
+            age = TPUtils::currentEpoch() - created;
+
+            // Deal with clock skews..
+            if (age < 0)
+                age = 0;
+        }
+
+        return QVariant(age);
+    }
+
+
     TPMapModel::const_iterator it = find(key);
     return it == end() ? QVariant() : it.value();
 }

@@ -104,3 +104,20 @@ bool TPAssociativeObject::save(int timeoutMs)
 }
 
 
+QMap<QString, QVariant> TPAssociativeObject::toMap(QStringList *filteredKeys)
+{
+    if (!item)
+        return QVariantMap();
+
+    QVariantMap result = *item;
+    result.insert(objectAttrAge, getInt(objectAttrAge, -1));
+
+    if (filteredKeys)
+    {
+        QVariantMap result = *item;
+        for (int i=0;i<filteredKeys->count();++i)
+            result.remove(filteredKeys->at(i));
+    }
+
+    return result;
+}

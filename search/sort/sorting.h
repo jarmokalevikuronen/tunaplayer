@@ -22,11 +22,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <QString>
 #include "tpassociative.h"
+#include "tplog.h"
 
 // FORWARD DECLARATIONS
 class TPSortableAssociativeObject;
 
-
+//! @class TPSortInterface
+//! @brief Abstract class defining interface used to
+//! perform comparison operations to associative objects.
 class TPSortInterface
 {
 public:
@@ -185,7 +188,6 @@ protected:
 
     TPSortImplementationNumBase(const QString _key) : TPSortInterface(_key)
     {
-
     }
 
     inline int getNum(const TPSortableAssociativeObject &object) const
@@ -193,10 +195,14 @@ protected:
         int value;
 
         if (object.hasCachedIntFor(this))
+        {
             value = object.getCachedInt();
+//            DEBUG() << "CACHED INT: " << value;
+        }
         else
         {
             value = object.object().getInt(key);
+//            DEBUG() << "CACHING INT: " << value << " KEY=" << key;
             const_cast<TPSortableAssociativeObject &>(object).setCachedInt(this, value);
         }
 
@@ -279,11 +285,9 @@ private:
         // If equals at this level, do dig a bit deeper to find the real order if any.
         if (int1 == int2)
             return tryNextLessThanFalse(object1, object2);
-
         if (ascending)
             return int1 < int2;
-
-        return int2 > int2;
+        return int1 > int2;
     }
 
     bool equals(const TPSortableAssociativeObject &object1, const TPSortableAssociativeObject &object2) const

@@ -52,21 +52,7 @@ public:
     virtual int getInt(const QString key, int defaultValue = 0) const;
     virtual const QString getString(const QString key, const QString defaultValue="") const;
 
-    virtual QMap<QString, QVariant> toMap(QStringList *filteredKeys = NULL)
-    {
-        if (!item)
-            return QVariantMap();
-
-        if (filteredKeys)
-        {
-            QVariantMap result = *item;
-            for (int i=0;i<(*filteredKeys).count();++i)
-                result.remove((*filteredKeys).at(i));
-            return result;
-        }
-
-        return *item;
-    }
+    virtual QMap<QString, QVariant> toMap(QStringList *filteredKeys = NULL);
 
     void incIntValue(const QString key, int by = 1);
 

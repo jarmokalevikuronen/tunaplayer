@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 static bool lessThan(const TPSortableAssociativeObject *object1, const TPSortableAssociativeObject *object2)
 {
+//    DEBUG() << "LT: " << object1->object().getString("_pk_") << " <> " << object2->object().getString("_pk_");
     return object1->sorter()->lessThan(*object1, *object2);
 }
 
@@ -40,4 +41,17 @@ void TPSearchResults::sort()
 {
     if (sorter)
         qStableSort(results.begin(), results.end(), lessThan);
+}
+
+void TPSearchResults::limitTo(int amount)
+{
+    if (count() > amount)
+    {
+        // We have too much results -> delete remaining
+        for (int idx = amount;idx < count();++idx)
+            delete results.at(idx);
+
+        // and resize the vector to requested amount.
+        results.resize(amount);
+    }
 }

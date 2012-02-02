@@ -380,7 +380,27 @@ var tunaPlayer = {
   },
   getBuiltInPlaylists: function(callback) {
     this.callSP("get_builtin_playlists", callback);
-  }
+  },
+  getRecentAlbums: function(count, callback) {
+    var args = undefined;
+    if (count != undefined) {
+      args = { "result-count": count };
+    } 
+    this.callSP("get_recently_added_albums", callback, args);
+  },
+  getMostPlayedTracks: function(count, callback) {
+    var args = undefined;
+    if (count != undefined) {
+      args = { "result-count": count };
+    }
+    this.callSP("get_most_played_tracks", callback, args);
+  },
+  getMostPlayedAlbums: function(count, callback) {
+    var args = undefined;
+    if (count != undefined) {
+      args = { "result-count": count };
+    }
+    this.callSP("get_most_played_albums", callback, args);
+  },
 };
-
 

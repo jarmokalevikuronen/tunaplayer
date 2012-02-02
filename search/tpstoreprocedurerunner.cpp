@@ -36,7 +36,7 @@ TPSearchResults* TPStoredProcedureRunner::execute(QVariantMap &args, TPStoredPro
     TPStoredProcedureArgs *arguments = sp.createArguments(args);
     if (!arguments)
     {
-        ERROR() << "TSP: Invalid args";
+        ERROR() << "TSP: Invalid arguments.";
         return 0;
     }
 
@@ -46,6 +46,8 @@ TPSearchResults* TPStoredProcedureRunner::execute(QVariantMap &args, TPStoredPro
     int maxResultCount = arguments->argValue(keyResultCount).toInt(&ok);
     if (!ok)
         maxResultCount = INT_MAX;
+
+    DEBUG() << "TSP: result-count: " << maxResultCount;
 
     int count = op.count();
 
@@ -67,10 +69,10 @@ TPSearchResults* TPStoredProcedureRunner::execute(QVariantMap &args, TPStoredPro
             results->add(op.at(i));
     }
 
-    // Finally, apply the requested sorting to results.
+    // Apply the requested sorting to results.
     results->sort();
 
-    // Limit the result set to requested amount.
+    // Finally, after all information in sorted order, limit the result count.
     results->limitTo(maxResultCount);
 
     delete arguments;

@@ -40,7 +40,8 @@ void TPPlaybackStatisticsCollector::currentTrackChanged(TPTrack *track)
 {
     if (currTrack != track)
     {
-        // track changed.
+        // track changed. Update the statistics regarding
+        // the old track whom playback was stopped.
         if (currTrack)
         {
             // From a real track to non real track.
@@ -53,8 +54,7 @@ void TPPlaybackStatisticsCollector::currentTrackChanged(TPTrack *track)
             }
             else if (secondSum > 10)
             {
-                int shortPlays = currTrack->getInt(objectAttrShortPlays);
-                currTrack->setInt(objectAttrShortPlays, shortPlays+1);
+                currTrack->incIntValue(objectAttrShortPlays);
                 currTrack->save(100);
             }
 

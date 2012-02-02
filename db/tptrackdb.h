@@ -65,9 +65,6 @@ public:
 
     void insertItem(TPAssociativeDBItem *dbItem);
 
-signals:
-
-public slots:
 private: // DAta
 
 

@@ -51,18 +51,7 @@ public:
         return results.at(index)->object();
     }
 
-    inline void limitTo(int amount)
-    {
-        if (count() > amount)
-        {
-            // We have too much results -> delete remaining
-            for (int idx = amount;idx < count();++idx)
-                delete results.at(idx);
-
-            // and resize the vector to requested amount.
-            results.resize(amount);
-        }
-    }
+    void limitTo(int amount);
 
 private:
 
