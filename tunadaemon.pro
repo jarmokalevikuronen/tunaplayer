@@ -75,7 +75,8 @@ SOURCES += player.cpp \
     alsa/tpalsavolume.cpp \
     tpsignalhandler.cpp \
     tplog.cpp \
-    playlist/tpautomaticplaylist.cpp
+    playlist/tpautomaticplaylist.cpp \
+    webserver/tpwebsocketipaddressmask.cpp
 
 HEADERS += player.h \
     tpreferencecounted.h \
@@ -143,7 +144,8 @@ HEADERS += player.h \
     tpclargs.h \
     alsa/tpalsavolume.h \
     tpsignalhandler.h \
-    playlist/tpautomaticplaylist.h
+    playlist/tpautomaticplaylist.h \
+    webserver/tpwebsocketipaddressmask.h
 ##### END PLAYER
 
 ##### BEGIN JSON

@@ -39,6 +39,7 @@ public:
     static const char *cliArgLogLevel;
     static const char *cliArgSecret;
     static const char *cliArgMaintainInterval;
+    static const char *cliArgIpFilter;
 
     static TPCLArgs& initialize(QStringList cliArgs);
     static TPCLArgs& instance();

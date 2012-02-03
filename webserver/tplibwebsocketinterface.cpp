@@ -18,6 +18,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include <QFile>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <errno.h>
 #include "tplibwebsocketinterface.h"
 #include "tpsettings.h"
 #include "tpclargs.h"
@@ -60,6 +63,8 @@ struct libwebsocket_protocols TPWebSocketServer::protocols[] =
 TPWebSocketServer::TPWebSocketServer(QObject *parent) :
     QObject(parent)
 {
+    filter = 0;
+
     clientCount = 0;
     gWebSocketServer = this;
 
@@ -80,6 +85,7 @@ TPWebSocketServer::~TPWebSocketServer()
 {
     if (context)
         libwebsocket_context_destroy(context);
+    delete filter;
 }
 
 int TPWebSocketServer::callback_tp_json_protocol(struct libwebsocket_context *context,
@@ -123,19 +129,52 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
 {
     Q_UNUSED(context);
     Q_UNUSED(len);
-    int fd;
-
+    int fd = (int)(long)user;
 
     switch (reason)
     {
-    case LWS_CALLBACK_CLIENT_WRITEABLE:
+        case LWS_CALLBACK_FILTER_NETWORK_CONNECTION:
+        {
+            // If no filter configured -> allow any IP.
+            if (!gWebSocketServer->filter)
+                return 0;
+
+            char ipstr[64];
+            struct sockaddr_storage ss;
+            len = sizeof ss;
+            int status = getpeername(fd, (struct sockaddr *)&ss, &len);
+            if (status < 0)
+            {
+                ERROR() << "HTTP: SERVE: getpeername failed (" << errno << ") for socket #" << fd;
+                return 1; // Will not be accpted.
+            }
+
+            // deal with both IPv4 and IPv6:
+            if (ss.ss_family == AF_INET)
+            {
+                struct sockaddr_in *s = (struct sockaddr_in *)&ss;
+                inet_ntop(AF_INET, &s->sin_addr, ipstr, sizeof ipstr);
+            }
+            else
+            { // AF_INET6
+                struct sockaddr_in6 *s = (struct sockaddr_in6 *)&ss;
+                inet_ntop(AF_INET6, &s->sin6_addr, ipstr, sizeof ipstr);
+            }            
+
+            bool passed = gWebSocketServer->filter->match(QByteArray(ipstr));
+
+            if (passed)
+                DEBUG() << "Accepting connection from: " << ipstr;
+            else
+                DEBUG() << "Denying connection from: " << ipstr;
+
+            return passed ? 0 : 1;
+
+        }
         break;
 
-    case LWS_CALLBACK_SERVER_WRITEABLE:
-        break;
-
-    case LWS_CALLBACK_HTTP:
-    {
+        case LWS_CALLBACK_HTTP:
+        {
         DEBUG() << "HTTP: SERVE: " << (char *)in;
 
         const char *http_request_path = (const char *)in;
@@ -160,7 +199,6 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
 
     case LWS_CALLBACK_ADD_POLL_FD:
     {
-        fd = (int)(long)user;
         TPWebSocketServerNotifier *notifier = new TPWebSocketServerNotifier(fd, wsi, gWebSocketServer);
         notifier->setEnabled(true);
         gWebSocketServer->notifiers.insert(fd, notifier);
@@ -170,7 +208,6 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
 
     case LWS_CALLBACK_DEL_POLL_FD:
     {
-        fd = (int)(long)user;
         TPWebSocketServerNotifier *notifier = gWebSocketServer->notifierForFd(fd);
         if (notifier)
         {

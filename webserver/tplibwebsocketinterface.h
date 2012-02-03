@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define TPLIBWEBSOCKETINTERFACE_H
 
 #include "tplog.h"
+#include "tpwebsocketipaddressmask.h"
 #include <QVector>
 
 extern "C"
@@ -62,6 +63,10 @@ private:
     struct libwebsocket *wsi;
 };
 
+//! @class TPWebSocketServer
+//! @brief HTTP + WebSocket server. Mainly responsible of adapting
+//! the functionality provided by the libwebsocet into Qt mainloop.
+//! Also deals with some ip address filtering and such tasks.
 class TPWebSocketServer : public QObject
 {
     Q_OBJECT
@@ -74,6 +79,12 @@ public:
     void addVirtualFolder(TPWebSocketDataProviderInterface *dataProvider)
     {
         providers.append(dataProvider);
+    }
+
+    inline void addIpFilter(const QString ipFilter)
+    {
+        delete filter; filter = 0;
+        filter = new TPWebSocketIPAddressMask(ipFilter);
     }
 
     TPWebSocketServerNotifier* notifierForFd(int fd)
@@ -131,7 +142,7 @@ private:
 
     const QString filenameToMime(const QString filename);
 
-public:
+private:
 
     static struct libwebsocket_protocols protocols[];
 
@@ -140,7 +151,13 @@ public:
     struct libwebsocket_context *context;
 
     QMap<int, TPWebSocketServerNotifier *> notifiers;
+
+
 private:
+
+    //! IP Address filtering utility used to check the connected
+    //! peer(s).
+    TPWebSocketIPAddressMask *filter;
 
     //! Amount of connected clients.
     int clientCount;

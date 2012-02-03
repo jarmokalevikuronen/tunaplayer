@@ -29,6 +29,7 @@ const char *TPCLArgs::cliArgMediaPath = "-media";
 const char *TPCLArgs::cliArgLogLevel = "-loglevel";
 const char *TPCLArgs::cliArgSecret = "-secret";
 const char *TPCLArgs::cliArgMaintainInterval = "-maintain";
+const char *TPCLArgs::cliArgIpFilter = "-ipfilter";
 
 static struct usage_item
 {
@@ -43,6 +44,7 @@ static struct usage_item
     {TPCLArgs::cliArgMaintainInterval, "How often, in minutes, the filesystem is scanned to detect changes. (30)"},
     {TPCLArgs::cliArgMediaPath, "Where to search for music content. Multiple paths can be given by separating those with \';\'. ($HOME)."},
     {TPCLArgs::cliArgSecret, "Secret value for http server. (topsecret). Server will serve in http://ip:port/<secret>/tunaplayer.html"},
+    {TPCLArgs::cliArgIpFilter, "IP Mask as regular expression. Used to specify which devices are allowed to connect to this server (127.0.0.1)"},
     {0, 0}
 };
 

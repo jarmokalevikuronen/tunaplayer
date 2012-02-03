@@ -125,6 +125,11 @@ int main(int argc, char *argv[])
     // Initialize more permanent settings.
     TPSettings::initialize(TPPathUtils::getSettingsFilename());
 
+    QString ipFilter;
+    ipFilter = TPCLArgs::instance().arg(TPCLArgs::cliArgIpFilter, QString("")).toString();
+    if (!ipFilter.length())
+        ipFilter = TPSettings::instance().get(settingIpFilter, QString("")).toString();
+
     // Create Web Server and a virtual directory handler/mapper
     TPWebSocketVirtualFolder *virtualFolderAccount =
             new TPWebSocketVirtualFolder(TPPathUtils::getWebServerRootFolder(),
@@ -135,6 +140,7 @@ int main(int argc, char *argv[])
     TPWebSocketServer *server = new TPWebSocketServer();
     server->addVirtualFolder(virtualFolderGlobal);
     server->addVirtualFolder(virtualFolderAccount);
+    server->addIpFilter(ipFilter);
 
     TPWebSocketProtocol *protocol =
             new TPWebSocketProtocol(server);

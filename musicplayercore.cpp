@@ -626,7 +626,10 @@ void TPMusicPlayerCore::protocolRespondNAK(TPWebSocketProtocol *protocol, TPWebS
     protocol->sendResponse(response);
 }
 
-void TPMusicPlayerCore::protocolRespondACK(TPWebSocketProtocol *protocol, TPWebSocketProtocolMessage message, const QVariantMap headerArgs, const QVariantMap args)
+void TPMusicPlayerCore::protocolRespondACK(TPWebSocketProtocol *protocol,
+                                           TPWebSocketProtocolMessage message,
+                                           const QVariantMap headerArgs,
+                                           const QVariantMap args)
 {
     TPWebSocketProtocolMessage response;
 
@@ -730,7 +733,7 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
             {
                 if (addToPlaylist(objectId, position))
                 {
-                    protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+                    protocolRespondACK(protocol, message);
                     protocolReportEvent(protocolEventCurrentPlaylistChanged);
                 }
                 else
@@ -742,7 +745,7 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
         else if (msgId == protocolCommandClearPlaylist)
         {
             clearActivePlaylist();
-            protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+            protocolRespondACK(protocol, message);
         }
         else if (msgId == protocolCommandSavePlaylist)
         {
@@ -751,7 +754,7 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
             if (name.isValid() && !name.isNull())
             {
                 if (saveCurrentPlaylist(name.toString()))
-                    protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+                    protocolRespondACK(protocol, message);
                 else
                     protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
             }
@@ -765,7 +768,7 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
             if (id.isValid() && !id.isNull())
             {
                 if (removePlaylist(id.toString()))
-                    protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+                    protocolRespondACK(protocol, message);
                 else
                     protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
             }
@@ -780,7 +783,7 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
             {
                 if (removeFromPlaylist(id.toString()))
                 {
-                    protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+                    protocolRespondACK(protocol, message);
                     // Notify all connected clients that current playlist has changed.
                     protocolReportEvent(protocolEventCurrentPlaylistChanged);
                 }
@@ -797,7 +800,7 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
             if (id.isValid() && !id.isNull())
             {
                 if (setActivePlaylist(id.toString()))
-                    protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+                    protocolRespondACK(protocol, message);
                 else
                     protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
             }
@@ -809,7 +812,7 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
             TPPlaylist *pl = player->getPlaylist();
             if (pl)
                 pl->shuffle();
-            protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+            protocolRespondACK(protocol, message);
             if (pl)
                 protocolReportEvent(protocolEventCurrentPlaylistChanged);
         }
@@ -819,7 +822,7 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
             if (id.isValid() && !id.isNull())
             {
                 if (seekToTrack(id.toString()))
-                    protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+                    protocolRespondACK(protocol, message);
                 else
                     protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
             }
@@ -833,7 +836,7 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
             if (objectId.isValid() && !objectId.isNull())
             {
                 if (searchAlbumArt(objectId.toString()))
-                    protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+                    protocolRespondACK(protocol, message);
                 else
                     protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
             }
@@ -843,7 +846,7 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
         else if (msgId == protocolCommandSearchAlbumArtCancel)
         {
             cancelSearchAlbumArt();
-            protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+            protocolRespondACK(protocol, message);
         }
         else if (msgId == protocolCommandSearchAlbumArtSelect)
         {
@@ -853,7 +856,7 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
             {
                 if (selectSearchedAlbumArt(objectId.toString()))
                 {
-                    protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+                    protocolRespondACK(protocol, message);
                 }
                 else
                     protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
@@ -868,7 +871,7 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
             if (opCode.isValid() && !opCode.isNull())
             {
                 if (executePlaybackOperation(opCode.toString()))
-                    protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+                    protocolRespondACK(protocol, message);
                 else
                     protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
             }
@@ -879,7 +882,7 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
         else if (msgId == protocolCommandStatus)
         {
             // Firstly ACK
-            protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+            protocolRespondACK(protocol, message);
 
             // Secondly deliver the state events.
             startupProgress(startupProgressPercents, true);
@@ -896,7 +899,7 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
             if (ok)
             {
                 if (protocolReportVolumeLevel())
-                    protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+                    protocolRespondACK(protocol, message);
                 else
                     protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
             }
@@ -906,7 +909,7 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
         else if (msgId == protocolCommandReportVolume)
         {
             if (protocolReportVolumeLevel())
-                protocolRespondACK(protocol, message, QVariantMap(), QVariantMap());
+                protocolRespondACK(protocol, message);
             else
                 protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
         }

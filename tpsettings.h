@@ -29,6 +29,7 @@ static const QString settingPlayTrackCmd("playTrackCmd");
 static const QString settingPlayPlaylistCmd("playPlaylistCmd");
 static const QString settingDisableAutoArtLoader("disableautoartloader");
 static const QString settingWWWPort("port");
+static const QString settingIpFilter("ipfilter");
 
 class TPSettings : public QSettings
 {

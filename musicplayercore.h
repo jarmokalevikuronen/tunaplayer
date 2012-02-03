@@ -144,7 +144,7 @@ private: // PROTOCOL IMPLEMENTATION
     //! @param message message to be responded with NAK
     //! @param error optional error description.
     void protocolRespondNAK(TPWebSocketProtocol *protocol, TPWebSocketProtocolMessage message, const QString error = "");
-    void protocolRespondACK(TPWebSocketProtocol *protocol, TPWebSocketProtocolMessage message, const QVariantMap headerArgs, const QVariantMap args);
+    void protocolRespondACK(TPWebSocketProtocol *protocol, TPWebSocketProtocolMessage message, const QVariantMap headerArgs = QVariantMap(), const QVariantMap args = QVariantMap());
 
     //! @brief Creates a event that will be delivered to all connected peers
     void protocolReportEvent(const QString eventId, QVariantMap args = QVariantMap());
