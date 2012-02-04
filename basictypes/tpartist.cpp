@@ -181,6 +181,18 @@ const QString TPArtist::getString(const QString key, const QString defaultValue)
     if (key == objectAttrIdentifier)
         return QString(const_cast<TPArtist *>(this)->identifier());
 
+    //
+    // Base object should know the key, unless
+    //
+    /*
+    if (TPAssociativeObject::contains(key))
+        return TPAssociativeObject::getString(key, defaultValue);
+
+    //
+    // it is aggregated value that is calculated only on runtime.
+    //
+    return QString::number(getInt(key));*/
+
     return TPAssociativeObject::getString(key, defaultValue);
 }
 

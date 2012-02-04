@@ -388,19 +388,37 @@ var tunaPlayer = {
     } 
     this.callSP("get_recently_added_albums", callback, args);
   },
-  getMostPlayedTracks: function(count, callback) {
+  getMost: function(sp, count, callback) {
     var args = undefined;
     if (count != undefined) {
       args = { "result-count": count };
     }
-    this.callSP("get_most_played_tracks", callback, args);
+    this.callSP("get_most_" + sp, callback, args);
+  },
+  getMostPlayedTracks: function(count, callback) {
+    this.getMost("played_tracks", count, callback);
   },
   getMostPlayedAlbums: function(count, callback) {
+    this.getMost("played_albums", count, callback);
+  },
+  getMostPlayedArtists: function(count, callback) {
+    this.getMost("played_artists", count, callback);
+  },
+  getRecently: function(sp, count, callback) {
     var args = undefined;
     if (count != undefined) {
       args = { "result-count": count };
     }
-    this.callSP("get_most_played_albums", callback, args);
+    this.callSP("get_recently_" + sp, callback, args);
   },
+  getRecentlyPlayedAlbums: function(count, callback) {
+    this.getRecently("played_albums", count, callback);
+  },
+  getRecentlyPlayedTracks: function(count, callback) {
+    this.getRecently("played_tracks", count, callback);
+  },
+  getRecentlyPlayedArtists: function(count, callback) {
+    this.getRecently("played_artists", count, callback);
+  }
 };
 

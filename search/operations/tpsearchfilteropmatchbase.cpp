@@ -38,7 +38,9 @@ bool TPSearchFilterOpMatchBase::addArg(const QString arg)
 const QString TPSearchFilterOpMatchBase::evalValue(Value &valRef, TPSearchFilterEvalArgs &args)
 {
     if (valRef.scheme == Value::ValueTargetObject)
+    {
         return args.object()->getString(valRef.value);
+    }
     else if (valRef.scheme == Value::ValueTargetParameter)
         return args.args()->argValue(valRef.value);
     else if (valRef.scheme == Value::ValueTargetValue)

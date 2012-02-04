@@ -58,6 +58,9 @@ public:
 
     bool save(int timeoutMs);
 
+    //! @brief Checks whether given key is known
+    bool contains(const QString key) const;
+
 protected:
 
     bool itemOwned;

@@ -433,7 +433,7 @@ function playerUpdatePlaybackAlbum(json) {
   if (!json || json == undefined) {
     img = document.getElementById("player_playing_album_image");
     if (img) {
-      img.setAttribute("src", "");
+      img.removeAttribute("src");
     }
 
     $("#player_playing_track").html("");
@@ -441,14 +441,17 @@ function playerUpdatePlaybackAlbum(json) {
 
     return;
   }
-   
 
   var albumart = json["album.artl"];
   if (!albumart)
     albumart = json["album.arts"];
   img = document.getElementById("player_playing_album_image");
   if (img) {
-    img.setAttribute("src", albumart ? albumart : "");
+    if (albumart && albumart.length > 0) {
+      img.setAttribute("src", albumart);
+    } else {
+      img.removeAttribute("src");
+    }
  }
 
   if (json["id"]) {
@@ -491,7 +494,10 @@ function playerUpdatePlaybackTrack(json) {
   
   var albumart = json["album.artl"];
   if (albumart != undefined && albumart.length > 0) {
+    console.log("SETTING ALBUMART TO: " + albumart);
     $("#player_playing_album_image").attr("src", albumart);
+  } else {
+    $("#player_playing_album_image").removeAttr("src");
   }
   $("#player_playing_album_image").attr("data-album-id", json["album.id"]);
 }
@@ -1263,6 +1269,11 @@ function tunaDaemonConnectionEstablished() {
 
   tunaPlayer.getMostPlayedTracks(10, function(json) {console.log("POPULARTRACKS: " + JSON.stringify(json)); });
   tunaPlayer.getMostPlayedAlbums(10, function(json) {console.log("POPULARALBUMS: " + JSON.stringify(json)); });
+  tunaPlayer.getMostPlayedArtists(10, function(json) {console.log("POPULARARTISTS: " + JSON.stringify(json)); });
+
+  tunaPlayer.getRecentlyPlayedTracks(10, function(json) {console.log("RECENTTRACKS: " + JSON.stringify(json)); });
+  tunaPlayer.getRecentlyPlayedAlbums(10, function(json) {console.log("RECENTALBUMS: " + JSON.stringify(json)); });
+  tunaPlayer.getRecentlyPlayedArtists(10, function(json) {console.log("RECENTARTISTS: " + JSON.stringify(json)); });
 }
 
 function tunaDaemonConnectionClosed() {

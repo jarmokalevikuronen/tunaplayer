@@ -316,6 +316,13 @@ const QString TPAlbum::getString(const QString key, const QString defaultValue) 
             return artist->getString(objectAttrIdentifier);
     }
 
+/*    if (TPAssociativeObject::contains(key))
+        return TPAssociativeObject::getString(key, defaultValue);
+
+    //
+    // Could be numeric aggregated value available through getInt
+    //
+    return QString::number(getInt(key));*/
     return TPAssociativeObject::getString(key, defaultValue);
 }
 

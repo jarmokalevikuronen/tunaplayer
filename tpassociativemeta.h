@@ -41,6 +41,7 @@ static const QString objectAttrName("name");
 static const QString objectAttrCreated("crtt");
 static const QString objectAttrUpdated("updt");
 static const QString objectAttrLastPlayed("lastplt");
+static const QString objectAttrLastPlayedAgo("lastpltago");
 static const QString objectAttrLen("len");
 static const QString objectAttrPlayCount("plcnt");
 static const QString objectAttrPlayLength("pllen");

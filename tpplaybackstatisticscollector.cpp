@@ -50,14 +50,14 @@ void TPPlaybackStatisticsCollector::currentTrackChanged(TPTrack *track)
                 // Inc playcount and mark last played timestamp.
                 currTrack->incPlayCount();
                 currTrack->setInt(objectAttrLastPlayed, TPUtils::currentEpoch());
-                currTrack->save(100);
             }
             else if (secondSum > 10)
             {
                 currTrack->incIntValue(objectAttrShortPlays);
-                currTrack->save(100);
             }
 
+            currTrack->incIntValue(objectAttrPlayLength, secondSum);
+            currTrack->save(100);
             currTrack->dec();
             currTrack = 0;
         }
@@ -79,8 +79,9 @@ void TPPlaybackStatisticsCollector::playbackPositionChanged(TPTrack *track, int 
     if (!track || track != currTrack)
         return;
 
-    if (seconds == (previousSecondValue+1) || seconds == (previousSecondValue+2))
-        secondSum += (seconds - previousSecondValue);
+    int diff = seconds - previousSecondValue;
+    if (diff >= 1 && diff <= 3)
+        secondSum += diff;
     else
         previousSecondValue = seconds;
 }

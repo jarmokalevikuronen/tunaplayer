@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpassociativemeta.h"
 #include "tppathutils.h"
 #include "tplog.h"
-
+#include "tputils.h"
 
 TPAssociativeObject::TPAssociativeObject(const QString primaryKey)
 {
@@ -68,8 +68,44 @@ const QVariant TPAssociativeObject::get(const QString key) const
 
 int TPAssociativeObject::getInt(const QString key, int defaultValue) const
 {
+    //
+    // Special attribute handling here - basically
+    // aggregated value calculated from current time are placed here.
+    //
+    if (key == objectAttrAge)
+    {
+        int age = -1;
+        int created = getInt(objectAttrCreated, -1);
+        if (created > 0)
+        {
+            age = TPUtils::currentEpoch() - created;
+
+            // Deal with clock skews..
+            if (age < 0)
+                age = 0;
+        }
+
+        return age;
+    }
+    else if (key == objectAttrLastPlayedAgo)
+    {
+        int ago = INT_MAX;
+        int lastplt = getInt(objectAttrLastPlayed, -1);
+        if (lastplt >= 0)
+        {
+            ago = TPUtils::currentEpoch() - lastplt;
+
+            // Deal with clock skew.
+            if (ago < 0)
+                ago = 0;
+        }
+
+        return ago;
+    }
+
     if (item)
         return item->intValue(key, defaultValue);
+
     return defaultValue;
 }
 
@@ -87,12 +123,16 @@ void TPAssociativeObject::setByteArray(const QString key, const QByteArray value
 
 const QString TPAssociativeObject::getString(const QString key, const QString defaultValue) const
 {
-    if (item)
-    {
-        QVariant ret = item->value(key);
-        if (ret.isValid())
-            return ret.toString();
-    }
+    if (contains(key))
+        return item->value(key).toString();
+
+    // Very much hack here. Should be able to query (optional param etc.) whether the
+    // value is actually available as this effectively disallows using of negative
+    // values as integers (not that there would be really be need to use those as such).
+    int integerValue = getInt(key, INT_MIN+1);
+    if (integerValue != INT_MIN+1)
+        return QString::number(integerValue);
+
     return defaultValue;
 }
 
@@ -114,10 +154,14 @@ QMap<QString, QVariant> TPAssociativeObject::toMap(QStringList *filteredKeys)
 
     if (filteredKeys)
     {
-        QVariantMap result = *item;
         for (int i=0;i<filteredKeys->count();++i)
             result.remove(filteredKeys->at(i));
     }
 
     return result;
+}
+
+bool TPAssociativeObject::contains(const QString key) const
+{
+    return item ? item->contains(key) : false;
 }
