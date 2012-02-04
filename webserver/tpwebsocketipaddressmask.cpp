@@ -15,5 +15,13 @@ bool TPWebSocketIPAddressMask::match(const QByteArray &ipAddress)
     if (ipAddress == localhost)
         return true;
 
+    // Not provided -> do not match.
+    if (regularExp.isEmpty())
+        return false;
+    if (regularExp.pattern().length() == 0)
+        return false;
+    if (!regularExp.isValid())
+        return false;
+
     return regularExp.exactMatch(QString(ipAddress));
 }

@@ -28,8 +28,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QtGlobal>
 #include <QStringList>
 #include "tpstoredprocedureargs.h"
-#include "sort/sorting.h"
 #include "operations/tpsearchfilteropfactory.h"
+#include "tpsort.h"
 
 class TPStoredProcedure
 {

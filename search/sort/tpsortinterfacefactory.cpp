@@ -1,5 +1,6 @@
-#include "sorting.h"
-
+#include "tpsortinterfacefactory.h"
+#include "tpsortinterface.h"
+#include "tpsort.h"
 
 static const QString sortOrderAscending("ascending");
 static const QString sortOrderDescending("descending");
@@ -26,4 +27,5 @@ TPSortInterface* TPSortInterfaceFactory::create(const QString _sortOrder, const 
 
  return NULL;
 }
+
 

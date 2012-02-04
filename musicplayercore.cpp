@@ -27,7 +27,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpsearchobjectprovider.h"
 #include "tpsearchfacadedataproviders.h"
 #include "tpsearchresults.h"
-#include "sort/sorting.h"
+#include "tpsort.h"
 #include "operations/tpsearchfilteropfactory.h"
 #include "tpsearchfilterevalargs.h"
 #include "tpstoredprocedure.h"

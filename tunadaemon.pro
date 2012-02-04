@@ -5,7 +5,7 @@
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG += warn_on
-INCLUDEPATH += ./playlist ./feed ./webserver ./webserver/libwebsocket ./albumart/util ./albumart/fetch ./basictypes ./search ./alsa ./db
+INCLUDEPATH += ./search/sort ./playlist ./feed ./webserver ./webserver/libwebsocket ./albumart/util ./albumart/fetch ./basictypes ./search ./alsa ./db
 
 # TAGLIB
 LIBS += -L/usr/lib/ -ltag
@@ -51,7 +51,6 @@ SOURCES += player.cpp \
     search/operations/tpsearchfiltermatchendswith.cpp \
     search/operations/tpsearchfiltermatchcomparenum.cpp \
     search/operations/tpsearchfilteropfactory.cpp \
-    search/sort/sorting.cpp \
     search/tpstoredprocedure.cpp \
     albumart/fetch/tpautomaticalbumartdownloader.cpp \
     search/tpsearchfacadedataproviderinterface.cpp \
@@ -75,8 +74,13 @@ SOURCES += player.cpp \
     alsa/tpalsavolume.cpp \
     tpsignalhandler.cpp \
     tplog.cpp \
-    playlist/tpautomaticplaylist.cpp \
-    webserver/tpwebsocketipaddressmask.cpp
+    webserver/tpwebsocketipaddressmask.cpp \
+    search/sort/tpsortinterfacefactory.cpp \
+    search/sort/tpsortableassociativeobject.cpp \
+    search/sort/tpsortimplementationnumbase.cpp \
+    search/sort/tpsortimplementationstringbase.cpp \
+    search/sort/tpsortimplementationstring.cpp \
+    search/sort/tpsortimplementationnum.cpp
 
 HEADERS += player.h \
     tpreferencecounted.h \
@@ -117,7 +121,6 @@ HEADERS += player.h \
     search/operations/tpsearchfiltermatchendswith.h \
     search/operations/tpsearchfiltermatchcomparenum.h \
     search/operations/tpsearchfilteropfactory.h \
-    search/sort/sorting.h \
     search/tpstoredprocedure.h \
     albumart/fetch/tpautomaticalbumartdownloader.h \
     search/tpsearchfacadedataproviderinterface.h \
@@ -144,8 +147,15 @@ HEADERS += player.h \
     tpclargs.h \
     alsa/tpalsavolume.h \
     tpsignalhandler.h \
-    playlist/tpautomaticplaylist.h \
-    webserver/tpwebsocketipaddressmask.h
+    webserver/tpwebsocketipaddressmask.h \
+    search/sort/tpsortinterface.h \
+    search/sort/tpsortinterfacefactory.h \
+    search/sort/tpsortableassociativeobject.h \
+    search/sort/tpsortimplementationnumbase.h \
+    search/sort/tpsortimplementationstringbase.h \
+    search/sort/tpsortimplementationstring.h \
+    search/sort/tpsortimplementationnum.h \
+    search/sort/tpsort.h
 ##### END PLAYER
 
 ##### BEGIN JSON
