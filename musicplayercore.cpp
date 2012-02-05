@@ -964,8 +964,9 @@ void TPMusicPlayerCore::createMaintainTask()
     connect(&maintainTimer, SIGNAL(timeout()), this, SLOT(startMaintainTask()));
     maintainTimer.setSingleShot(false);
     int maintainInterval = TPCLArgs::instance().arg(TPCLArgs::cliArgMaintainInterval, 30).toInt();
-    maintainInterval = qMax(maintainInterval, 10);
-    maintainInterval = qMin(maintainInterval, 60*24);
+    // Range the maintain interval to 1min...24hrs..
+    maintainInterval = qMax(maintainInterval, 1);
+    maintainInterval = qMin(maintainInterval, 60 * 24);
 
     // Start timer, do minute -> millisecond conversion.
     maintainTimer.start(maintainInterval * 60 * 1000);

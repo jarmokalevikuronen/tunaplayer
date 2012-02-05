@@ -34,6 +34,7 @@ public:
     static bool artistsEqual(QString name1, QString name2);
     static bool album1BeforeAlbum2(const TPAlbum &_1, const TPAlbum &_2);
     static bool artist1BeforeArtist2(const TPArtist &_1, const TPArtist &_2);
+    static const QString normalizeArtistName(const QString &originalName);
 };
 
 #endif // AUDIOUTILS_H

@@ -3,7 +3,7 @@
       "result-count": "6",
       "max-lastpltago": "604800"
     },
-    "schemes":["album://"],
+    "schemes":["artist://"],
     "filterkeys": ["scheme","_pk_"],
     "filters":{
       "and":{

@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tstring.h"
 #include "fileref.h"
 #include "tplog.h"
+#include "tpaudioutils.h"
 
 int TPMediaFileMetaExtractor::trackNumberFromFilename(QFileInfo fi)
 {
@@ -107,7 +108,7 @@ TPAssociativeDBItem *TPMediaFileMetaExtractor::extractTrackInfo(const QString &f
         if (artistName.length())
             DEBUG() << QString("extracted %1 from %2").arg(artistName).arg(filename);
     }
-    item->setValue(trackAttrArtistName, artistName);
+    item->setValue(trackAttrArtistName, TPAudioUtils::normalizeArtistName(artistName));
 
     //
     // Construct ALBUM

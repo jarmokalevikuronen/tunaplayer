@@ -33,6 +33,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "db/tpalbumdb.h"
 #include "albumartutil.h"
 #include "tpmediafilemetaextractor.h"
+#include "tplog.h"
 
 Q_DECLARE_METATYPE(TPFileScanner::State);
 
@@ -46,6 +47,7 @@ TPFileScanner::TPFileScanner(TPDatabases *_db, QStringList folders, QString _dbF
     knownMediaFiles = 0;
     newDbItems = 0;
     maintainDb = 0;
+    maintainTimer = 0;
 
     qRegisterMetaType<TPFileScanner::State>("TPFileScanner::State");
 }
@@ -58,6 +60,7 @@ TPFileScanner::TPFileScanner(const QStringList &_scanFolders, QStringList *exist
     state = MediaScannerUnknown;
     newDbItems = 0;
     maintainDb = _maintainDb;
+    maintainTimer = 0;
 
     qRegisterMetaType<TPFileScanner::State>("TPFileScanner::State");
 }
@@ -66,6 +69,7 @@ TPFileScanner::~TPFileScanner()
 {
     delete knownMediaFiles;
     delete newDbItems;
+    delete maintainTimer;
 }
 
 void TPFileScanner::run()
@@ -125,32 +129,19 @@ void TPFileScanner::toState(State _state)
 
 void TPFileScanner::doMaintainScan()
 {
-    qDebug() << "SCANNER: STATE: Maintain scan start";
+    STATE() << "SCANNER: Maintain thread started";
 
-    QStringList newFiles = mediaFiles();
+    maintainCachedMediaFiles.clear();
+    delete maintainTimer; maintainTimer = 0;
 
-    qDebug() << "SCANNER: STATE: Maintain found " << newFiles.count() << " new media files";
+    // Returns true if/when asynchronous processing started
+    // and mainloop needs to run.
+    if (doMaintainCheck())
+        QThread::exec();
 
-    if (newFiles.count())
-    {
-        newDbItems = new QVector<TPAssociativeDBItem *>();
+    delete maintainTimer; maintainTimer = 0;
 
-        for (int i=0;i<newFiles.count();++i)
-        {
-            TPAssociativeDBItem *item =
-                    TPMediaFileMetaExtractor::extractTrackInfo(newFiles.at(i), maintainDb);
-            if (item)
-            {
-                item->setValue(trackAttrFilename, newFiles.at(i));
-                newDbItems->append(item);
-            }
-        }
-    }
-
-    // This will notify the musicplayer core
-    // that maintain scan is completed and results, if any, are
-    // available.
-    toState(MediaScannerMaintainScanComplete);
+    STATE() << "SCANNER: Maintain thread finished";
 }
 
 void TPFileScanner::doUpgradeScan()
@@ -250,3 +241,87 @@ QStringList TPFileScanner::mediaFiles()
 
     return files;
 }
+
+void TPFileScanner::doMaintainCheckSlot()
+{
+    (void)doMaintainCheck();
+}
+
+bool TPFileScanner::doMaintainCheck()
+{
+    STATE() << "SCANNER: Maintain scan start";
+
+    bool scanComplete = true;
+
+    QStringList currentMediaFiles = mediaFiles();
+
+    DEBUG() << "SCANNER: new files: " << currentMediaFiles.count();
+
+    if (!equalItemsInList(currentMediaFiles, maintainCachedMediaFiles))
+    {
+        // Three minute interval for next check.
+        maintainCachedMediaFiles = currentMediaFiles;
+        scanComplete = false;
+    }
+
+    if (scanComplete)
+    {
+        DEBUG() << "SCANNER: Maintain scan complete. " << currentMediaFiles.count() << " new media files.";
+
+        newDbItems = new QVector<TPAssociativeDBItem *>();
+
+        for (int i=0;i<currentMediaFiles.count();++i)
+        {
+            TPAssociativeDBItem *item =
+                    TPMediaFileMetaExtractor::extractTrackInfo(currentMediaFiles.at(i), maintainDb);
+            if (item)
+            {
+                item->setValue(trackAttrFilename, currentMediaFiles.at(i));
+                newDbItems->append(item);
+            }
+        }
+
+        // This will notify the musicplayer core
+        // that maintain scan is completed and results, if any, are
+        // available.
+        maintainCachedMediaFiles.clear();
+        toState(MediaScannerMaintainScanComplete);
+        QThread::exit(0);
+    }
+    else
+    {
+        DEBUG() << "SCANNER: maintain recheck scheduled for 3 minutes..";
+
+        if (maintainTimer)
+        {
+            disconnect(maintainTimer, SIGNAL(timeout()), this, SLOT(doMaintainCheckSlot()));
+            delete maintainTimer; maintainTimer = 0;
+        }
+        maintainTimer = new QTimer;
+        connect(maintainTimer, SIGNAL(timeout()), this, SLOT(doMaintainCheckSlot()));
+
+        maintainTimer->setSingleShot(true);
+        maintainTimer->start(1000 *  60 * 3);
+    }
+
+    return scanComplete ? false : true;
+}
+
+bool TPFileScanner::equalItemsInList(QStringList &list1, QStringList &list2)
+{
+    if (list1.count() != list2.count())
+        return false;
+
+    // can not use direct list comparison as the
+    // order of items in a list might be different.
+    // It is not possible to have same item twice in a list as every
+    // item represents a unique file in file system.
+    // -> this kind of easy check is enough.
+    for (int i=0;i<list1.count();++i)
+    {
+        if (!list2.contains(list1.at(i)))
+            return false;
+    }
+    return true;
+}
+

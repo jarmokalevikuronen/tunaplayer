@@ -1324,7 +1324,7 @@ function processStartupProgress(percents, loadtype) {
 
 function reloadInitialData() {
   console.log("reload_initial_data -> DB Changed?");
-  startup_progress(100, "shadow");
+  processStartupProgress(100, "shadow");
 }
 
 function updateChangedAlbumToLocalCache(json) {

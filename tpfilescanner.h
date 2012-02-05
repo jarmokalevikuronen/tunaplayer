@@ -23,7 +23,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QString>
 #include <QDirIterator>
 #include <QThread>
+#include <QTimer>
 #include <QStringList>
+#include <QEventLoop>
 #include "db/tpdatabases.h"
 #include "tpassociative.h"
 
@@ -84,6 +86,14 @@ private:
 
     QStringList mediaFiles();
 
+    bool equalItemsInList(QStringList &list1, QStringList &list2);
+
+    bool doMaintainCheck();
+
+private slots:
+
+    void doMaintainCheckSlot();
+
 signals:
 
     void mediaScannerProgress(int currentEntry, int totalEntries);
@@ -124,6 +134,16 @@ private:
     //! created during maintain scan. Not really used
     //! within this maintain thread.
     TPAssociativeDB *maintainDb;
+
+    //! In case maintain scan recognizes changes in content,
+    //! It will launch a timer for rescan until two subsequent
+    //! scans produce equal result set. This is to overcome issues
+    //! where meta extractor gets false results when trying extract
+    //! information from albums/files when they are being copied.
+    QTimer *maintainTimer;
+
+    //! Cached media files used to track changes.
+    QStringList maintainCachedMediaFiles;
 };
 
 #endif // FILESCANNER_H

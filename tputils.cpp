@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "tputils.h"
+#include <stdio.h>
 #include <QDateTime>
 
 bool TPUtils::webAddress(const QString uri)
@@ -38,11 +39,22 @@ int TPUtils::age(int born)
 
 QString TPUtils::ensureFilenameCharacters(const QString source)
 {
-    QString destination = source;
+    QString destination;
 
-    static const QString replacedCharacters(" /\\?\%*:|\"<>.");
-    for (int i=0;i<replacedCharacters.count();++i)
-        destination.replace(replacedCharacters.at(i), "_");
+    // NOTE = is used as escape character.
+    static const QString unescapedCharacters("abcdefghijklmnopqrstuvwxyz0123456789-+_");
+    for (int i=0;i<source.length();i++)
+    {
+        QChar ch = source.at(i);
+        if (unescapedCharacters.contains(ch.toLower()))
+            destination.append(ch);
+        else
+        {
+            char escaped[16];
+            sprintf(escaped, "=%04u", ch.unicode());
+            destination.append(escaped);
+        }
+    }
 
     return destination;
 }

@@ -75,3 +75,18 @@ bool TPAudioUtils::artistsEqual(QString name1, QString name2)
 {
     return name1.toLower().compare(name2.toLower()) == 0;
 }
+
+const QString TPAudioUtils::normalizeArtistName(const QString &originalName)
+{
+    static const QString a("a ");
+    static const QString the("the ");
+
+    QString lcName = originalName.toLower();
+
+    if (lcName.startsWith(a) && originalName.length() > a.length())
+        return originalName.mid(a.length()).trimmed();
+    else if (lcName.startsWith(the) && originalName.length() > the.length())
+        return originalName.mid(the.length()).trimmed();
+
+    return originalName.trimmed();
+}

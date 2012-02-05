@@ -86,7 +86,7 @@ public:
         if (f.exists())
             return true;
 
-        // NOTE: Playlists do store their album arts with fully qualified paths.
+        // NOTE: Playlists do store their album arts with fully qualified path names.
         return QFile::exists(artFile);
     }
 
@@ -132,11 +132,11 @@ public:
         QString fn;
         fn.reserve(256);
         if (artist)
-            fn += artist->getName().toUtf8().toLower();
+            fn += artist->getName().toLower();
         else
-            fn += "noartist";
+            fn += "_noartist_";
 
-        fn += "_" + getString(objectAttrName).toUtf8().toLower();
+        fn += "_" + getString(objectAttrName).toLower();
         fn = TPUtils::ensureFilenameCharacters(fn);
         if (type == ESmallArt)
             fn += ".SMALL.";
