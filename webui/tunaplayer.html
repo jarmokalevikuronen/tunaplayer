@@ -450,7 +450,7 @@ function playerUpdatePlaybackAlbum(json) {
     if (albumart && albumart.length > 0) {
       img.setAttribute("src", albumart);
     } else {
-      img.setAttribute("src", "");
+      img.setAttribute("src", null);
     }
  }
 
@@ -497,7 +497,7 @@ function playerUpdatePlaybackTrack(json) {
     console.log("SETTING ALBUMART TO: " + albumart);
     $("#player_playing_album_image").attr("src", albumart);
   } else {
-    $("#player_playing_album_image").attr("src", "");
+    $("#player_playing_album_image").attr("src", null);
   }
   $("#player_playing_album_image").attr("data-album-id", json["album.id"]);
 }
