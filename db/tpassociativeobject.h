@@ -52,7 +52,7 @@ public:
     virtual int getInt(const QString key, int defaultValue = 0) const;
     virtual const QString getString(const QString key, const QString defaultValue="") const;
 
-    virtual void clearCachedValues() {;}
+    virtual void clearCachedValues();
 
     virtual QMap<QString, QVariant> toMap(QStringList *filteredKeys = NULL);
 
@@ -64,6 +64,11 @@ public:
     bool contains(const QString key) const;
 
 protected:
+
+    //! Mutable as cache updated in const method
+    mutable int cachedAge;
+    //! Mutable as cache updated in const method.
+    mutable int cachedLastPlayedAgo;
 
     bool itemOwned;
     TPAssociativeDBItem *item;

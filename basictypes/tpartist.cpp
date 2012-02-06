@@ -196,6 +196,7 @@ const QString TPArtist::getString(const QString key, const QString defaultValue)
 
 void TPArtist::clearCachedValues()
 {
+    TPAssociativeObject::clearCachedValues();
     cache.clear();
 }
 

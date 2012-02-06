@@ -31,6 +31,7 @@ TPAssociativeObject::TPAssociativeObject(const QString primaryKey)
 {
     item = new TPAssociativeDBItem(primaryKey);
     itemOwned = true;
+    TPAssociativeObject::clearCachedValues();
 }
 
 
@@ -38,12 +39,14 @@ TPAssociativeObject::TPAssociativeObject(TPAssociativeDBItem *_item)
 {
     itemOwned = false;
     item = _item;
+    TPAssociativeObject::clearCachedValues();
 }
 
 TPAssociativeObject::~TPAssociativeObject()
 {
     if (itemOwned)
         delete item;
+    item = 0;
 }
 
 void TPAssociativeObject::setInt(const QString key, int value)
@@ -74,33 +77,41 @@ int TPAssociativeObject::getInt(const QString key, int defaultValue) const
     //
     if (key == objectAttrAge)
     {
-        int age = -1;
+        if (cachedAge >= 0 && cachedAge != INT_MAX)
+            return cachedAge;
+
         int created = getInt(objectAttrCreated, -1);
         if (created > 0)
         {
-            age = TPUtils::currentEpoch() - created;
+            cachedAge = TPUtils::currentEpoch() - created;
 
             // Deal with clock skews..
-            if (age < 0)
-                age = 0;
+            if (cachedAge < 0)
+                cachedAge = 0;
         }
+        else
+            cachedAge = INT_MAX;
 
-        return age;
+        return cachedAge;
     }
     else if (key == objectAttrLastPlayedAgo)
     {
-        int ago = INT_MAX;
+        if (cachedLastPlayedAgo >= 0 && cachedLastPlayedAgo != INT_MAX)
+            return cachedLastPlayedAgo;
+
         int lastplt = getInt(objectAttrLastPlayed, -1);
         if (lastplt >= 0)
         {
-            ago = TPUtils::currentEpoch() - lastplt;
+            cachedLastPlayedAgo = TPUtils::currentEpoch() - lastplt;
 
             // Deal with clock skew.
-            if (ago < 0)
-                ago = 0;
+            if (cachedLastPlayedAgo < 0)
+                cachedLastPlayedAgo = 0;
         }
+        else
+            cachedLastPlayedAgo = INT_MAX;
 
-        return ago;
+        return cachedLastPlayedAgo;
     }
 
     if (item)
@@ -164,4 +175,9 @@ QMap<QString, QVariant> TPAssociativeObject::toMap(QStringList *filteredKeys)
 bool TPAssociativeObject::contains(const QString key) const
 {
     return item ? item->contains(key) : false;
+}
+
+void TPAssociativeObject::clearCachedValues()
+{
+    cachedAge = cachedLastPlayedAgo = -1;
 }

@@ -168,12 +168,39 @@ function handleSearchAlbumArtComplete() {
   $("#search_album_arts_status").html("search complete");
 }
 
+function isChrome() {
+  return navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+}
+
+function setImage(json, objectId) {
+  var art = json["album.artl"];
+  if (art == undefined || art == null || art.length < 1) {
+    art = json["album.arts"];
+    if (art == null || art == undefined || art.length < 1) {  
+      art = null;
+    }
+  }
+
+  var o = document.getElementById(objectId);
+  if (o != undefined && o != null) {
+    if (art == null) {
+      if (isChrome()) {
+        /* Chrome can not handle this properly. Sadly so. */
+        o.src = "bogus-image-not-found";
+      } else {
+        o.src = null;
+      }
+    } else { 
+      o.src = art;
+    }
+  }
+}
 
 function openAlbum(object, openedByWindow) {
   var id = object.getAttribute("data-album-id");
   if (id != undefined && id.length > 0) {
     var src = object.getAttribute("src");
-    if (src == undefined || src.length < 1) {
+    if (src == undefined || src == null || src.length < 1 || src === "bogus-image-not-found") {
       searchAlbumArt(object, openedByWindow); 
     } else {  
       tunaPlayer.getAlbum(id, function(json) { 
@@ -442,17 +469,7 @@ function playerUpdatePlaybackAlbum(json) {
     return;
   }
 
-  var albumart = json["album.artl"];
-  if (!albumart)
-    albumart = json["album.arts"];
-  img = document.getElementById("player_playing_album_image");
-  if (img) {
-    if (albumart && albumart.length > 0) {
-      img.setAttribute("src", albumart);
-    } else {
-      img.setAttribute("src", null);
-    }
- }
+  setImage(json, "player_playing_album_image");
 
   if (json["id"]) {
     $("#player_playing_album_image").attr("data-album-id", json["id"]);
@@ -492,13 +509,8 @@ function playerUpdatePlaybackTrack(json) {
     
   $("#player_playing_artist_album").html(albumartist.toLowerCase());
   
-  var albumart = json["album.artl"];
-  if (albumart != undefined && albumart.length > 0) {
-    console.log("SETTING ALBUMART TO: " + albumart);
-    $("#player_playing_album_image").attr("src", albumart);
-  } else {
-    $("#player_playing_album_image").attr("src", null);
-  }
+  setImage(json, player_playing_artist_album);
+
   $("#player_playing_album_image").attr("data-album-id", json["album.id"]);
 }
 
@@ -1360,6 +1372,7 @@ function processAlbumChanged(json) {
   updateChangedAlbumToLocalCache(json);
 
   /* Update also UI directly, in case it is visible at this moment already */
+  
   var art = json["album.artl"] != undefined ? json["album.artl"] : json["album.arts"];
   var id = json["id"];
   if (id.length > 0) {

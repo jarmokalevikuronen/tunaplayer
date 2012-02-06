@@ -372,5 +372,6 @@ int TPAlbum::getInt(const QString key, int defaultValue) const
 
 void TPAlbum::clearCachedValues()
 {
+    TPAssociativeObject::clearCachedValues();
     cache.clear();
 }
