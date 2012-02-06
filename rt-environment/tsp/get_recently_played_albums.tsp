@@ -7,9 +7,9 @@
     "filterkeys": ["scheme","_pk_"],
     "filters":{
       "and":{
-         "!equals" :["object://deleted", "value://1"],
-         ">=" :["object://plcnt", "value://1"], 
-         "<=" :["object://lastpltago", "parameter://max-lastpltago"]
+         "<=" :["object://lastpltago", "parameter://max-lastpltago"],
+         ">=" :["object://plcnt", "value://1"],
+         "!equals" :["object://deleted", "value://1"]
       }
     },
     "sorting":[

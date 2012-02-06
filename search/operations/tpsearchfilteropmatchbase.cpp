@@ -38,9 +38,7 @@ bool TPSearchFilterOpMatchBase::addArg(const QString arg)
 const QString TPSearchFilterOpMatchBase::evalValue(Value &valRef, TPSearchFilterEvalArgs &args)
 {
     if (valRef.scheme == Value::ValueTargetObject)
-    {
         return args.object()->getString(valRef.value);
-    }
     else if (valRef.scheme == Value::ValueTargetParameter)
         return args.args()->argValue(valRef.value);
     else if (valRef.scheme == Value::ValueTargetValue)
@@ -49,19 +47,20 @@ const QString TPSearchFilterOpMatchBase::evalValue(Value &valRef, TPSearchFilter
     return QString();
 }
 
-qint64 TPSearchFilterOpMatchBase::evalValueNum(Value &valRef, TPSearchFilterEvalArgs &args)
-{
-    // TODO: cache the value is scheme is value:// or parameter://
-    return evalValue(valRef, args).toLongLong();
+int TPSearchFilterOpMatchBase::evalValueNum(Value &valRef, TPSearchFilterEvalArgs &args)
+{    
+    if (valRef.cachedNumberAvailable)
+        return valRef.cachedNumber;
+
+    return evalValue(valRef, args).toInt();
 }
 
-
-const QString TPSearchFilterOpMatchBase::evalValue1(TPSearchFilterEvalArgs &args)
+/*const QString TPSearchFilterOpMatchBase::evalValue1(TPSearchFilterEvalArgs &args)
 {
     return evalValue(value1, args);
 }
 
-qint64 TPSearchFilterOpMatchBase::evalValue1Num(TPSearchFilterEvalArgs &args)
+int TPSearchFilterOpMatchBase::evalValue1Num(TPSearchFilterEvalArgs &args)
 {
     return evalValueNum(value1, args);
 }
@@ -71,9 +70,17 @@ const QString TPSearchFilterOpMatchBase::evalValue2(TPSearchFilterEvalArgs &args
     return evalValue(value2, args);
 }
 
-qint64 TPSearchFilterOpMatchBase::evalValue2Num(TPSearchFilterEvalArgs &args)
+int TPSearchFilterOpMatchBase::evalValue2Num(TPSearchFilterEvalArgs &args)
 {
     return evalValueNum(value2, args);
+}
+*/
+void TPSearchFilterOpMatchBase::preProcess(TPStoredProcedureArgs &args)
+{
+    if (value1.isSetUp())
+        value1.preProcess(args);
+    if (value2.isSetUp())
+        value2.preProcess(args);
 }
 
 bool TPSearchFilterOpMatchBase::Value::parse(const QString line)
@@ -96,3 +103,24 @@ bool TPSearchFilterOpMatchBase::Value::parse(const QString line)
 
     return scheme != ValueTargetInvalid;
 }
+
+void TPSearchFilterOpMatchBase::Value::preProcess(TPStoredProcedureArgs &args)
+{
+    cachedNumberAvailable = cachedStringAvailable = false;
+
+    if (scheme == ValueTargetParameter)
+    {
+        cachedString = args.argValue(value);
+        cachedStringAvailable = cachedString.length() > 0;
+
+        cachedNumber = cachedString.toInt(&cachedNumberAvailable);
+    }
+    else if (scheme == ValueTargetValue)
+    {
+        cachedString = value;
+        cachedStringAvailable = cachedString.length() > 0;
+
+        cachedNumber = cachedString.toInt(&cachedNumberAvailable);
+    }
+}
+

@@ -37,6 +37,7 @@ TPAlbum::TPAlbum(TPArtist *_artist, QString _name, TPAssociativeDBItem *dbItem) 
 
     addIdSource(artist->getName() + "\n");
     addIdSource(_name);
+    clearCachedValues();
 }
 
 TPAlbum::TPAlbum(QString _name, TPAssociativeDBItem *dbItem) : TPAssociativeObject(dbItem), TPIdBase(schemeAlbum)
@@ -333,29 +334,43 @@ int TPAlbum::getInt(const QString key, int defaultValue) const
     }
     else if (key == objectAttrPlayCount)
     {
-        int count = 0;
+        if (cache.playCount >= 0)
+            return cache.playCount;
+
+        cache.playCount = 0;
         for (int i=0;i<tracks.count();++i)
-            count += tracks.at(i)->getInt(objectAttrPlayCount);
-        return count;
+            cache.playCount += tracks.at(i)->getInt(objectAttrPlayCount);
+        return cache.playCount;
     }
     else if (key == objectAttrPlayLength)
     {
-        int length = 0;
+        if (cache.playLen >= 0)
+            return cache.playLen;
+
+        cache.playLen = 0;
         for (int i=0;i<tracks.count();++i)
-            length += tracks.at(i)->getInt(objectAttrPlayLength);
-        return length;
+            cache.playLen += tracks.at(i)->getInt(objectAttrPlayLength);
+        return cache.playLen;
     }
     else if (key == objectAttrLastPlayed)
     {
-        int ts = 0;
+        if (cache.lastPlayed >= 0)
+            return cache.lastPlayed;
+
+        cache.lastPlayed = 0;
         for (int i=0;i<tracks.count();++i)
         {
             int tmpTs = tracks.at(i)->getInt(objectAttrLastPlayed);
-            ts = qMax(ts, tmpTs);
+            cache.lastPlayed = qMax(cache.lastPlayed, tmpTs);
         }
-        return ts;
+        return cache.lastPlayed;
     }
 
     // Fallback to non-aggregated values...
     return TPAssociativeObject::getInt(key, defaultValue);
+}
+
+void TPAlbum::clearCachedValues()
+{
+    cache.clear();
 }

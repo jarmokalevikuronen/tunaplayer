@@ -155,7 +155,8 @@ HEADERS += player.h \
     search/sort/tpsortimplementationstringbase.h \
     search/sort/tpsortimplementationstring.h \
     search/sort/tpsortimplementationnum.h \
-    search/sort/tpsort.h
+    search/sort/tpsort.h \
+    basictypes/tpcachedvalues.h
 ##### END PLAYER
 
 ##### BEGIN JSON

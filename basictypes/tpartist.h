@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpassociative.h"
 #include "tpassociativemeta.h"
 #include "tpidbase.h"
+#include "tpcachedvalues.h"
 
 class TPAlbum;
 
@@ -58,6 +59,7 @@ public: // From TPAssociativeObject
 
     QMap<QString, QVariant> toMap(QStringList *filteredKeys);
     const QString getString(const QString key, const QString defaultValue = "") const;
+    void clearCachedValues();
 
 public: // From TPReferenceCounted
 
@@ -68,8 +70,13 @@ public: // From TPReferenceCounted
 
 private:
 
+    //! Cached values for faster access during sorting/searching.
+    mutable TPCachedValues cache;
+
+    //! Copy constructor -> private
     Q_DISABLE_COPY(TPArtist);
 
+    //! List of albums this artist has composed.
     QList<TPAlbum *> albums;
 };
 

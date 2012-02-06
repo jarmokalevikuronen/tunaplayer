@@ -55,9 +55,13 @@ TPSearchResults* TPStoredProcedureRunner::execute(QVariantMap &args, TPStoredPro
 
     if (sp.getFilter())
     {
+        sp.getFilter()->preProcess(*arguments);
+
         for (int i=0;i<count;++i)
         {
             TPAssociativeObject *object = op.at(i);
+            object->clearCachedValues();
+
             TPSearchFilterEvalArgs args(op.at(i), arguments);
             if (sp.getFilter()->evaluate(args))
                 results->add(object);

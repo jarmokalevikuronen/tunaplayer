@@ -24,20 +24,35 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QString>
 
 
+//! @class TPSearchFilterOpMatchBase
+//! @brief Base class for search filter match operation
 class TPSearchFilterOpMatchBase : public TPSearchFilterOpInterface
 {
 protected:
 
     TPSearchFilterOpMatchBase();
 
-    const QString evalValue1(TPSearchFilterEvalArgs &args);
-    qint64 evalValue1Num(TPSearchFilterEvalArgs &args);
-    const QString evalValue2(TPSearchFilterEvalArgs &args);
-    qint64 evalValue2Num(TPSearchFilterEvalArgs &args);
+    inline const QString evalValue1(TPSearchFilterEvalArgs &args)
+    {
+        return evalValue(value1, args);
+    }
+
+    inline int evalValue1Num(TPSearchFilterEvalArgs &args)
+    {
+        return evalValueNum(value1, args);
+    }
+
+    inline const QString evalValue2(TPSearchFilterEvalArgs &args)
+    {
+        return evalValue(value2, args);
+    }
+
+    inline int evalValue2Num(TPSearchFilterEvalArgs &args)
+    {
+        return evalValueNum(value2, args);
+    }
 
 private:
-
-
 
     class Value
     {
@@ -54,14 +69,16 @@ private:
             ValueTargetObject
         };
 
-    public:
-
         Value()
         {
             scheme = ValueTargetInvalid;
+            cachedStringAvailable = cachedNumberAvailable = false;
         }
 
         bool parse(const QString source);
+
+        void preProcess(TPStoredProcedureArgs &args);
+
         inline bool isSetUp() const
         {
             return scheme != ValueTargetInvalid;
@@ -69,13 +86,19 @@ private:
 
         ValueTarget scheme;
         QString value;
+
+        QString cachedString;
+        bool cachedStringAvailable;
+
+        int cachedNumber;
+        bool cachedNumberAvailable;
     };
 
     Value value1;
     Value value2;
 
     const QString evalValue(Value &valRef, TPSearchFilterEvalArgs &args);
-    qint64 evalValueNum(Value &valRef, TPSearchFilterEvalArgs &args);
+    int evalValueNum(Value &valRef, TPSearchFilterEvalArgs &args);
 
 private:
 
@@ -89,6 +112,8 @@ private:
     {
         return false;
     }
+
+    void preProcess(TPStoredProcedureArgs &args);
 
 public:
 

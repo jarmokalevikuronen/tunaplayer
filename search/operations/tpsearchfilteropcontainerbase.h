@@ -44,6 +44,8 @@ public:
         return false;
     }
 
+    void preProcess(TPStoredProcedureArgs &args);
+
 protected:
 
     QVector< TPSearchFilterOpInterface * > childs;

@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpidbase.h"
 #include "tppathutils.h"
 #include "tputils.h"
+#include "tpcachedvalues.h"
 
 #define ALBUM_ART_TYPE  "PNG"
 
@@ -160,9 +161,11 @@ public: // From TPAssociativeObject (specialization)
     QMap<QString, QVariant> toMap(QStringList *filteredKeys = 0);
     int getInt(const QString key, int defaultValue = 0) const;
     const QString getString(const QString key, const QString defaultValue="") const;
+    void clearCachedValues();
 
 private:
 
+    mutable TPCachedValues cache;
     //! Artist performing this album
     TPArtist *artist;
     mutable int year;

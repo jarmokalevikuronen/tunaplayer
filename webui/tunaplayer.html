@@ -450,7 +450,7 @@ function playerUpdatePlaybackAlbum(json) {
     if (albumart && albumart.length > 0) {
       img.setAttribute("src", albumart);
     } else {
-      img.removeAttribute("src");
+      img.setAttribute("src", "");
     }
  }
 
@@ -497,7 +497,7 @@ function playerUpdatePlaybackTrack(json) {
     console.log("SETTING ALBUMART TO: " + albumart);
     $("#player_playing_album_image").attr("src", albumart);
   } else {
-    $("#player_playing_album_image").removeAttr("src");
+    $("#player_playing_album_image").attr("src", "");
   }
   $("#player_playing_album_image").attr("data-album-id", json["album.id"]);
 }
@@ -1362,13 +1362,17 @@ function processAlbumChanged(json) {
   /* Update also UI directly, in case it is visible at this moment already */
   var art = json["album.artl"] != undefined ? json["album.artl"] : json["album.arts"];
   var id = json["id"];
-  if (art != undefined && art.length > 0 && id != undefined && id.length > 0) {
+  if (id.length > 0) {
     console.log("Updating UI for album " + id + " to have image " + art);
     /* Update the single album page to contain the "up-to-date" albumart */
     $("img").each(function(index, object) {
       myid = $(object).attr("data-album-id");
       if (myid == id) {
-        $(object).attr("src", art);
+        if (art.length > 0) {
+          $(object).attr("src", art);
+        } else {
+          $(object).removeAttr("src");
+        }
       }
     });
   }
@@ -1417,6 +1421,7 @@ function connectToDaemon() {
 
   tunaPlayer.onStartupProgress = processStartupProgress;
 
+  /* This event is received when information regarding an album changes. Album does not need to playing at that time. */
   tunaPlayer.onAlbumChanged = processAlbumChanged;
 
   tunaPlayer.onVolumeChanged = processVolumeChanged;

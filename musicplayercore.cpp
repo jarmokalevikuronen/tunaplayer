@@ -982,12 +982,16 @@ void TPMusicPlayerCore::maintainTaskState(TPFileScanner::State state)
 
     if (results)
     {
+        bool dbChanged = results->count() > 0;
+
         STATE() << "CORE: Maintain complete: " << results->count();
         for (int i=0;i<results->count();++i)
             db->getTrackDB()->insertItem(results->at(i));
 
         results->clear();
-        protocolReportEvent(protocolEventDatabaseChanged);
+
+        if (dbChanged)
+            protocolReportEvent(protocolEventDatabaseChanged);
 
         bool autoartDisabled = TPSettings::instance().get(settingDisableAutoArtLoader, false).toBool();
         if (!autoartDisabled && autoArtLoader)
@@ -995,11 +999,9 @@ void TPMusicPlayerCore::maintainTaskState(TPFileScanner::State state)
             DEBUG() << "Triggering automatic album art download";
             autoArtLoader->execute(db->getAlbumDB());
         }
-    }
 
-    // Get rid of the maintain scanner
-    // instance and the results.
-    delete results;
+        delete results;
+    }
 }
 
 void TPMusicPlayerCore::startMaintainTask()

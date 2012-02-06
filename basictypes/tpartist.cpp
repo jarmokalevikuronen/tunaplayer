@@ -32,6 +32,7 @@ TPArtist::TPArtist(QString _name, TPAssociativeDBItem *dbItem) : TPAssociativeOb
     setString(objectAttrName, _name);
     setString(objectAttrScheme, schemeArtist);
     addIdSource(_name);
+    clearCachedValues();
 }
 
 TPArtist::~TPArtist()
@@ -151,27 +152,36 @@ int TPArtist::getInt(const QString key, int defaultValue) const
     }
     else if (key == objectAttrPlayCount)
     {
-        int count = 0;
+        if (cache.playCount >= 0)
+            return cache.playCount;
+
+        cache.playCount = 0;
         for (int i=0;i<albums.count();++i)
-            count += albums.at(i)->getInt(objectAttrPlayCount);
-        return count;
+            cache.playCount += albums.at(i)->getInt(objectAttrPlayCount);
+        return cache.playCount;
     }
     else if (key == objectAttrPlayLength)
     {
-        int count = 0;
+        if (cache.playLen >= 0)
+            return cache.playLen;
+
+        cache.playLen = 0;
         for (int i=0;i<albums.count();++i)
-            count += albums.at(i)->getInt(objectAttrPlayLength);
-        return count;
+            cache.playLen += albums.at(i)->getInt(objectAttrPlayLength);
+        return cache.playLen;
     }
     else if (key == objectAttrLastPlayed)
     {
-        int ts = 0;
+        if (cache.lastPlayed >= 0)
+            return cache.lastPlayed;
+
+        cache.lastPlayed = 0;
         for (int i=0;i<albums.count();++i)
         {
             int tmpTs = albums.at(i)->getInt(objectAttrLastPlayed);
-            ts = qMax(ts, tmpTs);
+            cache.lastPlayed = qMax(cache.lastPlayed, tmpTs);
         }
-        return ts;
+        return cache.lastPlayed;
     }
     return TPAssociativeObject::getInt(key, defaultValue);
 }
@@ -181,19 +191,12 @@ const QString TPArtist::getString(const QString key, const QString defaultValue)
     if (key == objectAttrIdentifier)
         return QString(const_cast<TPArtist *>(this)->identifier());
 
-    //
-    // Base object should know the key, unless
-    //
-    /*
-    if (TPAssociativeObject::contains(key))
-        return TPAssociativeObject::getString(key, defaultValue);
-
-    //
-    // it is aggregated value that is calculated only on runtime.
-    //
-    return QString::number(getInt(key));*/
-
     return TPAssociativeObject::getString(key, defaultValue);
+}
+
+void TPArtist::clearCachedValues()
+{
+    cache.clear();
 }
 
 

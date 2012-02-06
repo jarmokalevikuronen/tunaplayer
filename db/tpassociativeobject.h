@@ -52,6 +52,8 @@ public:
     virtual int getInt(const QString key, int defaultValue = 0) const;
     virtual const QString getString(const QString key, const QString defaultValue="") const;
 
+    virtual void clearCachedValues() {;}
+
     virtual QMap<QString, QVariant> toMap(QStringList *filteredKeys = NULL);
 
     void incIntValue(const QString key, int by = 1);

@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "tpsearchfilteropcontainerbase.h"
+#include "tpstoredprocedureargs.h"
 
 TPSearchFilterOpContainerBase::TPSearchFilterOpContainerBase()
 {
@@ -32,4 +33,10 @@ bool TPSearchFilterOpContainerBase::add(TPSearchFilterOpInterface *op)
 {
     childs.append(op);
     return true; // OK.
+}
+
+void TPSearchFilterOpContainerBase::preProcess(TPStoredProcedureArgs &args)
+{
+    for (int i=0;i<childs.count();i++)
+        childs.at(i)->preProcess(args);
 }

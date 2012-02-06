@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef TPSEARCHFILTEROPINTERFACE_H__
 #define TPSEARCHFILTEROPINTERFACE_H__
 
+class TPStoredProcedureArgs;
 class TPSearchFilterEvalArgs;
 class QString;
 
@@ -35,6 +36,8 @@ public:
     virtual bool addArg(const QString arg) = 0;
 
     virtual bool isContainer() const = 0;
+
+    virtual void preProcess(TPStoredProcedureArgs &args) = 0;
 
     virtual bool evaluate(TPSearchFilterEvalArgs &args) = 0;
 };
