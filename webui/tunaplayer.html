@@ -20,20 +20,50 @@ var templates = {};
 
 /* Amount of tracks visible in playlist view at a time */
 var playlistVisibleItems = 6;
+
 /* Currently visible top index, increased in granularity of playlistVisibleItems */
 var playlistVisibleTopIndex = 0;
 
-
+/**
+View: ArtistSingleAlbum. 
+Description: Index of topmost track.  
+*/
 var currentTrackIndex = 0;
+
+/**
+View: ArtistSingleAlbum
+Description: Amount of visible tracks. Can not really be changed w/o refactoring the whole UI.
+*/
 var visibleTracks = 8;
 
-
-/* Initialize test content */
+/**
+View: ArtistList
+Description: How many artist shortcuts visible at @ time.
+*/
 var artistShortcutVisibleItems = 6;
 
+/**
+Context: Global
+Description: Data model for all the artists.
+*/
 var allArtists   = null;
+
+/**
+Context: Global
+Description: Shadow for allArtists. Will contain updated "all artists" model.
+*/
 var allArtists_shadow = null;
+
+/**
+Context: Global
+Description: Precalculated artist shortcuts ( 'A' -> { .. }, '0' -> { .. } )
+*/
 var artistShortcuts = null;
+
+/**
+Context: Global
+Description: Shadow for precalculated artist shortcuts used to built temporary list that gets updated when appropriate.
+*/
 var artistShortcuts_shadow = null;
 
 var artistAlbums = null;
@@ -49,9 +79,8 @@ var artistShortcutOffset = 0;
 
 var pageStack = new Array;
 
-var ignore_position_reports_timer = null;
-var playback_position_delay_active = false;
-var report_playback_position_timer = null;
+var ignorePositionReportsTimer = null;
+var reportPlaybackPositionTimer = null;
 
 /* Start index of leftmost visible art int artist albums view. Basically
  increases in granularity of xx */
@@ -337,7 +366,7 @@ function playerUpdateButtons(json) {
 }
 
 function playerUpdatePlaybackPosition(json) {
-  if (ignore_position_reports_timer != null)
+  if (ignorePositionReportsTimer != null)
     return;
 
   var position_ctrl = document.getElementById("player_playback_position_text");
@@ -414,29 +443,28 @@ function searchAlbumArt(object, caller_page) {
 
 
 
-function clear_ignore_position_reports() {
-  ignore_position_reports_timer = null;
+function clearIgnorePositionReports() {
+  ignorePositionReportsTimer = null;
 }
 
-function control_playback_position(object) {
+function controlPlaybackPosition(object) {
   tunaPlayer.seekPercents(object.value);
-  report_playback_position_timer = null;
+  reportPlaybackPositionTimer = null;
 }
 
-function player_playback_position_changed(object) {
+function playerPlaybackPositionChanged(object) {
 
   if (ignore_position_reports_timer != null) {
     clearTimeout(ignore_position_reports_timer);
-    ignore_position_reports_timer = null;
+    ignorePositionReportsTimer = null;
   }
 
-  if (report_playback_position_timer != null) {
-    clearTimeout(report_playback_position_timer);
-    report_playback_position_timer = null; 
+  if (reportPlaybackPositionTimer != null) {
+    clearTimeout(reportPlaybackPositionTimer);
+    reportPlaybackPositionTimer = null; 
   }
-  report_playback_position_timer = setTimeout(function() { control_playback_position(object) }, 250);
-
-  ignore_position_reports_timer = setTimeout(clear_ignore_position_reports, 500);
+  reportPlaybackPositionPimer = setTimeout(function() { controlPlaybackPosition(object) }, 250);
+  ignorePositionReportsTimer = setTimeout(clearIgnorePositionReports, 500);
 }
 
 function playerUpdatePlaybackTrackFromCache() {
@@ -638,7 +666,6 @@ function seekActiveArtistShortcutPage(offset) {
   artistShortcutOffset = 0;
 
   offset = fixOffset(offset);
-  console.log("### seekActiveArtistShortcutPage: " + offset);
 
   if (offset < 0) {
     artistShortcutLPos -= artistShortcutVisibleItems;
@@ -651,9 +678,6 @@ function seekActiveArtistShortcutPage(offset) {
     else
       return;
   }
-
-  console.log("### artistShortcutLPos -> " + artistShortcutLPos);
-
   renderPageContent("artists_container");
 }
 
@@ -887,11 +911,10 @@ function renderPageContent(pageId, renderHint, renderContext) {
       var lbContainer = document.getElementById("artist_listbox_container");
       if (lbContainer != undefined) {
         lbContainer.innerHTML = createArtistListbox();
-      } else {
-        tile.innerHTML = createArtistsPageContent(tile);
       }
     } else {
       targetObject.innerHTML = createArtistsPageContent();
+      updateShortcutVisiblePageText();
     }
   } else if (pageId == "artists_albums_container") {
     targetObject.innerHTML = createArtistAlbumsPageContent();
@@ -1049,6 +1072,7 @@ function startPreloadData(oldid, newid, initData, renderer) {
   }
   if (newid == "player_current_playlist") {
     delayedRender = true;
+    playlistVisibleTopIndex = 0;
     tunaPlayer.getCurrentPlaylist(function(json) {
       if (json["status"] == "OK") {
         currentPlaylist = json;
@@ -1096,6 +1120,7 @@ function upgradeDatabase() {
 }
 
 function handleKeyPress(e) {
+  console.log("KEYPRESS: " + e.toString() + "(raw: " + e + ")");
   if (e.charCode == 113 /* q */) {
     closeView();
   }
@@ -1106,15 +1131,7 @@ String.prototype.trim = function() {
 }
 
 function filterArtistName(str) {
-  var lc = str.trim().toLowerCase();
-	
-/*
-  if (lc.substring(0, 4) == "the ")
-    return lc.substring(4);
-  if (lc.substring(0, 2) == "a ")
-    return lc.substring(2);*/
-
-  return lc;
+  return str.trim().toLowerCase();
 }
 
 function initArtistShortcuts(list, inittype) {
@@ -1240,14 +1257,16 @@ function renderAlbumPage(renderHint) {
   renderPage(document.getElementById("artist_albums_page"), renderHint);
 }
 
-function rotateArtistList() {
+function rotateArtistList(ignoreRotate) {
   var curIdx = currentShortcutIndex();
-
   var uiIndex = getArtistShortcutUiIndex(); 
-  uiIndex += 6; // TODO: Use DEFINE
+  if (ignoreRotate != undefined && ignoreRotate === false) {
+  } else {
+    uiIndex += 6;
+  }
 
-  var rounded = parseInt(uiIndex - getArtistCount(curIdx));
-  if (rounded >= 0)
+  var wrapped = parseInt(uiIndex - getArtistCount(curIdx));
+  if (wrapped >= 0)
     uiIndex = 0;
   
   artistShortcuts[curIdx]['_ui_index'] = uiIndex;
@@ -1255,6 +1274,13 @@ function rotateArtistList() {
 }
 
 function updateShortcutVisiblePageText(object) {
+  if (!object) {
+    var curIdx = currentShortcutIndex();
+    object = $("div[data-shortcut-index=" + curIdx + "]");
+    if (!object) {
+      return;
+    }
+  }
   var totalArtists = getArtistCount();
   var currentArtistIndex = getArtistShortcutUiIndex();
 
@@ -1269,7 +1295,14 @@ function updateShortcutVisiblePageText(object) {
   }
 }
 
+/**
+* This method is invoked when User "presses" artist shortcut (A,B,C,..).
+*/
 function selectArtistShortcut(object) {
+  if (!object) {
+    return;
+  }
+
   var index = parseInt(object.getAttribute("data-shortcut-index"));
 
   $(".artist_shortcut_hili_small_text").css("display", "none");
