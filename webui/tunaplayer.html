@@ -397,11 +397,8 @@ function stopWaitLongMousePress(object) {
 function searchAlbumArt(object, caller_page) {
   var albumId = $(object).attr("data-album-id");
   if (albumId != undefined && albumId.length > 0 && caller_page != undefined && caller_page.length > 0) {
-
     resetDownloadedAlbumArtItems();
-
     console.log("Starting album art search");
-
     tunaPlayer.searchAlbumArt(albumId, function(json) {
       if (json["status"] != "OK") { 
         closeView();
@@ -672,14 +669,19 @@ function __printPageStack(info) {
   console.log("-------------------------------------------");
 }
 
-function pageStackPush(pageId) {
-  pageStack.push(pageId);
+function pageStackPush(pageId1, pageId2) {
+  if (pageId1 != undefined) {
+    pageStack.push(pageId1);
+  } 
+  if (pageId2 != undefined) {
+    pageStack.push(pageId2);
+  }
   __printPageStack("push");
 }
 
 function pageStackPop() {
   return pageStack.pop();
-  __printPAgeStack("pop");
+  __printPageStack("pop");
 }
 
 function currentShortcutIndex() {
@@ -850,10 +852,11 @@ function handleAlbumArtDownloaded(json, norender) {
 
   console.log("ALBUMART-ITEM: " + JSON.stringify(json));
 
-  downloadedAlbumArtItems.push(json);
-  if (norender == undefined) {
-    console.log("rendering page");
-    renderPageContent('search_album_arts');
+  if (isForegroundView('search_album_arts')) {
+    downloadedAlbumArtItems.push(json);
+    if (norender == undefined) {
+      renderPageContent('search_album_arts');
+    }
   }
 }
 
@@ -868,7 +871,6 @@ function createSearchAlbumArtsPageContent() {
 }
 
 function createPlaylistContainerPageContent() {
-//  tunaPlayer.getBuiltInPlaylists(function(json) { console.log("BUILTIN: " + JSON.stringify(json)); });
   tunaPlayer.playPlaylist("Random tracks");
   openView("root", "player_container");
 }
@@ -921,6 +923,14 @@ function renderPageContent(pageId, renderHint, renderContext) {
   }
 }
 
+function isForegroundView(id) {
+  if (pageStack.length <= 2) {
+    return false;
+  }
+
+  return pageStack[pageStack.length-1] === id;
+}
+
 /**
 * oldId: Identifier of the "page" where transition begins
 * newId: Identifier of the "page" where to the transition ends.
@@ -937,8 +947,7 @@ function openView(oldId, newId, initData) {
   $("#" + newId).addClass("tile_opened");
 
   /* Page stack holds pairs. -> Thus when popping we get first the page to close and then the page to open */
-  pageStackPush(oldId);
-  pageStackPush(newId);
+  pageStackPush(oldId, newId);
 
   startPreloadData(oldId, newId, initData, function() { renderPageContent(newId, "nohint", initData); });
 }
