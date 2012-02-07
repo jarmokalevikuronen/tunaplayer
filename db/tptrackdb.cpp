@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpartist.h"
 #include "tpalbum.h"
 #include "tpmediafilemetaextractor.h"
+#include "tpaudioutils.h"
 #include "tplog.h"
 
 TPTrackDB::TPTrackDB(QObject *parent) :
@@ -62,7 +63,7 @@ TPTrackDB::~TPTrackDB()
 
 void TPTrackDB::insertItem(TPAssociativeDBItem *item)
 {
-    QString artistName = item->stringValue(trackAttrArtistName);
+    QString artistName = TPAudioUtils::normalizeArtistName(item->stringValue(trackAttrArtistName));
     QString albumName = item->stringValue(trackAttrAlbumName);
 
     TPArtist *artist = artistDB->createArtist(artistName);

@@ -33,6 +33,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define TP_SETTINGS_FILE                "settings.ini"
 #define TP_FEED_SETTINGS_DB_FILE        "feeddata.db"
 #define TP_FEEDITEM_SETTINGS_DB_FILE    "feeditemdata.db"
+#define TP_ARTIST_NAME_MAPPING_CONFIG_FILE     "artistnamemapping.txt"
 
 QString TPPathUtils::ensureBasePath(QString subdir)
 {
@@ -222,4 +223,11 @@ QStringList TPPathUtils::getMediaPaths()
     // E.g. /home/jarmo/;/home/jokumuu
     listOfPaths << TPCLArgs::instance().arg(TPCLArgs::cliArgMediaPath, d.homePath()).toString().split(';');
     return listOfPaths;
+}
+
+QString TPPathUtils::getArtistNameMappingConfigFile()
+{
+    QString path = ensureBasePath();
+    path += TP_ARTIST_NAME_MAPPING_CONFIG_FILE;
+    return path;
 }

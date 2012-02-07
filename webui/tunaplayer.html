@@ -454,8 +454,8 @@ function controlPlaybackPosition(object) {
 
 function playerPlaybackPositionChanged(object) {
 
-  if (ignore_position_reports_timer != null) {
-    clearTimeout(ignore_position_reports_timer);
+  if (ignorePositionReportsTimer != null) {
+    clearTimeout(ignorePositionReportsTimer);
     ignorePositionReportsTimer = null;
   }
 

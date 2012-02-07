@@ -58,6 +58,7 @@ public:
     static QString getTspFolder();
     static QStringList getMediaPaths();
     static QString getRootPath();
+    static QString getArtistNameMappingConfigFile();
 };
 
 #endif // TPPATHUTILS_H

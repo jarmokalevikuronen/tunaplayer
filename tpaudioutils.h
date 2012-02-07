@@ -21,9 +21,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define AUDIOUTILS_H
 
 #include <QVector>
+#include <QMap>
+#include <QString>
 #include "tptrack.h"
 #include "tpalbum.h"
 
+//! @class TPAudioUtils
+//! @brief Miscellaneous utility functions for artist name etc. handling
 class TPAudioUtils
 {
 public:
@@ -35,6 +39,18 @@ public:
     static bool album1BeforeAlbum2(const TPAlbum &_1, const TPAlbum &_2);
     static bool artist1BeforeArtist2(const TPArtist &_1, const TPArtist &_2);
     static const QString normalizeArtistName(const QString &originalName);
+
+private:
+
+    static void buildArtistNameMapping();
+
+private:
+
+    //! Flag variable to contain initialization
+    static bool artistNameMappingInitialized;
+    //! some sort of manual normalization of artist
+    //! names. Basically just name value pairs.
+    static QMap<QString, QString> artistNameMapping;
 };
 
 #endif // AUDIOUTILS_H

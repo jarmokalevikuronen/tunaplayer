@@ -18,6 +18,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "tpaudioutils.h"
+#include "tplog.h"
+
+
+bool TPAudioUtils::artistNameMappingInitialized = false;
+QMap<QString, QString> TPAudioUtils::artistNameMapping;
+
 
 bool TPAudioUtils::albumsEqual(const TPAlbum &_1, const QString name2)
 {
@@ -81,6 +87,19 @@ const QString TPAudioUtils::normalizeArtistName(const QString &originalName)
     static const QString a("a ");
     static const QString the("the ");
 
+    if (!artistNameMappingInitialized)
+    {
+        buildArtistNameMapping();
+        artistNameMappingInitialized = true;
+    }
+
+    QMap<QString, QString>::iterator it = artistNameMapping.find(originalName.trimmed());
+    if (it != artistNameMapping.end())
+    {
+        DEBUG() << "NORMALIZE: " << originalName << " mapped to " << it.value();
+        return it.value();
+    }
+
     QString lcName = originalName.toLower();
 
     if (lcName.startsWith(a) && originalName.length() > a.length())
@@ -90,3 +109,34 @@ const QString TPAudioUtils::normalizeArtistName(const QString &originalName)
 
     return originalName.trimmed();
 }
+
+void TPAudioUtils::buildArtistNameMapping()
+{
+    QFile f(TPPathUtils::getArtistNameMappingConfigFile());
+
+    if (f.open(QIODevice::ReadOnly))
+    {
+        while (!f.atEnd())
+        {
+            QByteArray line = f.readLine();
+            if (line.length())
+            {
+                QString wc = QString::fromUtf8(line.constData());
+                QStringList items = wc.split("=");
+                if (items.length() == 2)
+                {
+                    QString key = items.at(0).trimmed();
+                    QString value = items.at(1).trimmed();
+
+                    if (key.length() && value.length() && key.at(0) != '#' && key != value)
+                    {
+                        artistNameMapping[key] = value;
+                    }
+                }
+            }
+        }
+        f.close();
+    }
+}
+
+

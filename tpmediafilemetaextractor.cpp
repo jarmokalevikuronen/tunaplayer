@@ -94,7 +94,6 @@ TPAssociativeDBItem *TPMediaFileMetaExtractor::extractTrackInfo(const QString &f
         return NULL;
     }
 
-
     TPAssociativeDBItem *item = new TPAssociativeDBItem(filename, db);
 
     //
