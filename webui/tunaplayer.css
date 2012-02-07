@@ -1,29 +1,50 @@
 
-.tile_1 {
-  left: 28%;
+.tile_00 {
+  left: 5%;
   top: 5%;
 }
 
-.tile_2 {
-  left: 28%;
+.tile_01 {
+  left: 5%;
   top: 28%;
 }
 
-.tile_3 {
-  left: 28%;
+.tile_02 {
+  left: 5%;
   top: 51%;
 }
 
-.tile_4 {
-  left: 28%;
+.tile_03 {
+  left: 5%;
   top: 74%;
 }
+
+.tile_10 {
+  left: 50%;
+  top: 5%;
+}
+
+.tile_11 {
+  left: 50%;
+  top: 28%;
+}
+
+.tile_12 {
+  left: 50%;
+  top: 51%;
+}
+
+.tile_13 {
+  left: 50%;
+  top: 74%;
+}
+
 
 .tile_closed {
   position: absolute;
   z-index: 1;
-  width: 300px;
-  height: 90px;  
+  width: 40%;
+  height: 18%;
   background: -webkit-gradient(linear, left top, left bottom, from(#fca51a), to(#5e3a10));
   background: -moz-linear-gradient(top, #fca51a, #5e3a10);
   background: -o-linear-gradient(top, #fca51a, #5e3a10);

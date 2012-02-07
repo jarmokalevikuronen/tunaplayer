@@ -284,7 +284,7 @@ _TUNA_BEGIN_TEMPLATE
     <% for (var i=this.firstVisible;i<this.items.length && i<this.lastVisible;i++) { %>
       <% var art = this.items[i]['arts']; %>
       <% if (art == undefined) { art = this.items[i]['artl']; } %>
-      <% if (art == undefined) { art = ""; } %>
+      <% if (art == undefined) { art = "bogus-image-not-found"; } %>
       <div class="radiostation_item" data-playlist-id="<%=this.items[i]['id']%>" onclick="listenRadio(this)";">
         <img class="radiostation_item_image" data-playlist-id="<%=this.items[i]['id']%>" src="<%=art%>" alt="(No Album Art)" />
         <center><p class="radiostation_item_name"><%=this.items[i]['name']%></p></center>
@@ -333,4 +333,35 @@ _TUNA_BEGIN_TEMPLATE
    </div>
  </div>
 _TUNA_END_TEMPLATE=tmpl_album_art_search
+
+
+_TUNA_BEGIN_TEMPLATE
+<div style="position: absolute; display: table-cell; width: 96%; height: 96%; left: 2%; top: 2%;">
+<% var loops = this.items.length; 
+   for (var i=0;i<loops;i++) {
+     var art = this.items[i]["album.artl"] ? this.items[i]["album.artl"] : this.items[i]["album.arts"];
+     if (art == undefined || art == null || art.length < 1) art = "bogus-art-not-found";
+%>
+  <div style="float: left; left: 2%; height: 30%; width: 96%; background: black; color: white;" data-album-id="<%=this.items[i]['id']%>" data-artist-id="<%=this.items[i]['artist.id']%>" onmousedown="startWaitLongMousePress(this, 'recent_albums_container'); return false;" onmouseup="stopWaitLongMousePress(this, openAlbum(this, 'recent_albums_container')); return false;">
+    <img src="<%=art%>" data-album-id="<%=this.items[i]['id']%>" data-artist-id="<%=this.items[i]['artist.id']%>" style="float: left; height: 90%; width: 18%; top: 0; bottom: 0; left: 2%; margin: auto;"/>
+    <div style="overflow: hidden; position: absolute; left: 20%; width: 80%; float:top;" data-album-id="<%=this.items[i]['id']%>" data-artist-id="<%=this.items[i]['artist.id']%>">
+      <div style="font-size: 3em; overflow: hidden; position: absolute: left: 1%; width: 99%; height: 50%; top: 1%;" data-album-id="<%=this.items[i]['id']%>" data-artist-id="<%=this.items[i]['artist.id']%>" >
+        <%=this.items[i]["artist.name"].toLowerCase()%><br><div style="width: 99%; font-size:0.5em;"><b><%=this.items[i]["name"].toLowerCase()%></b> - <i><%=this.items[i]["trcnt"]%></i> tracks - added 
+<i><%=age2Text(this.items[i]["age"])%></i></div>
+      </div>
+    </div>
+  </div>
+<%}%>
+</div>
+   <div class="shortcut_button close_button" onclick="closeView();">
+     <div class="shortcut_button_inner">
+       <center>&#x21d0;</center>
+     </div>
+   </div>
+   <div class="shortcut_button home_button" onclick="closeAllViews();">
+     <div class="shortcut_button_inner">
+       <center>&#x21da;</center>
+     </div>
+   </div>
+_TUNA_END_TEMPLATE=tmpl_recent_albums
 

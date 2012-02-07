@@ -40,6 +40,7 @@ signals:
     void expectedImageCount(QObject *caller, int count);
     void imageDownloaded(QObject *caller, QImage image);
     void complete(QObject *caller);
+    void connectivityLost(QObject *caller);
 
 public slots:
 

@@ -33,6 +33,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 TPAutomaticAlbumArtDownloader::TPAutomaticAlbumArtDownloader(QObject *parent) :
     QObject(parent)
 {
+    is = 0;
     currentAlbum = NULL;
     delayTimer = new QTimer(this);
     delayTimer->setSingleShot(true);
@@ -51,7 +52,7 @@ TPAutomaticAlbumArtDownloader::~TPAutomaticAlbumArtDownloader()
 
 void TPAutomaticAlbumArtDownloader::execute(TPAlbumDB *db)
 {
-    if (albumsToDownload.count() > 0)
+    if (albumsToDownload.count() > 0 || is)
     {
         ERROR() << "ALBUMART: Automatic album art loader busy\n";
         return;
@@ -90,6 +91,7 @@ void TPAutomaticAlbumArtDownloader::execute(TPAlbumDB *db)
         connect(is, SIGNAL(expectedImageCount(QObject*,int)), this, SLOT(expectedImageCount(QObject*,int)));
         connect(is, SIGNAL(imageDownloaded(QObject*,QImage)), this, SLOT(imageDownloaded(QObject*,QImage)));
         connect(is, SIGNAL(complete(QObject*)), this, SLOT(complete(QObject*)));
+        connect(is, SIGNAL(connectivityLost(QObject*)), this, SLOT(connectivityLost(QObject*)));
 
         startDownloadNextAlbum();
     }
@@ -138,11 +140,22 @@ void TPAutomaticAlbumArtDownloader::complete(QObject */*caller*/)
     }
 }
 
-bool TPAutomaticAlbumArtDownloader::startDownloadNextAlbum()
+void TPAutomaticAlbumArtDownloader::connectivityLost(QObject */*caller*/)
 {
     Q_ASSERT(is);
 
-    DEBUG() << "startDownloadNextAlbum: remaining: " << albumsToDownload.count();
+    DEBUG() << "ALBUMART: Connectivity LOST -> Bailing out.";
+
+    is->deleteLater();
+    is = 0;
+
+    TPDecForAll(albumsToDownload);
+    albumsToDownload.clear();
+}
+
+bool TPAutomaticAlbumArtDownloader::startDownloadNextAlbum()
+{
+    DEBUG() << "ALBUMART: startDownloadNextAlbum: remaining: " << albumsToDownload.count();
 
     if (currentAlbum)
         currentAlbum->dec();
@@ -164,7 +177,6 @@ bool TPAutomaticAlbumArtDownloader::startDownloadNextAlbum()
 void TPAutomaticAlbumArtDownloader::downloadNextAlbum()
 {
     Q_ASSERT(currentAlbum);
-    Q_ASSERT(is);
 
     //
     // Here, lets mark the item count and the timestamp.

@@ -228,7 +228,11 @@ function setImage(json, objectId) {
 function openAlbum(object, openedByWindow) {
   var id = object.getAttribute("data-album-id");
   if (id != undefined && id.length > 0) {
-    var src = object.getAttribute("src");
+    var src = "notrelevant";
+    if (object.tagName === "img") {
+      src = object.getAttribute("src");
+    }
+ 
     if (src == undefined || src == null || src.length < 1 || src === "bogus-image-not-found") {
       searchAlbumArt(object, openedByWindow); 
     } else {  
@@ -269,7 +273,7 @@ function rotateRadioStations() {
   if (radioVisibleStart >= radioStations.length)
     radioVisibleStart = 0;
 
-  renderPageContent("radio_container");
+  renderView("radio_container");
 }
 
 
@@ -405,21 +409,24 @@ function playerUpdateCurrentPlaylist(json) {
       playlistVisibleTopIndex = 0;
     }
 
-    renderPageContent("player_current_playlist");
+    renderView("player_current_playlist");
   }
 }
 
-function startWaitLongMousePress(object) {
+function startWaitLongMousePress(object, callerView) {
   longPressTimer = setTimeout(function() { 
     longPressTimer = null;
-    albumCommand("play", object, 'artists_albums_container'); 
+    albumCommand("play", object, callerView ? callerView : 'artists_albums_container'); 
     }, 750);
 }
 
-function stopWaitLongMousePress(object) {
+function stopWaitLongMousePress(object, execCommand) {
   if (longPressTimer) {
     clearTimeout(longPressTimer);
     longPressTimer = null;
+    if (execCommand) {
+      execCommand();
+    }
   }
 }
 
@@ -659,7 +666,7 @@ function rotateAlbums(object) {
 
   console.log("-> rotateAlbums: " + index);
 
-  renderPageContent('artists_albums_container');
+  renderView('artists_albums_container');
 }
 
 function seekActiveArtistShortcutPage(offset) {
@@ -678,7 +685,7 @@ function seekActiveArtistShortcutPage(offset) {
     else
       return;
   }
-  renderPageContent("artists_container");
+  renderView("artists_container");
 }
 
 
@@ -846,7 +853,7 @@ function rotatePlaylistTracks() {
   if (playlistVisibleTopIndex >= currentPlaylist["args"]["items"].length)
     playlistVisibleTopIndex = 0;
 
-  renderPageContent("player_current_playlist");
+  renderView("player_current_playlist");
 }
 
 function createRadioPageContent() {
@@ -879,7 +886,7 @@ function handleAlbumArtDownloaded(json, norender) {
   if (isForegroundView('search_album_arts')) {
     downloadedAlbumArtItems.push(json);
     if (norender == undefined) {
-      renderPageContent('search_album_arts');
+      renderView('search_album_arts');
     }
   }
 }
@@ -899,14 +906,24 @@ function createPlaylistContainerPageContent() {
   openView("root", "player_container");
 }
 
-function renderPageContent(pageId, renderHint, renderContext) {
-  var targetObject = document.getElementById(pageId);
+function createRecentAlbumsPageContent(json) {
+  var initData = {};
+
+  initData["items"] = json["items"];
+
+  var html = $.jqote(templates.tmpl_recent_albums, initData);
+
+  return html;
+}
+
+function renderView(viewId, renderHint, renderContext) {
+  var targetObject = document.getElementById(viewId);
   if (!targetObject) {
-    console.log("ERROR: Unable to locate object: " + pageId);
+    console.log("ERROR: Unable to locate object: " + viewId);
     return;
   }
 
-  if (pageId == "artists_container") { 
+  if (viewId == "artists_container") { 
     if (renderHint == "artistlistOnly") {
       var lbContainer = document.getElementById("artist_listbox_container");
       if (lbContainer != undefined) {
@@ -916,9 +933,9 @@ function renderPageContent(pageId, renderHint, renderContext) {
       targetObject.innerHTML = createArtistsPageContent();
       updateShortcutVisiblePageText();
     }
-  } else if (pageId == "artists_albums_container") {
+  } else if (viewId == "artists_albums_container") {
     targetObject.innerHTML = createArtistAlbumsPageContent();
-  } else if (pageId == "artist_single_album_container") {
+  } else if (viewId == "artist_single_album_container") {
     if (renderHint == "tracklistOnly") {
       var tlContainer = document.getElementById("artist_single_album_tracklist");
       if (tlContainer != undefined) {
@@ -927,22 +944,26 @@ function renderPageContent(pageId, renderHint, renderContext) {
         targetObject.innerHTML = createArtistSingleAlbumPageContent(renderContext.getAttribute('data-album-id'));
       }
     } else {
+console.log("INNER: " + renderContext.outerHTML);
+
       targetObject.innerHTML = createArtistSingleAlbumPageContent(renderContext.getAttribute('data-album-id'));
     }
-  } else if (pageId == "radio_container") {
+  } else if (viewId == "radio_container") {
     targetObject.innerHTML = createRadioPageContent();
-  } else if (pageId == "player_container") {
+  } else if (viewId == "player_container") {
     targetObject.innerHTML = createPlayerPageContent();
     playerUpdateButtonsFromCache();
     playerUpdatePlaybackTrackFromCache();
     playerUpdatePlaybackAlbumFromCache();
     processVolumeChanged();
-  } else if (pageId == "player_current_playlist") {
+  } else if (viewId == "player_current_playlist") {
     targetObject.innerHTML = createPlayerCurrentPlaylistPageContent();
-  } else if (pageId == "search_album_arts") {
+  } else if (viewId == "search_album_arts") {
     targetObject.innerHTML = createSearchAlbumArtsPageContent();
-  } else if (pageId == "playlist_container") {
+  } else if (viewId == "playlist_container") {
     targetObject.innerHTML = createPlaylistContainerPageContent();    
+  } else if (viewId == "recent_albums_container") {
+    targetObject.innerHTML = createRecentAlbumsPageContent(renderContext["args"]);
   }
 }
 
@@ -969,10 +990,19 @@ function openView(oldId, newId, initData) {
   $("#" + newId).removeClass("div_hidden");
   $("#" + newId).addClass("tile_opened");
 
-  /* Page stack holds pairs. -> Thus when popping we get first the page to close and then the page to open */
+  /* Page stack holds pairs. -> Thus when popping we get first the page to close and then the page to open 
+     This effectively allows non-deterministic transitions between views thus that "back" from a view returns user to some other
+     view than where the original transition started. Confusing but yet useful sometimes.
+  */
   pageStackPush(oldId, newId);
-
-  startPreloadData(oldId, newId, initData, function() { renderPageContent(newId, "nohint", initData); });
+if (initData) {
+console.log("INITDATA: " + initData.outerHTML);
+console.log("INITDATA: " + typeof initData);
+}
+  loadViewContent(oldId, newId, initData, function() { 
+     renderView(newId, "nohint", initData); 
+    }
+  );
 }
 
 function closeAllViews() {
@@ -1030,15 +1060,17 @@ function loadArtistAlbums(object, renderer) {
   }
 }
 
-function startPreloadData(oldid, newid, initData, renderer) {
+function loadViewContent(oldid, newid, initData, renderer) {
 
   console.log("PRELOAD DATA to OPEN " + newid + " from " + oldid);
 
+  /* When set to true, page will not be rendered at the end of this function
+     but will be done "later on" when data is available. */
   var delayedRender = false;
 
   if (newid == 'artist_single_album_container' || oldid == 'search_album_arts') {
+    var id = null;
     if (newid == 'artist_single_album_container') {
-      var id = null;
       var index = $(initData).attr("data-album-index");
       if (index != undefined) {
         index = parseInt(index);
@@ -1050,6 +1082,7 @@ function startPreloadData(oldid, newid, initData, renderer) {
       }
     }
     if (!id) {
+console.log("OUTER: " + initData.outerHTML);
       id = initData.getAttribute("data-album-id");
     }
     if (oldid == "player_container")
@@ -1095,11 +1128,20 @@ function startPreloadData(oldid, newid, initData, renderer) {
   if (newid == "radio_container") {
     upgradeDatabase();
   }
+  if (newid == "recent_albums_container") {
+    delayedRender = true;
+    tunaPlayer.getRecentAlbums(3, function(json) {
+      console.log("RECENTALBUMS: " + JSON.stringify(json)); 
+      if (json["status"] == "OK") {
+        renderView(newid, "nohint", json);
+      } else {
+        closeView();
+      }
+    });
+  }
 
-  if (!delayedRender) {
-    if (renderer != undefined) {
-      renderer();
-    }
+  if (!delayedRender && renderer) {
+    renderer();
   }
 }
 
@@ -1270,7 +1312,7 @@ function rotateArtistList(ignoreRotate) {
     uiIndex = 0;
   
   artistShortcuts[curIdx]['_ui_index'] = uiIndex;
-  renderPageContent("artists_container", "artistlistOnly");
+  renderView("artists_container", "artistlistOnly");
 }
 
 function updateShortcutVisiblePageText(object) {
@@ -1313,7 +1355,7 @@ function selectArtistShortcut(object) {
     $(".artist_shortcut").removeClass("artist_shortcut_hili");
     $(object).addClass("artist_shortcut_hili");
     artistShortcutOffset = index % artistShortcutVisibleItems; 
-    renderPageContent("artists_container", "artistlistOnly");
+    renderView("artists_container", "artistlistOnly");
   }
   updateShortcutVisiblePageText(object); 
 }
@@ -1538,31 +1580,83 @@ function playerUpdateVolumeLevel(volume) {
   }
 }
 
+/**
+* Converts a second value to more descriptive representation
+* that can be shown in UI.
+*/
+function age2Text(age) {
+  age = parseInt(age);
+  if (age < (60 * 60 * 12)) {
+    return "today";
+  } else if (age < (60 * 60 * 24 * 2)) {
+    return "yesterday";
+  } else if (age < (60 * 60 * 24 * 7)) {
+    return "less than week ago";
+  }
+  return "more than week ago";
+}
+
 </script>	  
 
   <body onload="connectToDaemon();" onkeypress="handleKeyPress(event);" style="background: black; z-index:1;">		
     <div class="playercontainer" id="root">
 
-      <div id=radio_launcher class="tile_1 tile_closed"  onclick="openView('root', 'radio_container');">
+      <div id=radio_launcher class="tile_00 tile_closed"  onclick="openView('root', 'radio_container');">
         <div class="tile_closed_inner"><center>radio</center></div>
       </div>
 
-      <div id=artists_launcher class="tile_2 tile_closed"  onclick="openView('root', 'artists_container');">
-        <div class="tile_closed_inner"><center>collection</center></div>
+      <div id=artists_launcher class="tile_10 tile_closed"  onclick="openView('root', 'artists_container');">
+        <div class="tile_closed_inner"><center>albums</center></div>
       </div>
 
-      <div id=player_launcher class="tile_3 tile_closed"  onclick="openView('root', 'player_container');">
+      <div id=player_launcher class="tile_01 tile_closed"  onclick="openView('root', 'player_container');">
         <div class="tile_closed_inner"><center>player</center></div>
       </div>
 
-      <div id=playlist_launcher class="tile_4 tile_closed"  onclick="tunaPlayer.playPlaylist('Random tracks'); openView('root', 'player_container'); /*openView('root', 'playlist_container');*/">
-        <div class="tile_closed_inner"><center>random</center></div>
+      <div id=playrandom_launcher class="tile_03 tile_closed"  onclick="tunaPlayer.playPlaylist('Random tracks'); openView('root', 'player_container');">
+        <div class="tile_closed_inner"><center>random play</center></div>
+      </div>
+
+      <div id=recent_albums_launcher class="tile_13 tile_closed"  onclick="openView('root', 'recent_albums_container');">
+        <div class="tile_closed_inner"><center>new albums</center></div>
       </div>
 
       <div id="radio_container" class="topleft div_hidden">
       </div>
 
       <div id=artists_container class="topleft div_hidden">              
+      </div>
+
+      <div id=recent_albums_container class="topleft div_hidden">
+<!--
+ <div style="position: absolute; display: table-cell; width: 96%; height: 96%; left: 2%; top: 2%;">
+
+  <div style="float: left; left: 2%; height: 30%; width: 96%; background: yellow; border: 1px solid white;">
+    <img src="albumart/juanes_mi=0032sangre.SMALL.PNG" style="float: left; height: 90%; width: 18%; top: 0; bottom: 0; left: 2%; margin: auto;"/>
+    <div style="overflow: hidden; position: absolute; left: 20%; width: 80%; float:top;">
+      <div style="font-size: 3em; overflow: hidden; position: absolute: left: 1%; width: 99%; height: 50%; top: 1%;">
+        red hot chili peppers<br><div style="width: 80%; font-size:0.7em;">america - 18 tracks - added more than week ago</div>
+      </div>
+    </div>
+  </div>
+  <div style="float: left; left: 2%; height: 30%; width: 96%; background: yellow; border: 1px solid white;">
+    <img src="albumart/juanes_mi=0032sangre.SMALL.PNG" style="float: left; height: 90%; width: 18%; top: 0; bottom: 0; left: 2%; margin: auto;"/>
+    <div style="overflow: hidden; position: absolute; left: 20%; width: 80%; float:top;">
+      <div style="font-size: 3em; overflow: hidden; position: absolute: left: 1%; width: 99%; height: 50%; top: 1%;">
+        red hot chili peppers<br><div style="width: 80%; font-size:0.7em;">america - 18 tracks - added more than week ago</div>
+      </div>
+    </div>
+  </div>
+  <div style="float: left; left: 2%; height: 30%; width: 96%; background: yellow; border: 1px solid white;">
+    <img src="albumart/juanes_mi=0032sangre.SMALL.PNG" style="float: left; height: 90%; width: 18%; top: 0; bottom: 0; left: 2%; margin: auto;"/>
+    <div style="overflow: hidden; position: absolute; left: 20%; width: 80%; float:top;">
+      <div style="font-size: 3em; overflow: hidden; position: absolute: left: 1%; width: 99%; height: 50%; top: 1%;">
+        red hot chili peppers<br><div style="width: 80%; font-size:0.7em;">america - 18 tracks - added more than week ago</div>
+      </div>
+    </div>
+  </div>
+ </div>
+-->
       </div>
 
       <div id=artists_albums_container class="topleft div_hidden">

@@ -55,6 +55,7 @@ bool TPAlbumArtDownloader::exec(TPAlbumArtDownloadRequest *_request, const QStri
         QObject::connect(google, SIGNAL(expectedImageCount(QObject*,int)), this, SLOT(handleExpectedImageCount(QObject*,int)));
         QObject::connect(google, SIGNAL(imageDownloaded(QObject *, QImage)), this, SLOT(imageDownloaded(QObject *, QImage)));
         QObject::connect(google, SIGNAL(complete(QObject *)), this, SLOT(imageDownloadComplete(QObject *)));
+        QObject::connect(google, SIGNAL(connectivityLost(QObject *)), this, SLOT(imageDownloadComplete(QObject *)));
     }
     if (!lastfm && (services.contains("lastfm") || services.length() == 0))
     {
@@ -62,6 +63,7 @@ bool TPAlbumArtDownloader::exec(TPAlbumArtDownloadRequest *_request, const QStri
         QObject::connect(lastfm, SIGNAL(complete(QObject*)), this, SLOT(imageDownloadComplete(QObject*)));
         QObject::connect(lastfm, SIGNAL(expectedImageCount(QObject*,int)), this, SLOT(handleExpectedImageCount(QObject*,int)));
         QObject::connect(lastfm, SIGNAL(imageDownloaded(QObject*,QImage)), this, SLOT(imageDownloaded(QObject*,QImage)));
+        QObject::connect(lastfm, SIGNAL(connectivityLost(QObject *)), this, SLOT(imageDownloadComplete(QObject *)));
     }
 
     // We serve only one client at a time.

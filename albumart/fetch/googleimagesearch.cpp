@@ -49,7 +49,6 @@ bool TPGoogleImageSearch::startSearch(const QString artist, const QString album)
     QUrl url("http://ajax.googleapis.com/ajax/services/search/images");
     url.addQueryItem("q", query);
     url.addQueryItem("v", "1.0");
-    //url.addQueryItem("rsz?", QString::number(maxResults));
 
     manager->get(QNetworkRequest(url));
 
@@ -59,6 +58,14 @@ bool TPGoogleImageSearch::startSearch(const QString artist, const QString album)
 void TPGoogleImageSearch::searchFinished(QNetworkReply *reply)
 {
     QObject::disconnect(manager,0,0,0);
+
+    QVariant status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+    if (!status.isValid())
+    {
+        DEBUG() << "GOOGLE: No connectivity. Bailing out.";
+        emit connectivityLost(this);
+        return;
+    }
 
     bool success = false;
     QVariant result = Json::parse(reply->readAll(), success);

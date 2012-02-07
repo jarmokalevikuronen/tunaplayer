@@ -21,7 +21,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QUrl>
 #include <QNetworkRequest>
 #include <QNetworkReply>
-#include <QDebug>
+#include <QNetworkInterface>
+#include "tplog.h"
 #include <QDomDocument>
 #include <QDomElement>
 #include <QDomNodeList>
@@ -59,6 +60,8 @@ bool TPLastFMImageSearch::startSearch(const QString artist, const QString album)
 
 void TPLastFMImageSearch::searchFinished(QNetworkReply *reply)
 {
+    QObject::disconnect(manager,0,0,0);
+
     /*
 <?xml version="1.0" encoding="utf-8"?>
 <lfm status="ok">
@@ -83,8 +86,16 @@ void TPLastFMImageSearch::searchFinished(QNetworkReply *reply)
    </album></lfm>
     */
 
-    QByteArray response = reply->readAll();
+    QVariant status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+    if (!status.isValid())
+    {
+        DEBUG() << "LASTFM: No connectivity. Bailing out.";
 
+        emit connectivityLost(this);
+        return;
+    }
+
+    QByteArray response = reply->readAll();
     QDomDocument dom("lastfm");
     if (!dom.setContent(response))
     {
@@ -118,7 +129,7 @@ void TPLastFMImageSearch::searchFinished(QNetworkReply *reply)
 
     if (imageUrls.count() <= 0)
     {
-        qDebug() << "LastFM Art Search -> No matches";
+        DEBUG() << "LASTFM: Art Search -> No matches";
         emit complete(this);
     }
     else
@@ -139,12 +150,12 @@ void TPLastFMImageSearch::processImageDownloaded(QNetworkReply *reply)
     QImage image;
     if (image.loadFromData(reply->readAll()))
     {
-        qDebug() << "LASTFM: image downloaded from: " << reply->request().url().toString();
+        DEBUG() << "LASTFM: image downloaded from: " << reply->request().url().toString();
         emit imageDownloaded(this, image);
     }
     else
     {
-        qDebug() << "LASTFM: image download failed from: " << reply->request().url().toString();
+        DEBUG() << "LASTFM: image download failed from: " << reply->request().url().toString();
     }
 
     if (imageUrls.count() <= 0)
