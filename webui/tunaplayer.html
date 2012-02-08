@@ -225,6 +225,15 @@ function setImage(json, objectId) {
   }
 }
 
+function openArtist(object, openedByView) {
+  var id = object.getAttribute("data-artist-id");
+  if (id != undefined && id.length > 0) {
+    openView(openedByView, 'artists_albums_container', object);
+  } else {
+    console.log("ERROR: No data-artist-id defined");
+  }
+}
+
 function openAlbum(object, openedByWindow) {
   var id = object.getAttribute("data-album-id");
   if (id != undefined && id.length > 0) {
@@ -782,12 +791,12 @@ function createArtistsPageContent(rootElement) {
 }  
 
 
-function createArtistAlbumsPageContent(rootElement) {
+function createArtistAlbumsPageContent(artistDefinition) {
   if (artistAlbums == null || artistAlbums == undefined) {
     console.log("artistAlbums not ready yet -> leaving");
     return;
   }
-
+// zzzz
   var initData = {};
   var imagesToShow = 6;
 
@@ -934,7 +943,7 @@ function renderView(viewId, renderHint, renderContext) {
       updateShortcutVisiblePageText();
     }
   } else if (viewId == "artists_albums_container") {
-    targetObject.innerHTML = createArtistAlbumsPageContent();
+    targetObject.innerHTML = createArtistAlbumsPageContent(renderContext);
   } else if (viewId == "artist_single_album_container") {
     if (renderHint == "tracklistOnly") {
       var tlContainer = document.getElementById("artist_single_album_tracklist");
@@ -944,8 +953,6 @@ function renderView(viewId, renderHint, renderContext) {
         targetObject.innerHTML = createArtistSingleAlbumPageContent(renderContext.getAttribute('data-album-id'));
       }
     } else {
-console.log("INNER: " + renderContext.outerHTML);
-
       targetObject.innerHTML = createArtistSingleAlbumPageContent(renderContext.getAttribute('data-album-id'));
     }
   } else if (viewId == "radio_container") {
@@ -995,10 +1002,6 @@ function openView(oldId, newId, initData) {
      view than where the original transition started. Confusing but yet useful sometimes.
   */
   pageStackPush(oldId, newId);
-if (initData) {
-console.log("INITDATA: " + initData.outerHTML);
-console.log("INITDATA: " + typeof initData);
-}
   loadViewContent(oldId, newId, initData, function() { 
      renderView(newId, "nohint", initData); 
     }
@@ -1082,7 +1085,6 @@ function loadViewContent(oldid, newid, initData, renderer) {
       }
     }
     if (!id) {
-console.log("OUTER: " + initData.outerHTML);
       id = initData.getAttribute("data-album-id");
     }
     if (oldid == "player_container")

@@ -38,12 +38,15 @@ _TUNA_BEGIN_TEMPLATE
     <div id="artist_listbox">
 
     <% for (var i=0;i<this.items.length;i++) { 
+         var multipleAlbums = false;
+         if (parseInt(this.items[i]["alcnt"]) > 1)
+           multipleAlbums = true;
          var visible = true;
          if (i < this.topIndex)
            visible = false;
          if (i > this.bottomIndex)
              visible = false; %>
-         <div class="artist_list_item <%= visible ? "" : "artist_list_item_hidden"%> " data-artist-id="<%=this.items[i]["id"]%>" onclick="openView('artists_container','artists_albums_container',this);"><center><p class="artist_list_item_text"><%=this.items[i]["name"]%>&nbsp;(<%=this.items[i]["alcnt"]%>)</p></center>
+         <div onclick="openArtist(this, 'artists_container');" class="artist_list_item <%= visible ? "" : "artist_list_item_hidden"%> " data-artist-id="<%=this.items[i]["id"]%>" ><center><p class="artist_list_item_text"><%=this.items[i]["name"]%><% if (multipleAlbums) { %> &nbsp;(<%=this.items[i]["alcnt"]%>)<%}%></p></center>
          </div>
     <% } %>      
     </div>
