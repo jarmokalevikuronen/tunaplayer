@@ -161,4 +161,22 @@ QStringList* TPTrackDB::getTrackFilenames() const
     return result;
 }
 
+void TPTrackDB::executePostCreateTasks()
+{
+    TPDBBase<TPTrack *>::executePostCreateTasks();
+    save();
 
+    if (albumDB)
+    {
+        albumDB->executePostCreateTasks();
+        albumDB->save();
+    }
+
+    if (artistDB)
+    {
+        artistDB->executePostCreateTasks();
+        artistDB->save();
+    }
+
+    save(100);
+}

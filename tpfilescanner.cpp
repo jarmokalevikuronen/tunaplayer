@@ -209,13 +209,6 @@ void TPFileScanner::doFullScan()
 void TPFileScanner::processFinalTasks()
 {
     dbs->getTrackDB()->executePostCreateTasks();
-    dbs->getTrackDB()->save();
-
-    dbs->getAlbumDB()->executePostCreateTasks();
-    dbs->getAlbumDB()->save();
-
-    dbs->getArtistDB()->executePostCreateTasks();
-    dbs->getArtistDB()->save();
 
     //
     // Feeds are not to be touched here.

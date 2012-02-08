@@ -65,6 +65,8 @@ public:
 
     void insertItem(TPAssociativeDBItem *dbItem);
 
+    void executePostCreateTasks();
+
 private: // DAta
 
 

@@ -985,8 +985,14 @@ void TPMusicPlayerCore::maintainTaskState(TPFileScanner::State state)
         bool dbChanged = results->count() > 0;
 
         STATE() << "CORE: Maintain complete: " << results->count();
-        for (int i=0;i<results->count();++i)
-            db->getTrackDB()->insertItem(results->at(i));
+
+        if (results->count())
+        {
+            for (int i=0;i<results->count();++i)
+                db->getTrackDB()->insertItem(results->at(i));
+
+            db->getTrackDB()->executePostCreateTasks();
+        }
 
         results->clear();
 
