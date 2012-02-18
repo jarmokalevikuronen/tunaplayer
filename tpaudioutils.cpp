@@ -96,7 +96,7 @@ const QString TPAudioUtils::normalizeArtistName(const QString &originalName)
     QMap<QString, QString>::iterator it = artistNameMapping.find(originalName.trimmed());
     if (it != artistNameMapping.end())
     {
-        DEBUG() << "NORMALIZE: " << originalName << " mapped to " << it.value();
+/*        DEBUG() << "NORMALIZE: " << originalName << " mapped to " << it.value();*/
         return it.value();
     }
 

@@ -1,50 +1,40 @@
 
+body {
+  overflow-x:hidden;
+  overflow: hidden;
+}
+
 .tile_00 {
-  left: 5%;
+  left: 10%;
   top: 5%;
 }
 
 .tile_01 {
-  left: 5%;
-  top: 28%;
+  left: 10%;
+  top: 53%;
 }
 
 .tile_02 {
-  left: 5%;
-  top: 51%;
-}
-
-.tile_03 {
-  left: 5%;
-  top: 74%;
+  left: 10%;
+  top: 29%;
 }
 
 .tile_10 {
-  left: 50%;
-  top: 5%;
+  left: 10%;
+  top: 17%;
 }
 
 .tile_11 {
-  left: 50%;
-  top: 28%;
-}
-
-.tile_12 {
-  left: 50%;
-  top: 51%;
-}
-
-.tile_13 {
-  left: 50%;
-  top: 74%;
+  left: 10%;
+  top: 41%;
 }
 
 
 .tile_closed {
   position: absolute;
   z-index: 1;
-  width: 40%;
-  height: 18%;
+  width: 80%;
+  height: 10%;
   vertical-align: center;
   background: -webkit-gradient(linear, left top, left bottom, from(#fca51a), to(#5e3a10));
   background: -moz-linear-gradient(top, #fca51a, #5e3a10);
@@ -71,7 +61,7 @@
   background: -moz-linear-gradient(top, #000000, #202020);
   background: -o-linear-gradient(top, #000000, #202020);
   color: white;
-  font-size: 2.5em;
+  font-size: 2.8em;
   -webkit-border-radius: 30px;
   -moz-border-radius: 30px;
   -o-border-radius: 30px;
@@ -85,14 +75,14 @@
 }
 
 .tile_opened {
-  overflow: hidden;
+/*  overflow: hidden;*/
   opacity: 1.0;
   position: absolute;
   z-index: 100;
   left: 0px;
   top: 0px;
-  width: 800px;
-  height: 480px;
+  width: 380px;
+  height: 800px;
   background: black;
   -webkit-border-radius: 0;
   -moz-border-radius: 0;
@@ -106,7 +96,7 @@
   top: 2%;
   left: 2%;
   background: black;
-  height: 20%;
+  height: 10%;
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   -o-border-radius: 5px;
@@ -122,12 +112,12 @@
   -moz-opacity: 0.6;  
   -o-opacity: 0.6;  
   opacity: 0.6;
-  width: 10%;
+  width: 15%;
   height: 80%;
   top: 1%;
   margin-left: 1%;
   text-align: center;
-  font-size: 4.0em;
+  font-size: 3.0em;
   color: black;
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
@@ -151,7 +141,7 @@
 }
 
 .artist_shortcut_hili {
-  width: 10%;
+/*  width: 10%;*/
   height: 110%;
   font-size: 4.5em;
   background: -webkit-gradient(linear, left top, left bottom, from(#f8ce51), to(#f06015));
@@ -202,13 +192,45 @@
   position: absolute;
   margin-left: auto;
   margin-right: auto;
-  top: 25%;
+  top: 1%;
   left: 5%;
   height: 70%;
-  width: 80%;
+  width: 90%;
   -webkit-transition: all 0.5s ease-in-out;
   -moz-transition: all 0.5s ease-in-out;
   -o-transition: all 0.5s ease-in-out;
+}
+
+.artist_listbox_letter {
+  color: white;
+}
+
+.artist_listbox_header_letter {
+  color: #f8ce51;
+  font-size: 4em;
+  background: black;
+  -webkit-border-radius: 10px;
+}
+
+.artist_listbox_header_letter_opened {
+  background: darkgray;
+  -webkit-border-radius: 15px;
+}
+
+.artist_listbox_letter_container {
+/*  background: #333333;*/
+  -webkit-border-radius: 10px; 
+  border: solid 2px darkgray;
+  left: 1%;
+  width: 98%;
+}
+
+/*.artist_listbox_letter_container:active {
+  background: white;
+}*/
+
+.artist_listbox_letter_container_hidden {
+  display: none;
 }
 
 .artist_list_item {
@@ -221,8 +243,8 @@
   margin-left: auto;
   margin-bottom: 1%;
   margin-right: auto;
-  height: 14%;
-  width: 95%;
+  height: 11%;
+  width: 100%;
   
   -webkit-border-radius: 5px;
   -webkit-box-shadow: 0 3px 7px #333; 
@@ -252,14 +274,15 @@
 }
 
 .artist_list_item_text {
-  font-size: 2.5em;
+  font-size: 2em;
   display: table-cell;
   margin-top: 1%;
   margin-bottom: 1%;
   margin-left: auto;
   margin-right: auto;
   text-align: left;
-  height: 80%;
+  height: 90%;
+  width: 100%;
   -webkit-transition: all 0.5s ease-in-out;
   -moz-transition: all 0.5s ease-in-out;
   -o-transition: all 0.5s ease-in-out;
@@ -270,8 +293,8 @@
   position: absolute;
   left: 0px;
   top: 0px;
-  width: 800px;
-  height: 480px;
+  width: 380px;
+  height: 800px;
   background: black;
 }
 
@@ -292,14 +315,14 @@
   top: 0%;
   left: 5%;
   width: 90%;
-  height: 15%;
+  height: 25%;
   font-size: 3.5em;
 }
 
 .artist_albums_container {
   display: block;
   position: absolute;
-  top: 10%;
+  top: 25%;
   height: 88%;
   width: 88%;
   left: 4%;
@@ -342,9 +365,9 @@
 .artist_albums_container_item {
   position: relative;
   left:1%;
-  width: 28%;
-  height: 42%;
-  min-height: 42%;
+  width: 45%;
+  height: 22%;
+  min-height: 22%;
   background: black;
   border: solid 2px darkgray;
   margin-left: 2%;
@@ -434,41 +457,6 @@
   width: 20%;
 }
 
-.artist_single_album_button_play {
-  position: absolute;
-  left: 5%;
-  top: 76%;
-  height: 10%;
-  padding: 1.5% 0 2% 0;
-  width: 18%;
-}
-
-.artist_single_album_button_queue {
-  position: absolute;
-  left: 26%;
-  top: 76%;
-  height: 10%;
-  padding: 1.5% 0 2% 0;
-  width: 18%;
-}
-
-.artist_single_album_button_inner {
-  position: absolute;
-  left: 2.5%;
-  top: 3%;
-  height: 94%;
-  width: 95%;
-  background: -webkit-gradient(linear, left top, left bottom, from(#000000), to(#202020));
-  background: -moz-linear-gradient(top, #000000, #202020);
-  background: -o-linear-gradient(top, #000000, #202020);
-  font-size: 3.5em;
-  color: #faa51a;
-  -webkit-border-radius: 10px;
-  -moz-border-radius: 10px;
-  -o-border-radius: 10px;
-  border-radius: 10px;
-}
-
 /**
 * Orange button used throughout the software.
 */
@@ -491,32 +479,13 @@
   background: -o-linear-gradient(top, #f47a20, #faa51a);
 }
 
-.artist_single_album_header_artist {
-  color: white;
-  float: left;
-  display: block;
-  position: absolute;
-  top: 0%;
-  left: 5%;
-  width: 95%;
-  height: 10%;
-  font-size: 2.5em;
-  overflow: hidden;
-}
 
-.artist_single_album_header_albumname {
-  color: white;
-  float: left;
-  display: block;
-  position: absolute;
-  top: 10%;
-  left: 8%;
-  width: 92%;
-  height: 7%;
-  font-size: 2em;
-  overflow: hidden;
-}
 
+/*
+///////////////////////////////////////////////////////////////////////////////////
+// SINGLE ALBUM PAGE
+///////////////////////////////////////////////////////////////////////////////////
+*/
 .artist_single_album_page {
   position: absolute;
   left: 0px;
@@ -525,13 +494,61 @@
   height: 100%; 
 }
 
+.artist_single_album_button_play {
+  position: absolute;
+  left: 82%;
+  top: 10%;
+  height: 6%;
+  padding: 1.5% 0 2% 0;
+  width: 15%;
+}
+
+.artist_single_album_button_queue {
+  position: absolute;
+  left: 82%;
+  top: 20%;
+  height: 6%;
+  padding: 1.5% 0 2% 0;
+  width: 15%;
+}
+
+.artist_single_album_button_inner {
+  position: absolute;
+  left: 2.5%;
+  top: 3%;
+  height: 94%;
+  width: 95%;
+  background: -webkit-gradient(linear, left top, left bottom, from(#000000), to(#202020));
+  background: -moz-linear-gradient(top, #000000, #202020);
+  background: -o-linear-gradient(top, #000000, #202020);
+  font-size: 3.5em;
+  color: #faa51a;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+}
+
+.artist_single_album_header_artist {
+  color: white;
+  float: left;
+  display: block;
+  position: absolute;
+  top: 0%;
+  left: 1%;
+  width: 98%;
+  height: 19%;
+  font-size: 2.5em;
+  overflow: hidden;
+}
+
 #artist_single_album_image_container {
   background: white;
   position: absolute;
   left: 5%;
-  width: 40%;
-  height: 60%;
-  top: 12%;
+  width: 70%;
+  height: 30%;
+  top: 22%;
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   -o-border-radius: 5px;
@@ -552,12 +569,11 @@
   position: relative;
   background: black;
   color: white;
-  left: 48%; 
-  width: 40%;
-  top: 12%;
-  height: 84%;
+  left: 1%; 
+  width: 98%;
+  top: 52%;
+  height: 48%;
   float: top;
-  overflow: hidden;
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   -o-border-radius: 5px;
@@ -587,8 +603,8 @@
 }
 
 .artist_single_album_track_selected {
-  border: solid 3px #fca51a;
-  font-weight: italic;
+  border: solid 5px #fca51a;
+  font-weight: italic bold;
   color: white;
 }
 
@@ -633,6 +649,12 @@
   box-shadow: 0 3px 7px #333;
 }
 
+
+/*
+////////////////////////////////////////////////////////////////////////
+// PLAYER
+////////////////////////////////////////////////////////////////////////
+*/
 #player_page {
   position: absolute;
   left: 0px;
@@ -644,10 +666,10 @@
 #player_playing_track {
   text-shadow: rgba(0,0,0,.4) 0 1px 0;
   position: absolute;
-  left: 45%;
+  left: 1%;
   top: 3%;
-  width: 54%;
-  height: 10%;
+  width: 98%;
+  height: 8%;
   font-size: 2.7em;
   overflow: hidden;
   color: white;
@@ -656,10 +678,10 @@
 #player_playing_artist_album {
   text-shadow: rgba(0,0,0,.4) 0 1px 0;
   position: absolute;
-  left: 47%;
-  top: 12%;
-  width: 52%;
-  height: 16%;
+  left: 1%;
+  top: 11%;
+  width: 98%;
+  height: 15%;
   font-size: 2em;
   overflow: hidden;
   color: lightgray;
@@ -668,10 +690,10 @@
 #player_playing_album_image_container {
   background: black;
   position: absolute;
-  left: 48%;
-  width: 40%;
-  height: 60%;
-  top: 30%;
+  left: 1%;
+  width: 67%;
+  height: 30%;
+  top: 26%;
   border: solid 2px darkgray;
 
   -webkit-border-radius: 10px;
@@ -693,62 +715,13 @@
   top: 1%;
 }
 
-#player_next_playing_track {
-  text-shadow: rgba(0,0,0,.4) 0 1px 0;
-  position: absolute;
-  left: 62%;
-  top: 80%;
-  width: 30%;
-  height: 6%;
-  font-size: 1.5em;
-  overflow: hidden;
-}
-
-#player_next_playing_artist_album {
-  text-shadow: rgba(0,0,0,.4) 0 1px 0;
-  position: absolute;
-  left: 63%;
-  top: 87%;
-  width: 45%;
-  height: 4%;
-  font-size: 1em;
-  overflow: hidden;
-}
-
-#player_next_playing_album_image_container {
-  background: white;
-  position: absolute;
-  left: 50%;
-  width: 10%;
-  height: 15%;
-  top: 76%;
-
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  -o-border-radius: 5px;
-  border-radius: 5px;
-
-  -webkit-box-shadow: 0 3px 7px #333; 
-  -moz-box-shadow: 0 3px 7px #333; 
-  -o-box-shadow: 0 3px 7px #333; 
-  box-shadow: 0 3px 7px #333; 
-}
-
-#player_next_playing_album_image {
-  position: relative;
-  width: 90%;
-  height: 90%;
-  left: 5%;
-  top: 5%;
-}
-
 #player_button_playstop {
   position: absolute;
-  left: 3%;
-  top: 5%;
-  height: 15%;
+  left: 70%;
+  top: 26%;
+  height: 10%;
   padding: 2% 0 2% 0;
-  width: 15%;
+  width: 25%;
 
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
@@ -791,11 +764,11 @@
 */
 #player_button_next {
   position: absolute;
-  left: 22%;
-  top: 5%;
-  height: 15%;
+  left: 70%;
+  top: 42%;
+  height: 10%;
   padding: 2% 0 2% 0;
-  width: 15%;
+  width: 25%;
 
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
@@ -832,8 +805,42 @@
 }
 
 
+#player_playback_position_container {
+  position: absolute;
+  left: 5%;
+  top: 65%;
+  height: 8%;
+  padding: 1% 0 1% 0;
+  width: 90%;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+
+  -webkit-box-shadow: 0 3px 7px #888; 
+  -moz-box-shadow: 0 3px 7px #888; 
+  -o-box-shadow: 0 3px 7px #888; 
+  box-shadow: 0 3px 7px #888; 
+  background: -webkit-gradient(linear, left top, left bottom, from(#fca51a), to(#5e3a10));
+  background: -moz-linear-gradient(top, #fca51a,#5e3a10);
+  background: -o-linear-gradient(top, #fca51a,#5e3a10);
+}
+
+#player_playback_position_container_inner {
+  position: absolute;
+  left: 5%;
+  width: 90%;
+  top: 5%;
+  height: 90%;
+  background: black;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+}
+
+
 /**
-* page: player
 * description: Text that is shown inside the playback position scroller
 */
 #player_playback_position_text {
@@ -841,11 +848,10 @@
   color: #fca51a;
   font-size: 3em;
   left: 37%; 
-  top: -10%;
+  top: -8%;
 }
 
 /**
-* page: player
 * description: Scroller that follows the current playback position
 * and allows seeking the playback position.
 */
@@ -868,8 +874,6 @@
     -moz-border-radius: 10px;
     -o-border-radius: 10px;
     border-radius: 10px;
-
-/* TODO: Fix this */
 }
 
 /**
@@ -894,6 +898,132 @@
   border-radius: 20px;
 }
 
+/**
+// PLAYER - VOLUME
+*/
+#player_volume_down {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  top: 78%;
+  left: 5%;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+  background: -webkit-gradient(linear, left top, left bottom, from(#faa51a), to(#f47a20));
+  background: -moz-linear-gradient(top, #faa51a, #f47a20);
+  background: -o-linear-gradient(top, #faa51a, #f47a20);
+}
+
+#player_volume_down:active {
+  opacity: .8;
+}
+
+#player_volume_down_inner {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  top: 5px;
+  left: 5px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  background: -webkit-gradient(linear, left top, left bottom, from(#000000), to(#202020));
+  background: -moz-linear-gradient(top, #000000, #202020);
+  background: -o-linear-gradient(top, #000000, #202020);
+  font-size: 3em;
+  color: #faa51a;
+}
+
+#player_volume_down_inner:active {
+  background: -webkit-gradient(linear, left top, left bottom, from(#202020), to(#404040));
+  background: -moz-linear-gradient(top, #202020, #404040);
+  background: -o-linear-gradient(top, #202020, #404040);
+}
+
+#player_volume_up {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  top: 78%;
+  left: 80%;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+  background: -webkit-gradient(linear, left top, left bottom, from(#faa51a), to(#f47a20));
+  background: -moz-linear-gradient(top, #faa51a, #f47a20);
+  background: -o-linear-gradient(top, #faa51a, #f47a20);
+}
+
+#player_volume_up:active {
+  opacity: .8;
+}
+
+#player_volume_up_inner {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  top: 5px;
+  left: 5px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+
+  background: -webkit-gradient(linear, left top, left bottom, from(#000000), to(#202020));
+  background: -moz-linear-gradient(top, #000000, #202020);
+  background: -o-linear-gradient(top, #000000, #202020);
+  font-size: 3em;
+  color: #faa51a;
+}
+
+#player_volume_up_inner:active {
+  background: -webkit-gradient(linear, left top, left bottom, from(#202020), to(#404040));
+  background: -moz-linear-gradient(top, #202020, #404040);
+  background: -o-linear-gradient(top, #202020, #404040);
+}
+
+#player_volume_container {
+  width: 55%;
+  height: 40px;
+  top: 79%;
+  left: 22%;
+  float: left;
+  position: absolute;
+  background: darkgray;
+  display: inline;
+  opacity: .5;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.player_volbar {
+  width: 8%;
+  height: 90%;
+  margin-top: 0.8%;
+  margin-left: 2%;
+  float: left;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.player_volbar_visible {
+  background: -webkit-gradient(linear, left top, left bottom, from(#faa51a), to(#f47a20));
+  background: -moz-linear-gradient(top, #faa51a, #f47a20);
+  background: -o-linear-gradient(top, #faa51a, #f47a20);
+}
+
+.player_volbar_hidden {
+  background: gray;
+  opacity: 0.5;
+}
 
 
 /**
@@ -902,8 +1032,8 @@
 */
 #radiostations_page {
   position: absolute;
-  left: 0px;
-  top: 0px;
+  left: 0;
+  top: 0;
   width: 100%;
   height: 100%; 
 }
@@ -911,12 +1041,44 @@
 #radiostations_container {
   display: block;
   position: absolute;
-  top: 1%;
-  height: 93%;
-  width: 90%;
-  left: 5%;
+  top: 2%;
+  height: 96%;
+  width: 96%;
+  left: 2%;
   float: left;
   margin: 10px auto;
+}
+
+.radiostation_item {
+  position: relative;
+  left:1%;
+  width: 45%;
+  height: 20%;
+  background: white;
+  margin-left: 2%;
+  margin-top: 2%;
+  float: left;
+  -webkit-border-radius: 5px;
+  -webkit-box-shadow: 0 3px 7px #333; 
+  -moz-border-radius: 5px;
+  -moz-box-shadow: 0 3px 7px #333; 
+  -o-border-radius: 5px;
+  -o-box-shadow: 0 3px 7px #333; 
+}
+
+.radiostation_item_image {
+  position: relative;
+  margin-left: 7.5%;
+  margin-top: 5%;
+  width: 85%;
+  height: 80%;
+}
+
+.radiostation_item_name {
+  position: relative;
+  font-size: 1em;
+  margin-top: .5%;
+  margin-left: 3%;
 }
 
 #radiostations_rotate {
@@ -953,39 +1115,6 @@
   font-size: 1.8em;
 }
 
-.radiostation_item {
-  position: relative;
-  left:1%;
-  width: 28%;
-  height: 42%;
-  min-height: 42%;
-  background: white;
-  margin-left: 2%;
-  margin-top: 4%;
-  float: left;
-  overflow: hidden;
-  -webkit-border-radius: 5px;
-  -webkit-box-shadow: 0 3px 7px #333; 
-  -moz-border-radius: 5px;
-  -moz-box-shadow: 0 3px 7px #333; 
-  -o-border-radius: 5px;
-  -o-box-shadow: 0 3px 7px #333; 
-}
-
-.radiostation_item_image {
-  position: relative;
-  margin-left: 7.5%;
-  margin-top: 5%;
-  width: 85%;
-  height: 80%;
-}
-
-.radiostation_item_name {
-  position: relative;
-  font-size: 1em;
-  margin-top: .5%;
-  margin-left: 3%;
-}
 
 
 .shortcut_button {
@@ -1032,9 +1161,12 @@
 }
 
 .close_button {
-  position: absolute;
+/*  position: absolute;
   top: 30%;
-  left: 91%;
+  left: 80%;*/
+  position: fixed;
+  right: 0;
+  top: 35%;
   width: 60px;
   height: 60px;
 }
@@ -1044,9 +1176,12 @@
 }
 
 .home_button {
-  position: absolute;
+/*  position: absolute;
   top: 45%;
-  left: 91%;
+  left: 80%;*/
+  position: fixed;
+  right: 0;
+  top: 50%;
   width: 60px;
   height: 60px;
 }
@@ -1071,17 +1206,10 @@
  Currently playing playlist
 */
 
-#player_current_playlist_page {
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
 #player_current_playlist_items {
   position: absolute;
   left: 5%;
-  top: 12%;
+  top: 90%;
   width: 100%;
   height: 100%;
   float: top;
@@ -1095,9 +1223,9 @@
   margin-top: 1%;
   position: absolute:
   top: 15%;
-  left: 5%;
-  width: 84%;
-  height: 12%;
+  left: 1%;
+  width: 80%;
+  height: 7%;
   float: left;
   border-bottom: solid 2px darkgray;
   -webkit-border-radius: 5px;
@@ -1118,7 +1246,7 @@
 .player_current_playlist_item_track_name {
   position: relative:
   display: block;
-  font-size: 1.7em;
+  font-size: 1.4em;
   left: 1%;
   float: top;
   overflow: hidden;
@@ -1130,7 +1258,7 @@
   position: relative;
   display: block;
   left: 2%;
-  font-size: 1.3em;
+  font-size: 1.2em;
   overflow: hidden;
   white-space: nowrap;
 }
@@ -1151,7 +1279,7 @@
   font-size: 1.2em;
   left: 100%;
   height: 85%;
-  width: 40%;
+  width: 80%;
   color: white;
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
@@ -1256,8 +1384,9 @@
 
 
 /**
- Searching of album arts
-
+///////////////////////////////////////////////////////////////////////////////
+// Searching of album arts
+///////////////////////////////////////////////////////////////////////////////
 */
 
 #search_album_arts_page {
@@ -1269,9 +1398,9 @@
   position: absolute; 
   padding-left: 5%;
   top: 1%;
-  left: 10%;
-  width: 80%;
-  height: 10%;
+  left: 5%;
+  width: 90%;
+  height: 7%;
   overflow: hidden;
   font-size: 2.4em;
   -webkit-border-radius: 5px;
@@ -1289,8 +1418,8 @@
 #search_album_arts_result_container {
   position: absolute;
   top: 12%;
-  left: 5%;
-  width: 84%;
+  left: 1%;
+  width: 98%;
   height: 85%;
 }
 
@@ -1300,8 +1429,8 @@
   margin-left: 2%;
   margin-top: 2%;
   position: relative;
-  width: 30%;
-  height: 45%;
+  width: 45%;
+  height: 23%;
   background: black;
   border: solid 2px darkgray;
 
@@ -1328,11 +1457,13 @@
 }
 
 
-
+/**
+* The overlay that is shown when daemon connection is lost.
+*/
 #connectionlost {
   position: absolute;
-  width: 800px;
-  height: 480px;
+  width: 380px;
+  height: 600px;
   font-size: 64px;
   background-color: black;
   -webkit-border-radius: 5px;
@@ -1344,10 +1475,13 @@
   opacity: .9;
 }
 
+/**
+* The overlay that is shown when browser does not support the required features, like websockets.
+*/
 #notsupported {
   position: absolute;
-  width: 800px;
-  height: 480px;
+  width: 380px;
+  height: 800px;
   font-size: 64px;
   background-color: black;
   -webkit-border-radius: 5px;
@@ -1361,8 +1495,8 @@
 
 #waitamoment {
   position: absolute;
-  width: 800px;
-  height: 480px;
+  width: 380px;
+  height: 800px;
   font-size: 64px;
   background-color: black;
   -webkit-border-radius: 5px;
@@ -1388,163 +1522,7 @@
   text-shadow: rgba(0,0,0,.4) 0 2px 0;
 }
 
-#player_volume_down {
-  position: absolute;
-  width: 60px;
-  height: 60px;
-  top: 70%;
-  left: 5%;
-  -webkit-border-radius: 10px;
-  -moz-border-radius: 10px;
-  -o-border-radius: 10px;
-  border-radius: 10px;
-  background: -webkit-gradient(linear, left top, left bottom, from(#faa51a), to(#f47a20));
-  background: -moz-linear-gradient(top, #faa51a, #f47a20);
-  background: -o-linear-gradient(top, #faa51a, #f47a20);
-}
 
-#player_volume_down:active {
-  opacity: .8;
-}
-
-#player_volume_down_inner {
-  position: absolute;
-  width: 50px;
-  height: 50px;
-  top: 5px;
-  left: 5px;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  -o-border-radius: 5px;
-  border-radius: 5px;
-  background: -webkit-gradient(linear, left top, left bottom, from(#000000), to(#202020));
-  background: -moz-linear-gradient(top, #000000, #202020);
-  background: -o-linear-gradient(top, #000000, #202020);
-  font-size: 3em;
-  color: #faa51a;
-}
-
-#player_volume_down_inner:active {
-  background: -webkit-gradient(linear, left top, left bottom, from(#202020), to(#404040));
-  background: -moz-linear-gradient(top, #202020, #404040);
-  background: -o-linear-gradient(top, #202020, #404040);
-}
-
-#player_volume_up {
-  position: absolute;
-  width: 60px;
-  height: 60px;
-  top: 70%;
-  left: 38%;
-  -webkit-border-radius: 10px;
-  -moz-border-radius: 10px;
-  -o-border-radius: 10px;
-  border-radius: 10px;
-  background: -webkit-gradient(linear, left top, left bottom, from(#faa51a), to(#f47a20));
-  background: -moz-linear-gradient(top, #faa51a, #f47a20);
-  background: -o-linear-gradient(top, #faa51a, #f47a20);
-}
-
-#player_volume_up:active {
-  opacity: .8;
-}
-
-#player_volume_up_inner {
-  position: absolute;
-  width: 50px;
-  height: 50px;
-  top: 5px;
-  left: 5px;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  -o-border-radius: 5px;
-  border-radius: 5px;
-
-  background: -webkit-gradient(linear, left top, left bottom, from(#000000), to(#202020));
-  background: -moz-linear-gradient(top, #000000, #202020);
-  background: -o-linear-gradient(top, #000000, #202020);
-  font-size: 3em;
-  color: #faa51a;
-}
-
-#player_volume_up_inner:active {
-  background: -webkit-gradient(linear, left top, left bottom, from(#202020), to(#404040));
-  background: -moz-linear-gradient(top, #202020, #404040);
-  background: -o-linear-gradient(top, #202020, #404040);
-}
-
-#player_volume_container {
-  width: 180px;
-  height: 40px;
-  top: 73%;
-  left: 14%;
-  float: left;
-  position: absolute;
-  background: darkgray;
-  display: inline;
-  opacity: .5;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  -o-border-radius: 5px;
-  border-radius: 5px;
-}
-
-.player_volbar {
-  width: 8%;
-  height: 90%;
-  margin-top: 0.8%;
-  margin-left: 2%;
-  float: left;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  -o-border-radius: 5px;
-  border-radius: 5px;
-}
-
-.player_volbar_visible {
-  background: -webkit-gradient(linear, left top, left bottom, from(#faa51a), to(#f47a20));
-  background: -moz-linear-gradient(top, #faa51a, #f47a20);
-  background: -o-linear-gradient(top, #faa51a, #f47a20);
-}
-
-.player_volbar_hidden {
-  background: gray;
-  opacity: 0.5;
-}
-
-#player_playback_position_container {
-  position: absolute;
-  left: 5%;
-  top: 50%;
-  height: 8%;
-  padding: 1% 0 1% 0;
-  width: 40%;
-  -webkit-border-radius: 10px;
-  -moz-border-radius: 10px;
-  -o-border-radius: 10px;
-  border-radius: 10px;
-
-  -webkit-box-shadow: 0 3px 7px #888; 
-  -moz-box-shadow: 0 3px 7px #888; 
-  -o-box-shadow: 0 3px 7px #888; 
-  box-shadow: 0 3px 7px #888; 
-  background: -webkit-gradient(linear, left top, left bottom, from(#fca51a), to(#5e3a10));
-  background: -moz-linear-gradient(top, #fca51a,#5e3a10);
-  background: -o-linear-gradient(top, #fca51a,#5e3a10);
-}
-
-#player_playback_position_container_inner {
-  position: absolute;
-  left: 5%;
-  width: 90%;
-  top: 5%;
-  height: 90%;
-  background: black;
-  -webkit-border-radius: 10px;
-  -moz-border-radius: 10px;
-  -o-border-radius: 10px;
-  border-radius: 10px;
-}
 
 
 /*
@@ -1554,9 +1532,9 @@
 .notification_dialog {
   position: fixed;
   overflow: hidden;
-  left: 65%;
+  left: 10%;
   top: 5%;
-  width: 30%;
+  width: 80%;
   height: 15%;
   background: -webkit-gradient(linear, left top, left bottom, from(#faa51a), to(#f47a20));
   background: #faa51a;

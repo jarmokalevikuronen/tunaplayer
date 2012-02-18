@@ -244,9 +244,12 @@ INSTALLS += target
 html.files += webui/jquery.min.js
 html.files += webui/jquery.jqote2.min.js
 html.files += webui/tunaplayer.css
+html.files += webui/tunaplayer_n9.css
 html.files += webui/tunaplayerdaemon.js
 html.files += webui/tunaplayer.html
 html.files += webui/tunaplayer.tmpl
+html.files += webui/tunaplayer_n9.tmpl
+html.files += webui/jgestures.min.js
 html.path = $$PREFIX/usr/share/tunaplayer/
 INSTALLS += html
 
