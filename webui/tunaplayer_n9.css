@@ -669,7 +669,7 @@ body {
   left: 1%;
   top: 3%;
   width: 98%;
-  height: 8%;
+  height: 15%;
   font-size: 2.7em;
   overflow: hidden;
   color: white;
@@ -679,7 +679,7 @@ body {
   text-shadow: rgba(0,0,0,.4) 0 1px 0;
   position: absolute;
   left: 1%;
-  top: 11%;
+  top: 15%;
   width: 98%;
   height: 15%;
   font-size: 2em;
@@ -1206,10 +1206,39 @@ body {
  Currently playing playlist
 */
 
+.player_current_playlist_clear {
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+
+  position: absolute;
+  top: 88%;
+  left: 5%;
+  width: 60px;
+  height: 60px;
+  color: white;
+}
+
+.player_current_playlist_shuffle {
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+
+  position: absolute;
+  top: 88%;
+  left: 25%;
+  width: 60px;
+  height: 60px;
+  color: white;
+}
+
+
 #player_current_playlist_items {
   position: absolute;
   left: 5%;
-  top: 90%;
+  top: 98%;
   width: 100%;
   height: 100%;
   float: top;
@@ -1228,10 +1257,10 @@ body {
   height: 7%;
   float: left;
   border-bottom: solid 2px darkgray;
-  -webkit-border-radius: 5px;
+/*  -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   -o-border-radius: 5px;
-  border-radius: 5px;
+  border-radius: 5px;*/
 }
 
 .player_current_playlist_item_names {
@@ -1268,7 +1297,7 @@ body {
   position: relative;
   display: block;
   height: 100%;
-  width: 20%;
+  width: 25%;
   left: 0%;
 }
 
@@ -1304,8 +1333,9 @@ body {
   width: 90%;
   height: 84%;
   font-size: 2em;
-  color: #ff551a;
+  color: #ff331a;
 }
+
 
 .playlist_shuffle_button_inner {
   -webkit-border-radius: 10px;
@@ -1322,64 +1352,6 @@ body {
   height: 84%;
   font-size: 2em;
   color: #faa51a;
-}
-
-.player_current_playlist_clear {
-  -webkit-border-radius: 10px;
-  -moz-border-radius: 10px;
-  -o-border-radius: 10px;
-  border-radius: 10px;
-
-  position: absolute;
-  top: 1%;
-  left: 45%;
-  width: 60px;
-  height: 60px;
-  color: white;
-}
-
-.player_current_playlist_shuffle {
-  -webkit-border-radius: 10px;
-  -moz-border-radius: 10px;
-  -o-border-radius: 10px;
-  border-radius: 10px;
-
-  position: absolute;
-  top: 1%;
-  left: 60%;
-  width: 60px;
-  height: 60px;
-  color: white;
-}
-
-.player_current_playlist_tracks_rotate {
-  position: absolute;
-  display: block;
-  top: 12.5%;
-  height: 85%;
-  left: 2%;
-  width: 12%;
-  background: darkgray;
-  vertical-align: middle;
-  font-size: 2em;
-  opacity: 0.25;
-  -webkit-transition: opacity 0.25s ease-in-out;
-  -webkit-border-radius: 5px;
-  -webkit-box-shadow: 0 3px 7px #333; 
-  -moz-transition: opacity 0.25s ease-in-out;
-  -moz-border-radius: 5px;
-  -moz-box-shadow: 0 3px 7px #333; 
-  -o-transition: opacity 0.25s ease-in-out;
-  -o-border-radius: 5px;
-  -o-box-shadow: 0 3px 7px #333; 
-  border-radius: 5px;
-  box-shadow: 0 3px 7px #333; 
-
-  text-align: middle;
-}
-
-.player_current_playlist_tracks_rotate:active {
-  opacity: .5;
 }
 
 

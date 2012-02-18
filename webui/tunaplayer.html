@@ -58,7 +58,7 @@ var visibleTracks = 8;
 View: ArtistList
 Description: How many artist shortcuts visible at @ time.
 */
-var artistShortcutVisibleItems = 4;
+var artistShortcutVisibleItems = isN9() ? 4 : 7;
 
 /**
 Context: Global
@@ -109,7 +109,7 @@ var playerVolumeUpLongPressTimer = null;
 var longPressTimer = null;
 
 /* Amount of visible items in radio stations page */
-var radioVisibleCount = 128;
+var radioVisibleCount = isN9() ? 128 : 6;
 /* Currently visible item in radio stations page */
 var radioVisibleStart = 0;
 
@@ -1129,11 +1129,6 @@ function closeView() {
   var closeId = pageStackPop();
   var openId = pageStackPop();
 
-if (openId == "root")
-{
-//alert(closes);
-//closes = "";
-}
   if (closeId == undefined || openId == undefined) {
     return false;
   }
@@ -1147,6 +1142,7 @@ if (openId == "root")
       if (cachedContent && cachedContent.length) {
         object.innerHTML = cachedContent;
         object.removeAttribute("data-cached-content");
+/* TODO: Make sure the innerHTML gets updated with latest available information (like album arts) */
       }
       $(object).removeClass("div_hidden");
       $(object).addClass("tile_opened");
@@ -1606,6 +1602,8 @@ function processAlbumChanged(json) {
   if (id.length > 0) {
     console.log("Updating UI for album " + id + " to have image " + art);
     /* Update the single album page to contain the "up-to-date" albumart */
+
+    /* TOOD: Update also the locally cached stuff here so that We get up-to-date information when required. */
     $("img").each(function(index, object) {
       myid = $(object).attr("data-album-id");
       if (myid == id) {
