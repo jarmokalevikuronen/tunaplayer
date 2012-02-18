@@ -3,7 +3,7 @@ _TUNA_BEGIN_TEMPLATE
   <div id="artist_listbox_container">
     <div id="artist_listbox">
     <% for (var i=0;i<this.items.length;i++) { %>
-     <div class="artist_listbox_letter" onclick="toggleClassById('artist_listbox_letter_container_<%=i%>', 'artist_listbox_letter_container_hidden');">
+     <div class="artist_listbox_letter" onclick="this.scrollIntoView(true);toggleClassById('artist_listbox_letter_container_<%=i%>', 'artist_listbox_letter_container_hidden');">
       <div class="artist_listbox_header_letter"><b><center><%=this.items[i][0]["name"].charAt(0)%></center></b></div>
            <div id="artist_listbox_letter_container_<%=i%>" class="artist_listbox_letter_container artist_listbox_letter_container_hidden">
             <%

@@ -212,22 +212,19 @@ body {
   -webkit-border-radius: 10px;
 }
 
-.artist_listbox_header_letter_opened {
-  background: darkgray;
-  -webkit-border-radius: 15px;
+.artist_listbox_header_letter:active {
+  background: -webkit-gradient(linear, left top, left bottom, from(#f88e11), to(#f06015));
+  background: -moz-linear-gradient(top, #f88e11, #f06015);
+  background: -o-linear-gradient(top, #f88e11, #f06015);
 }
 
 .artist_listbox_letter_container {
-/*  background: #333333;*/
-  -webkit-border-radius: 10px; 
+/*  -webkit-border-radius: 10px; 
   border: solid 2px darkgray;
+*/
   left: 1%;
   width: 98%;
 }
-
-/*.artist_listbox_letter_container:active {
-  background: white;
-}*/
 
 .artist_listbox_letter_container_hidden {
   display: none;
@@ -237,7 +234,12 @@ body {
   -webkit-opacity: 1;
   -moz-opacity: 1;
   position: relative;
-  background: black;
+/*  background: black;*/
+/*  background: -webkit-gradient(linear, left top, left bottom, from(#f88e11), to(#f06015));
+  background: -moz-linear-gradient(top, #f88e11, #f06015);
+  background: -o-linear-gradient(top, #f88e11, #f06015);
+*/
+
   color: white;
   margin-top: 1%;
   margin-left: auto;
@@ -257,6 +259,7 @@ body {
   -o-transition: all 0.5s ease-in-out;
   border-radius: 5px;
   box-shadow: 0 3px 7px #333; 
+  border: solid 2px darkgray;
 }
 
 .artist_list_item:active {
@@ -417,18 +420,18 @@ body {
 
 .artist_albums_button_play {
   position: absolute;
-  left: 88%;
-  top: 1%;
-  height:11%;
-  width: 10%;
+  left: 78%;
+  top: 4%;
+  height:9%;
+  width: 20%;
 }
 
 .artist_albums_button_queue {
   position: absolute;
-  left: 88%;
+  left: 78%;
   top: 15%;
-  height:11%;
-  width: 10%;
+  height:9%;
+  width: 20%;
 }
 
 .artist_albums_button_inner {
@@ -440,21 +443,12 @@ body {
   background: -webkit-gradient(linear, left top, left bottom, from(#000000), to(#202020));
   background: -moz-linear-gradient(top, #000000, #202020);
   background: -o-linear-gradient(top, #000000, #202020);
-  font-size: 2.4em;
+  font-size: 3.8em;
   color: #faa51a;
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
   -o-border-radius: 10px;
   border-radius: 10px;
-}
-
-.artist_albums_button_play_random {
-  position: absolute;
-  left: 70%;
-  top: 1%;
-  height: 3%;
-  padding: 1.5% 0 2% 0;
-  width: 20%;
 }
 
 /**
@@ -717,9 +711,9 @@ body {
 
 #player_button_playstop {
   position: absolute;
-  left: 70%;
+  left: 72%;
   top: 26%;
-  height: 10%;
+  height: 12%;
   padding: 2% 0 2% 0;
   width: 25%;
 
@@ -764,9 +758,9 @@ body {
 */
 #player_button_next {
   position: absolute;
-  left: 70%;
+  left: 72%;
   top: 42%;
-  height: 10%;
+  height: 12%;
   padding: 2% 0 2% 0;
   width: 25%;
 
@@ -808,7 +802,7 @@ body {
 #player_playback_position_container {
   position: absolute;
   left: 5%;
-  top: 65%;
+  top: 60%;
   height: 8%;
   padding: 1% 0 1% 0;
   width: 90%;
@@ -848,7 +842,7 @@ body {
   color: #fca51a;
   font-size: 3em;
   left: 37%; 
-  top: -8%;
+  top: 6%;
 }
 
 /**
@@ -1161,9 +1155,6 @@ body {
 }
 
 .close_button {
-/*  position: absolute;
-  top: 30%;
-  left: 80%;*/
   position: fixed;
   right: 0;
   top: 35%;
@@ -1176,9 +1167,6 @@ body {
 }
 
 .home_button {
-/*  position: absolute;
-  top: 45%;
-  left: 80%;*/
   position: fixed;
   right: 0;
   top: 50%;
@@ -1507,7 +1495,7 @@ body {
   left: 10%;
   top: 5%;
   width: 80%;
-  height: 15%;
+  height: 8%;
   background: -webkit-gradient(linear, left top, left bottom, from(#faa51a), to(#f47a20));
   background: #faa51a;
   color: black;

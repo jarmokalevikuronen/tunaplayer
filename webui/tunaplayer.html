@@ -1006,15 +1006,15 @@ function swipeAllowed() {
   return false;
 }
 
-
+//
+// TODO: Fix this so that parameters are passed more intelligently as a map.
+//
 function renderView(viewId, renderHint, renderContext) {
   var targetObject = document.getElementById(viewId);
   if (!targetObject) {
     console.log("ERROR: Unable to locate object: " + viewId);
     return;
   }
-
-  var customSwipe = false;
 
   if (viewId == "artists_container") { 
     if (renderHint == "artistlistOnly") {
@@ -1059,10 +1059,8 @@ function renderView(viewId, renderHint, renderContext) {
     targetObject.innerHTML = createRecentAlbumsPageContent(renderContext["args"]);
   }
 
-  if (!customSwipe && isN9() && targetObject.innerHTML.length > 0) {
+  if (isN9() && targetObject.innerHTML.length > 0) {
     new Swipe(targetObject, function(event) { if (event === "move.previous") closeView(); } );
-  }
-  if (isN9()) {
     window.scrollTo(0,0);
   }
 }
@@ -1102,6 +1100,7 @@ function openView(oldId, newId, initData) {
     var elem = document.getElementById(oldId);
     if (elem) {
       elem.setAttribute("data-cached-content", elem.innerHTML);
+      elem.setAttribute("data-cached-y-position", window.pageYOffset);
       elem.innerHTML = "";
     }
   }
@@ -1138,10 +1137,15 @@ function closeView() {
   if (openId != undefined) {
     var object = document.getElementById(openId);
     if (object) {
+      var ypos = object.getAttribute("data-cached-y-position");
       var cachedContent = object.getAttribute("data-cached-content");
       if (cachedContent && cachedContent.length) {
         object.innerHTML = cachedContent;
         object.removeAttribute("data-cached-content");
+        if (ypos) {
+          window.scrollTo(0, ypos);
+          object.removeAttribute("data-cached-y-position");
+        }
 /* TODO: Make sure the innerHTML gets updated with latest available information (like album arts) */
       }
       $(object).removeClass("div_hidden");
@@ -1764,6 +1768,10 @@ var note = {
 
   show: function(text) {
     note.element.innerHTML = text;
+    if (isN9()) {
+      $(note.element).css('top', window.pageYOffset + 30);
+    }
+
     $(note.element).removeClass("hidden");
     setTimeout(function() { $(note.element).css({"opacity":"0.9"}) }, 50);
     if (note.hideTimer) {
@@ -1910,7 +1918,7 @@ closes += "E";
       </div>
 
       <div id=recent_albums_launcher class="tile_02 tile_closed"  onclick="openView('root', 'recent_albums_container');">
-        <div class="tile_closed_inner"><center>recently added</center></div>
+        <div class="tile_closed_inner"><center>new albums</center></div>
       </div>
 <!--
       <div id=recent_albums_launcher class="tile_12 tile_closed"  onclick="openView('root', 'popular_albums_container');">
