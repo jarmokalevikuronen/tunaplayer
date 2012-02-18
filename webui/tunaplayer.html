@@ -452,11 +452,14 @@ function playerUpdatePlaybackPosition(json) {
 }
 
 function playerUpdateCurrentPlaylist(json) {
+
+  var oldPlaylistItemCount = currentPlaylist ? currentPlaylist["args"]["items"].length : 0;
+
   if (isN9()) {
     /* on mobile(s), the playlist is placed below the actual player */
      currentPlaylist = json;
     if (isForegroundView("player_container")) {
-      renderView("player_container");
+      renderView("player_container", {"scrollToTop": false } );
     }
   } else {
     var playlist_page = document.getElementById("player_current_playlist_page");
@@ -469,6 +472,11 @@ function playerUpdateCurrentPlaylist(json) {
 
       renderView("player_current_playlist");
     }
+  }
+
+  var playlistItemCount = currentPlaylist ? currentPlaylist["args"]["items"].length : 0;
+  if (playlistItemCount > 0 && playlistItemCount != oldPlaylistItemCount) {
+    note.show("Playlist has <b>" + playlistItemCount + "</b> tracks");
   }
 }
 
@@ -1006,15 +1014,17 @@ function swipeAllowed() {
   return false;
 }
 
-//
-// TODO: Fix this so that parameters are passed more intelligently as a map.
-//
-function renderView(viewId, renderHint, renderContext) {
+function renderView(viewId, arg) {
   var targetObject = document.getElementById(viewId);
   if (!targetObject) {
     console.log("ERROR: Unable to locate object: " + viewId);
     return;
   }
+    
+  var renderHint = arg ? arg.renderHint || "no" : undefined;
+  var renderContext = arg ? arg.renderContext || {} : undefined;
+  var initData = arg && arg.initData != undefined ? arg.initData : {};
+  var scrollToTop = arg && arg.scrollToTop != undefined ? arg.scrollToTop : true;
 
   if (viewId == "artists_container") { 
     if (renderHint == "artistlistOnly") {
@@ -1029,16 +1039,7 @@ function renderView(viewId, renderHint, renderContext) {
   } else if (viewId == "artists_albums_container") {
     targetObject.innerHTML = createArtistAlbumsPageContent(renderContext);
   } else if (viewId == "artist_single_album_container") {
-    if (renderHint == "tracklistOnly") {
-      var tlContainer = document.getElementById("artist_single_album_tracklist");
-      if (tlContainer != undefined) {
-        tlContainer.innerHTML = createArtistSingleAlbumTrackList();
-      } else {
-        targetObject.innerHTML = createArtistSingleAlbumPageContent(renderContext.getAttribute('data-album-id'));
-      }
-    } else {
-      targetObject.innerHTML = createArtistSingleAlbumPageContent(renderContext.getAttribute('data-album-id'));
-    }
+    targetObject.innerHTML = createArtistSingleAlbumPageContent(initData.getAttribute('data-album-id'));
   } else if (viewId == "radio_container") {
     targetObject.innerHTML = createRadioPageContent();
     $(targetObject).bind('swipeleft', function() { if (swipeAllowed()) rotateRadioStations("more");  } );
@@ -1054,14 +1055,17 @@ function renderView(viewId, renderHint, renderContext) {
   } else if (viewId == "search_album_arts") {
     targetObject.innerHTML = createSearchAlbumArtsPageContent();
   } else if (viewId == "playlist_container") {
-    targetObject.innerHTML = createPlaylistContainerPageContent();    
+    targetObject.innerHTML = createPlaylistContainerPageContent();
   } else if (viewId == "recent_albums_container") {
     targetObject.innerHTML = createRecentAlbumsPageContent(renderContext["args"]);
   }
 
   if (isN9() && targetObject.innerHTML.length > 0) {
     new Swipe(targetObject, function(event) { if (event === "move.previous") closeView(); } );
-    window.scrollTo(0,0);
+
+    if (scrollToTop === true) {
+      window.scrollTo(0,0);
+    }
   }
 }
 
@@ -1111,7 +1115,7 @@ function openView(oldId, newId, initData) {
   */
   pageStackPush(oldId, newId);
   loadViewContent(oldId, newId, initData, function() { 
-     renderView(newId, "nohint", initData); 
+     renderView(newId, {"initData": initData}); 
     }
   );
 }
@@ -1146,7 +1150,6 @@ function closeView() {
           window.scrollTo(0, ypos);
           object.removeAttribute("data-cached-y-position");
         }
-/* TODO: Make sure the innerHTML gets updated with latest available information (like album arts) */
       }
       $(object).removeClass("div_hidden");
       $(object).addClass("tile_opened");
@@ -1254,7 +1257,7 @@ function loadViewContent(oldid, newid, initData, renderer) {
     tunaPlayer.getRecentAlbums(isN9() ? 20 : 3, function(json) {
       console.log("RECENTALBUMS: " + JSON.stringify(json)); 
       if (json["status"] == "OK") {
-        renderView(newid, "nohint", json);
+        renderView(newid, {"renderContext": json});
       } else {
         closeView();
       }
@@ -1450,7 +1453,7 @@ function rotateArtistList(ignoreRotate) {
     uiIndex = 0;
   
   artistShortcuts[curIdx]['_ui_index'] = uiIndex;
-  renderView("artists_container", "artistlistOnly");
+  renderView("artists_container", {"renderHint": "artistlistOnly"});
 }
 
 function updateShortcutVisiblePageText(object) {
@@ -1493,7 +1496,7 @@ function selectArtistShortcut(object) {
     $(".artist_shortcut").removeClass("artist_shortcut_hili");
     $(object).addClass("artist_shortcut_hili");
     artistShortcutOffset = index % artistShortcutVisibleItems; 
-    renderView("artists_container", "artistlistOnly");
+    renderView("artists_container", {"renderHint": "artistlistOnly"});
   }
   updateShortcutVisiblePageText(object); 
 }
@@ -1562,7 +1565,7 @@ function processDatabaseChanged() {
 
   if (isForegroundView("recent_albums_container")) {
     loadViewContent('root', 'recent_albums_container', null, function() { 
-     renderView('recent_albums_container', "nohint", initData); 
+     renderView('recent_albums_container'); 
     });
   }
 }
@@ -1802,8 +1805,6 @@ var note = {
  *
 */
 
-var closes = "";
-
 window.Swipe = function(element, callback) {
   var _this = this;
 
@@ -1846,8 +1847,6 @@ Swipe.prototype = {
       time: Number( new Date() )
     };
 
-closes += "S";
-
     // used for testing first onTouchMove event
     this.isScrolling = undefined;
     this.deltaX = 0;
@@ -1860,7 +1859,6 @@ closes += "S";
     var duration = Number(new Date()) - this.start.time;
 
     this.deltaX = e.touches[0].pageX - this.start.pageX;
-closes += "M@" + duration + ":" + this.deltaX;
     // determine if scrolling test has run - one time test
     if ( typeof this.isScrolling == 'undefined') {
       this.isScrolling = !!( this.isScrolling || Math.abs(this.deltaX) < Math.abs(e.touches[0].pageY - this.start.pageY) );
@@ -1877,16 +1875,14 @@ closes += "M@" + duration + ":" + this.deltaX;
     var duration = Number(new Date()) - this.start.time;
     var moveDelta = Math.abs(this.deltaX);
 
-closes += "E";
-
-    var validSlide = duration < 350 && moveDelta > 60 && this.isScrolling === false; 
+    var validSlide = duration < 350 && moveDelta > 40 && this.isScrolling === false; 
 
     if (validSlide) {
       this.isScrolling = undefined;
       var md = this.deltaX < 0 ? "move.next" : "move.previous";
       if (!this.swipeAllowedTimer) {
         this.callback(md);
-        this.swipeAllowedTimer = setTimeout(function() { this.swipeAllowedTimer = null }, 750);
+        this.swipeAllowedTimer = setTimeout(function() { this.swipeAllowedTimer = null }, 1000);
       }
     }
   }

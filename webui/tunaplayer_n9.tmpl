@@ -166,7 +166,7 @@ _TUNA_BEGIN_TEMPLATE
     </div>
 
     <div id="player_current_playlist_items" data-playlist-id="">
-      <% for (var i=0;i<this.items.length;i++) { console.log("ADDING: " + i + " : " + JSON.stringify(this.items[i])); %>
+      <% for (var i=0;i<this.items.length;i++) { %>
           <div class="player_current_playlist_item_container" data-track-id="<%=this.items[i]['id']%>">
             <div class="player_current_playlist_item_names">
               <div class="player_current_playlist_item_track_name" ontouchstart="playlistTrackMouseDown(this);" onmousedown="playlistTrackMouseDown(this);" ontouchend="playlistTrackMouseDown(this);" onmouseup="playlistTrackMouseUp(this);" data-track-id="<%=this.items[i]['id']%>"><%=i+1%>. <%=this.items[i]['name'].toLowerCase()%></div>
