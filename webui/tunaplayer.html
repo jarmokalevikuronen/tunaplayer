@@ -387,6 +387,8 @@ function playerUpdateButtonsFromCache() {
 function playerUpdateButtons(json) {
   console.log("PLAYER: update_buttons: " + JSON.stringify(json));
 
+  updateMainShortcutVisibility();
+
   if (!playerOpened()) {
     return;
   }
@@ -430,14 +432,24 @@ function playerUpdatePlaybackPosition(json) {
     var mins;
     var secs;
 
+    hrs = Math.floor(position / 3600);
     mins = Math.floor(position / 60);
     secs = position % 60;
+
+    if (hrs > 0 && hrs < 10)
+      hrs = "0" + hrs;
+    else if (hrs < 1)
+      hrs = "";
 
     if (secs < 10)
       secs = "0" + secs;
 
     if (position != undefined) {
-      position_ctrl.innerHTML = mins + ":" + secs;
+      if (hrs.length) {
+        position_ctrl.innerHTML = hrs + ":" + mins + ":" + secs;
+      } else {
+        position_ctrl.innerHTML = mins + ":" + secs;
+      }
     } else {
       position_ctrl.innerHTML = "";
     }
@@ -457,26 +469,52 @@ function playerUpdateCurrentPlaylist(json) {
 
   if (isN9()) {
     /* on mobile(s), the playlist is placed below the actual player */
-     currentPlaylist = json;
+    currentPlaylist = json;
     if (isForegroundView("player_container")) {
       renderView("player_container", {"scrollToTop": false } );
     }
   } else {
+    currentPlaylist = json;
     var playlist_page = document.getElementById("player_current_playlist_page");
     if (playlist_page != undefined) {
-      currentPlaylist = json;
-
       if (playlistVisibleTopIndex >= currentPlaylist["args"]["items"].length) {
         playlistVisibleTopIndex = 0;
       }
-
       renderView("player_current_playlist");
     }
   }
 
   var playlistItemCount = currentPlaylist ? currentPlaylist["args"]["items"].length : 0;
   if (playlistItemCount > 0 && playlistItemCount != oldPlaylistItemCount) {
-    note.show("Playlist has <b>" + playlistItemCount + "</b> tracks");
+    note.show("Playlist has <b>" + playlistItemCount + "</b> tracks", 5000);
+  }
+
+  updateMainShortcutVisibility();
+}
+
+/**
+* Updates the visibility of the player 
+*/
+function updateMainShortcutVisibility() {
+
+  /*
+  * Update the visibility of the "Player" launcher. It should be visible only
+  * when there is playable content (playlist has entries etc.)
+  */
+  var hidePlayer = false;
+  var plItems = currentPlaylist ? currentPlaylist["args"]["items"].length : 0;
+  if (plItems === 0) {
+    if (tunaPlayer.cachedPlaybackControls) {
+      if (isFalse(tunaPlayer.cachedPlaybackControls.stop)) {
+        hidePlayer = true;
+      }
+    }
+  }
+
+  if (hidePlayer === true) {
+    $("#player_launcher").addClass("hidden"); 
+  } else {
+    $("#player_launcher").removeClass("hidden");
   }
 }
 
@@ -565,6 +603,10 @@ function playerUpdatePlaybackAlbum(json) {
     $("#player_playing_track").html("");
     $("#player_playing_artist_album").html("");
 
+    // We will automagically close the player view once there
+    // is nothing to play..
+    closeView();
+
     return;
   }
 
@@ -579,7 +621,7 @@ function playerUpdatePlaybackAlbum(json) {
 }
 
 function playerUpdatePlaybackTrack(json) {
-  console.log("playerUpdatePlaybackTrack: " + JSON.stringify(json));
+/*  console.log("playerUpdatePlaybackTrack: " + JSON.stringify(json));*/
 
   if (!json)
     return;
@@ -1153,6 +1195,9 @@ function closeView() {
       }
       $(object).removeClass("div_hidden");
       $(object).addClass("tile_opened");
+    } else {
+      // Likely the main view -> update the visibility of the main shortcuts.
+      updataMainShortcutVisibility();
     }
   }
   if (closeId != undefined) {
@@ -1765,28 +1810,41 @@ var note = {
       noteS = "<small><i>Now playing: </i></small><br>" + "<b>" + json["name"].toLowerCase() + "</b>";
     }
     if (noteS.length > 0) {
-      note.show(noteS);
+      note.show(noteS, true);
     }
   },
 
-  show: function(text) {
-    note.element.innerHTML = text;
+  show: function(text, clear) {
+    if (clear !== undefined && clear === true) { 
+      note.element.innerHTML = "";
+    }
+
+    var hadContent = note.element.innerHTML.length > 0;
+    if (hadContent) {
+      note.element.innerHTML += "<br>";
+    }
+    note.element.innerHTML += text;
     if (isN9()) {
       $(note.element).css('top', window.pageYOffset + 30);
     }
+    if (hadContent) {
+      $(note.element).css('height', $(note.element).css('heigth') + 100);
+    }
 
     $(note.element).removeClass("hidden");
+    /* Will begin to show after 50ms */
     setTimeout(function() { $(note.element).css({"opacity":"0.9"}) }, 50);
     if (note.hideTimer) {
       clearTimeout(note.hideTimer);
       note.hideTimer = null;
     }
-    note.hideTimer = setTimeout(function() { note.hide(3500); }, 3500);
+    $(note.element).css({"opacity":"1"});
+    note.hideTimer = setTimeout(function() { note.element.innerHTML = ""; note.hide(3500); }, 3500);
   },
 
   hide: function(text) {
     $(note.element).css({"opacity":"0"});
-    setTimeout(function(){$(note.element).addClass("hidden");}, 1000);
+    setTimeout(function(){note.element.innerHTML = ""; $(note.element).addClass("hidden");}, 1000);
   },
   element: null,
   hideTimer: null
