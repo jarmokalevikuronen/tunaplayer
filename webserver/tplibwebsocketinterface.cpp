@@ -175,30 +175,32 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
 
         case LWS_CALLBACK_HTTP:
         {
-        DEBUG() << "HTTP: SERVE: " << (char *)in;
+            DEBUG() << "HTTP: SERVE: " << (char *)in;
 
-        const char *http_request_path = (const char *)in;
+            const char *http_request_path = (const char *)in;
 
-        QString filePath;
-        bool found = false;
-        for (int i=0;!found && i<gWebSocketServer->providers.count();++i)
-        {
-            filePath = gWebSocketServer->providers.at(i)->objectToFile(http_request_path);
-            if (QFile::exists(filePath))
-                found = true;
-        }
+            QString filePath;
+            bool found = false;
+            for (int i=0;!found && i<gWebSocketServer->providers.count();++i)
+            {
+                filePath = gWebSocketServer->providers.at(i)->objectToFile(http_request_path);
+                if (QFile::exists(filePath))
+                    found = true;
+            }
 
-        QString contentType = gWebSocketServer->filenameToMime(filePath);
-        DEBUG() << "HTTP: SERVE: file=" << filePath << " content:" << contentType;
-        if (libwebsockets_serve_http_file(wsi, filePath.toUtf8().constData(), contentType.toUtf8().constData()))
-        {
-            ERROR() << "HTTP: SERVE";
-        }
+            QString contentType = gWebSocketServer->filenameToMime(filePath);
+            DEBUG() << "HTTP: SERVE: file=" << filePath << " content:" << contentType;
+            if (libwebsockets_serve_http_file(wsi, filePath.toUtf8().constData(), contentType.toUtf8().constData()))
+            {
+                ERROR() << "HTTP: SERVE";
+            }
     }
     break;
 
     case LWS_CALLBACK_ADD_POLL_FD:
     {
+        DEBUG() << "HTTP: AddFD: " << fd;
+
         TPWebSocketServerNotifier *notifier = new TPWebSocketServerNotifier(fd, wsi, gWebSocketServer);
         notifier->setEnabled(true);
         gWebSocketServer->notifiers.insert(fd, notifier);
@@ -208,12 +210,14 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
 
     case LWS_CALLBACK_DEL_POLL_FD:
     {
+        DEBUG() << "HTTP: RemoveFD: " << fd;
         TPWebSocketServerNotifier *notifier = gWebSocketServer->notifierForFd(fd);
         if (notifier)
         {
-            notifier->setEnabled(false);
-            notifier->deleteLater();
-            gWebSocketServer->notifiers.remove(fd);
+//            notifier->setEnabled(false);
+  //          notifier->deleteLater();
+            gWebSocketServer->removeNotifier(fd);
+            delete notifier;
         }
     }
     break;
@@ -227,14 +231,14 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
 
 void TPWebSocketServer::notifierActivated(int fd)
 {
-    //qDebug() << "notifiedActivated: fd: " << fd;
-
     TPWebSocketServerNotifier* notifier = notifierForFd(fd);
     if (notifier)
     {
         notifier->setEnabled(false);
         libwebsocket_service(gWebSocketServer->context, 0);
-        notifier->setEnabled(true);
+        notifier = notifierForFd(fd);
+        if (notifier)
+            notifier->setEnabled(true);
     }
 }
 

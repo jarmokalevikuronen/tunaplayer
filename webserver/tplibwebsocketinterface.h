@@ -97,6 +97,11 @@ public:
         return notifier;
     }
 
+    void removeNotifier(int fd)
+    {
+        notifiers.remove(fd);
+    }
+
     //! Sends specific information to all connected clients
     //! connected using the tp-json protocol
     void sendMessageToAll(const QByteArray content);
