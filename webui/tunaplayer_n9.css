@@ -9,24 +9,30 @@ body {
   top: 5%;
 }
 
-.tile_01 {
+.tile_10 {
   left: 10%;
-  top: 53%;
+  top: 15%;
 }
 
 .tile_02 {
   left: 10%;
-  top: 29%;
-}
-
-.tile_10 {
-  left: 10%;
-  top: 17%;
+  top: 25%;
 }
 
 .tile_11 {
   left: 10%;
-  top: 41%;
+  top: 35%;
+}
+
+.tile_12 {
+  left: 10%;
+  top: 45%;
+}
+
+
+.tile_01 {
+  left: 10%;
+  top: 55%;
 }
 
 
@@ -34,7 +40,7 @@ body {
   position: absolute;
   z-index: 1;
   width: 80%;
-  height: 10%;
+  height: 8%;
   vertical-align: center;
   background: -webkit-gradient(linear, left top, left bottom, from(#fca51a), to(#5e3a10));
   background: -moz-linear-gradient(top, #fca51a, #5e3a10);
@@ -212,11 +218,11 @@ body {
   -webkit-border-radius: 10px;
 }
 
-.artist_listbox_header_letter:active {
+/*.artist_listbox_header_letter:active {
   background: -webkit-gradient(linear, left top, left bottom, from(#f88e11), to(#f06015));
   background: -moz-linear-gradient(top, #f88e11, #f06015);
   background: -o-linear-gradient(top, #f88e11, #f06015);
-}
+}*/
 
 .artist_listbox_letter_container {
 /*  -webkit-border-radius: 10px; 
@@ -234,11 +240,6 @@ body {
   -webkit-opacity: 1;
   -moz-opacity: 1;
   position: relative;
-/*  background: black;*/
-/*  background: -webkit-gradient(linear, left top, left bottom, from(#f88e11), to(#f06015));
-  background: -moz-linear-gradient(top, #f88e11, #f06015);
-  background: -o-linear-gradient(top, #f88e11, #f06015);
-*/
 
   color: white;
   margin-top: 1%;

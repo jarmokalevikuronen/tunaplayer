@@ -54,6 +54,7 @@ void TPWebSocketProtocol::sendEvent(TPWebSocketProtocolMessage event)
 {
     if (server->countClients())
     {
+        // TODO: Check here.
         pendingEvents.append(event);
         if (!sendTimer->isActive())
             sendTimer->start(1);

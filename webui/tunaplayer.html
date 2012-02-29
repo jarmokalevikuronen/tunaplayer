@@ -8,14 +8,9 @@
     <meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   </head>
 
-<!--<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.css" />-->
   <script type="text/javascript" src="jquery.min.js"></script>
   <script type="text/javascript" src="jquery.jqote2.min.js"></script>
-
-<!--<script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>-->
-<!--<script src="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.js"></script>-->
   <script type="text/javascript" src="tunaplayerdaemon.js"></script>
-
   <script type="text/javascript">
 
 
@@ -257,7 +252,7 @@ function setImage(json, objectId) {
 function openArtist(object, openedByView) {
   var id = object.getAttribute("data-artist-id");
   if (id != undefined && id.length > 0) {
-    openView(openedByView, 'artists_albums_container', object);
+    openView(openedByView, 'artist_albums_container', object);
   } else {
     console.log("ERROR: No data-artist-id defined");
   }
@@ -521,7 +516,7 @@ function updateMainShortcutVisibility() {
 function startWaitLongMousePress(object, callerView) {
   longPressTimer = setTimeout(function() { 
     longPressTimer = null;
-    albumCommand("play", object, callerView ? callerView : 'artists_albums_container'); 
+    albumCommand("play", object, callerView ? callerView : 'artist_albums_container'); 
     }, 750);
 }
 
@@ -775,7 +770,7 @@ function rotateAlbums(object) {
 
   console.log("-> rotateAlbums: " + index);
 
-  renderView('artists_albums_container');
+  renderView('artist_albums_container');
 }
 
 function seekActiveArtistShortcutPage(offset) {
@@ -1078,7 +1073,7 @@ function renderView(viewId, arg) {
       targetObject.innerHTML = createArtistsPageContent();
       updateShortcutVisiblePageText();
     }
-  } else if (viewId == "artists_albums_container") {
+  } else if (viewId == "artist_albums_container") {
     targetObject.innerHTML = createArtistAlbumsPageContent(renderContext);
   } else if (viewId == "artist_single_album_container") {
     targetObject.innerHTML = createArtistSingleAlbumPageContent(initData.getAttribute('data-album-id'));
@@ -1269,7 +1264,7 @@ function loadViewContent(oldid, newid, initData, renderer) {
       }
     });
   }
-  if (newid == "artist_single_album_container" && oldid == "artists_albums_container") {
+  if (newid == "artist_single_album_container" && oldid == "artist_albums_container") {
     currentTrackIndex = 0;
   }
   if (newid == "player_current_playlist") {
@@ -1286,7 +1281,7 @@ function loadViewContent(oldid, newid, initData, renderer) {
       }
     });
   }
-  if (newid == 'artists_albums_container') {
+  if (newid == 'artist_albums_container') {
     artistAlbumArtVisibleIndex = 0;
     loadArtistAlbums(initData, renderer);
     delayedRender = true;
@@ -1968,17 +1963,16 @@ Swipe.prototype = {
       </div>
 
       <div id=playrandom_launcher class="tile_11 tile_closed"  onclick="tunaPlayer.playPlaylist('Random tracks'); openView('root', 'player_container');">
-        <div class="tile_closed_inner"><center>random play</center></div>
+        <div class="tile_closed_inner"><center>random</center></div>
+      </div>
+
+      <div id=search_launcher class="tile_12 tile_closed"  onclick="openView('root', 'search_container');">
+        <div class="tile_closed_inner"><center>search</center></div>
       </div>
 
       <div id=recent_albums_launcher class="tile_02 tile_closed"  onclick="openView('root', 'recent_albums_container');">
-        <div class="tile_closed_inner"><center>new albums</center></div>
+        <div class="tile_closed_inner"><center>new</center></div>
       </div>
-<!--
-      <div id=recent_albums_launcher class="tile_12 tile_closed"  onclick="openView('root', 'popular_albums_container');">
-        <div class="tile_closed_inner"><center>popular albums</center></div>
-      </div>
--->
 
       <div id="radio_container" class="topleft div_hidden">
       </div>
@@ -1992,7 +1986,7 @@ Swipe.prototype = {
       <div id=popular_albums_container class="topleft div_hidden">
       </div>
 
-      <div id=artists_albums_container class="topleft div_hidden">
+      <div id=artist_albums_container class="topleft div_hidden">
       </div>
 
       <div id="search_album_arts" class="topleft div_hidden">
@@ -2002,6 +1996,9 @@ Swipe.prototype = {
       </div>
 
       <div id="player_container" class="topleft div_hidden">
+      </div>
+
+      <div id="search_container" class="topleft div_hidden">
       </div>
 
       <div id="player_current_playlist" class="topleft div_hidden">

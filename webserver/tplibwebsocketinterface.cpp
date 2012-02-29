@@ -116,6 +116,21 @@ int TPWebSocketServer::callback_tp_json_protocol(struct libwebsocket_context *co
        QByteArray b((const char *)in, len);
        emit gWebSocketServer->messageReceived(b, wsi);
     }
+    else if (reason == LWS_CALLBACK_SERVER_WRITEABLE)
+    {
+        libwebsocket_callback_on_writable(context, wsi);
+        DEBUG() << "WEBSOCKET: ServerWriteable: " << wsi;
+    }
+/*    else if (LWS_EXT_CALLBACK_REQUEST_ON_WRITEABLE == reason)
+    {
+        DEBUG() << "WEBSOCKET: RequestOnWritable";
+        return 1;
+    }
+    else if (LWS_EXT_CALLBACK_IS_WRITEABLE == reason)
+    {
+        DEBUG() << "WEBSOCKET: CallbackIsWritable";
+        return 1;
+    }*/
 
     return 0;
 }
@@ -214,8 +229,6 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
         TPWebSocketServerNotifier *notifier = gWebSocketServer->notifierForFd(fd);
         if (notifier)
         {
-//            notifier->setEnabled(false);
-  //          notifier->deleteLater();
             gWebSocketServer->removeNotifier(fd);
             delete notifier;
         }
@@ -236,6 +249,8 @@ void TPWebSocketServer::notifierActivated(int fd)
     {
         notifier->setEnabled(false);
         libwebsocket_service(gWebSocketServer->context, 0);
+        // Above call might cause the notifier to be deleted ->
+        // refetch the pointer here.
         notifier = notifierForFd(fd);
         if (notifier)
             notifier->setEnabled(true);

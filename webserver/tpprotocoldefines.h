@@ -61,6 +61,10 @@ static const QString protocolCommandSetVolumeArgPercentsKey("percents");
 //! Calling this method will cause a volumechanged event to be reported.
 static const QString protocolCommandReportVolume("reportvolume");
 
+//! Can be used to disable certain events from being reported (E.g. no playback progress
+//! reporting when the currently visible view within the UI does not show such information).
+static const QString protocolCommandDisableEvents("disableevents");
+
 // Generic status reports.
 static const QString protocolExecStatusOK("OK");
 static const QString protocolExecStatusError("FAIL");
