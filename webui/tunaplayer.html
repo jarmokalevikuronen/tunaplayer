@@ -27,6 +27,8 @@
   }
 })();
 
+/* Global instance that contains the search results */
+var searchResults = {};
 
 /* Contains a precompiled qjote templates index by name */
 var templates = {};
@@ -218,6 +220,7 @@ function handleSearchAlbumArtComplete() {
 }
 
 function isN9() {
+/*return true;*/
   return navigator.userAgent.toLowerCase().indexOf('nokian9') > -1;
 }
 
@@ -1040,6 +1043,68 @@ function createRecentAlbumsPageContent(json) {
   return html;
 }
 
+var searchTriggerTimer = null;
+var searchTriggerTimeout = 500;
+var searchInProgress = false;
+var searchPending = false;
+
+function startSearch() {
+   searchPending = false;
+   var elem = document.getElementById("searchcriteria");
+    if (elem)
+      executeSearch(elem.value);
+ }
+
+function searchCriteriaChanged(inp) {
+  clearTimeout(searchTriggerTimer);
+  if (inp.value.length <= 1)
+    return;
+
+  searchTriggerTimer = setTimeout(function() { 
+    searchTriggerTimer = null;
+    startSearch();
+  }, searchTriggerTimeout);  
+}
+
+function executeSearch(criteria) {
+console.log("executeSearch: " + criteria);
+  if (searchInProgress) {
+    searchPending = true;
+    return;
+  }
+
+  searchInProgress = true;
+  tunaPlayer.searchArtist(criteria, function(json) { 
+    searchResults["artists"] = json["args"].items;
+    tunaPlayer.searchAlbum(criteria, function(json) {
+      searchResults["albums"] = json["args"].items;
+      tunaPlayer.searchTrack(criteria, function(json) {
+        searchResults["tracks"] = json["args"].items;
+        searchInProgress = false;
+        renderView("search_container", {"renderHint": "resultsonly", "renderContext": searchResults } );
+        if (searchPending) {
+          startSearch();
+        }
+      });
+    }); 
+  });
+}
+
+function createSearchResultsContent(json) {
+  if (!json) {
+    return "<div style='color: white'><center>(No results)</center></div>";
+  }
+console.log("DEBUG: " + JSON.stringify(json));
+  var artists = json["artists"];
+  var albums = json["albums"];
+  var tracks = json["tracks"];
+
+  return "<div style='color: white'>Artists: " + artists.length + " Albums: " + albums.length + " Tracks: " + tracks.length + "</div>";
+}
+
+function createSearchHeaderContent(json) {
+  return '<input onkeyup="searchCriteriaChanged(this);" type="text" style="margin-bottom: 5px; background-color: black; color: white; -webkit-border-radius: 15px; padding: 4px; font-size: 40px; position: absolute; top: 3%; width:80%; left:10%;" placeholder="search.." id="searchcriteria" autofocus="autofocus"/>';
+}
 
 var swipeBlocked = null;
 
@@ -1079,8 +1144,6 @@ function renderView(viewId, arg) {
     targetObject.innerHTML = createArtistSingleAlbumPageContent(initData.getAttribute('data-album-id'));
   } else if (viewId == "radio_container") {
     targetObject.innerHTML = createRadioPageContent();
-    $(targetObject).bind('swipeleft', function() { if (swipeAllowed()) rotateRadioStations("more");  } );
-    $(targetObject).bind('swiperight', function() { if (swipeAllowed()) rotateRadioStations("previous"); } );
   } else if (viewId == "player_container") {
     targetObject.innerHTML = createPlayerPageContent();
     playerUpdateButtonsFromCache();
@@ -1095,6 +1158,14 @@ function renderView(viewId, arg) {
     targetObject.innerHTML = createPlaylistContainerPageContent();
   } else if (viewId == "recent_albums_container") {
     targetObject.innerHTML = createRecentAlbumsPageContent(renderContext["args"]);
+  } else if (viewId == "search_container") {
+    if (renderHint !== "resultsonly") {
+      var search_header_container = document.getElementById("search_header");
+      search_header_container.innerHTML = createSearchHeaderContent(renderContext);
+    }
+    var search_result_container = document.getElementById("search_results");
+    if (search_result_container)
+      search_result_container.innerHTML = createSearchResultsContent(renderContext);
   }
 
   if (isN9() && targetObject.innerHTML.length > 0) {
@@ -1302,6 +1373,8 @@ function loadViewContent(oldid, newid, initData, renderer) {
         closeView();
       }
     });
+  }
+  if (newid == "search_container") {
   }
   if (isN9()) {
     if (newid == "player_container") {
@@ -1542,15 +1615,6 @@ function selectArtistShortcut(object) {
 }
 
 function tunaDaemonConnectionEstablished() {
-  /* TODO: Do something here, altough the daemon is at this time the active party */
-/*
-  tunaPlayer.getMostPlayedTracks(10, function(json) {console.log("POPULARTRACKS: " + JSON.stringify(json)); });
-  tunaPlayer.getMostPlayedAlbums(10, function(json) {console.log("POPULARALBUMS: " + JSON.stringify(json)); });
-  tunaPlayer.getMostPlayedArtists(10, function(json) {console.log("POPULARARTISTS: " + JSON.stringify(json)); });
-
-  tunaPlayer.getRecentlyPlayedTracks(10, function(json) {console.log("RECENTTRACKS: " + JSON.stringify(json)); });
-  tunaPlayer.getRecentlyPlayedAlbums(10, function(json) {console.log("RECENTALBUMS: " + JSON.stringify(json)); });
-  tunaPlayer.getRecentlyPlayedArtists(10, function(json) {console.log("RECENTARTISTS: " + JSON.stringify(json)); });*/
 }
 
 function tunaDaemonConnectionClosed() {
@@ -1999,6 +2063,10 @@ Swipe.prototype = {
       </div>
 
       <div id="search_container" class="topleft div_hidden">
+        <div id="search_header">
+        </div>
+        <div id="search_results">
+        </div>
       </div>
 
       <div id="player_current_playlist" class="topleft div_hidden">

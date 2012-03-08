@@ -419,6 +419,22 @@ var tunaPlayer = {
   },
   getRecentlyPlayedArtists: function(count, callback) {
     this.getRecently("played_artists", count, callback);
+  },
+  search: function(type, criteria, callback) {
+    var args = undefined;
+    if (criteria) {
+      args = { "criteria": criteria };
+    }
+    this.callSP("search_" + type, callback, args);  
+  },
+  searchArtist: function(criteria, callback) {
+    this.search("artist", criteria, callback);
+  },
+  searchAlbum: function(criteria, callback) {
+    this.search("album", criteria, callback);
+  },
+  searchTrack: function(criteria, callback) {
+    this.search("track", criteria, callback);
   }
 };
 
