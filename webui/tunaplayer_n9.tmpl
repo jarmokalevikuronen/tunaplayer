@@ -95,7 +95,7 @@ _TUNA_END_TEMPLATE=tmpl_artist_single_album
 
 _TUNA_BEGIN_TEMPLATE
    <% if (this.lastTrack >= this.items.length) { 
-        this.lastTrack = this.items.length - 1;
+        this.lastTrack = this.items.length;
       } %>
 
    <% for (var i=0;i<this.items.length;i++) { %>
@@ -239,4 +239,55 @@ _TUNA_BEGIN_TEMPLATE
 <%}%>
 </div>
 _TUNA_END_TEMPLATE=tmpl_recent_albums
+
+_TUNA_BEGIN_TEMPLATE
+<%
+  var cnt_artists = this.artists ? this.artists.length : 0;
+  var cnt_albums = this.albums ? this.albums.length : 0;
+  var cnt_tracks = this.tracks ? this.tracks.length : 0;
+%>
+  <div class="search_results">
+    <div class="search_result_header">
+      <p class="search_result_header_type_text"><b>Artists</b></p>
+      <div class="search_result_hor_delimiter"></div>
+      <div class="search_result_item_container">
+<%    if (cnt_artists <= 0) { %>
+        <p class="search_result_item"><i><b>(no items)</b></i></p>
+<%    } else {
+        for (var i=0;i<cnt_artists;i++) { %>
+          <p onclick="openArtist(this, 'search_container');" class="search_result_item" data-artist-id="<%=this.artists[i].id%>"><i><b><%=this.artists[i].name.toLowerCase()%></b></i></p>
+<%      }
+      } %>
+    </div>
+  </div>
+
+  <div class="search_result_header">
+    <p class="search_result_header_type_text"><b>Albums</b></p>
+    <div class="search_result_hor_delimiter"></div>
+    <div class="search_result_item_container">
+<%  if (cnt_albums <= 0) { %>
+      <p class="search_result_item"><i><b>(no items)</b></i></p>
+<%  } else {
+      for (var i=0;i<cnt_albums;i++) { %>
+        <p onclick="openAlbum(this, 'search_container');" class="search_result_item" data-album-id="<%=this.albums[i].id%>"><i><b><%=this.albums[i].name.toLowerCase()%></b></i><br><small>&nbsp;<%=this.albums[i]["artist.name"].toLowerCase()%></small></p>
+<%    }
+    } %>
+    </div>
+  </div>
+
+  <div class="search_result_header">
+    <p class="search_result_header_type_text"><b>Tracks</b></p>
+    <div class="search_result_hor_delimiter"></div>
+    <div class="search_result_item_container">
+<%  if (cnt_tracks <= 0) { %>
+      <p class="search_result_item"><i><b>(no items)</b></i></p>
+<%  } else {
+      for (var i=0;i<cnt_tracks;i++) { %>
+        <p onclick="openAlbum(this, 'search_container');" class="search_result_item" data-album-id="<%=this.tracks[i]['album.id']%>"><i><b><%=this.tracks[i].name.toLowerCase()%></b></i><br><small>&nbsp;<%=this.tracks[i]["album.artist.name"].toLowerCase()%></small></p>
+<%    }
+    } %>
+    </div>
+  </div>
+  
+_TUNA_END_TEMPLATE=tmpl_search_results
 

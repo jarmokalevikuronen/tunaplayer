@@ -1508,4 +1508,56 @@ body {
   opacity: 0;
 }
 
+/*
+* Search page
+*
+*/
+
+.search_results {
+  position: absolute;
+  top: 13%;
+  left: 1%;
+  width: 98%;
+  float: top;
+}
+
+.search_result_header {
+  position: relative;
+  margin-top: 25px;
+  left: 5%;
+  width: 90%;
+  background: black;
+  color: #faa51a;
+  font-size: 2em;
+}
+
+.search_result_header_type_text {
+  position: relative;
+  margin: 0;
+  left: 2%;
+}
+
+.search_result_item_container {
+  color: white;
+  position: relative;
+  left: 4%;
+}
+
+.search_result_item {
+  margin: 0;
+  margin-top: 10px;
+  font-size: 1em;
+  position: relative;
+}
+
+.search_result_hor_delimiter {
+  position: relative;
+  top: 0;
+  left: 0%;
+  width: 90%;
+  height: 3px;
+  -webkit-border-radius: 2px;
+  background: -webkit-gradient(linear, left top, right bottom, from(gray), to(black));
+  color: -webkit-gradient(linear, left top, right bottom, from(gray), to(black));
+}
 
