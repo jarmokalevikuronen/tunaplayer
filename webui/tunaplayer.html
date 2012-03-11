@@ -1267,7 +1267,7 @@ function closeView() {
       $(object).addClass("tile_opened");
     } else {
       // Likely the main view -> update the visibility of the main shortcuts.
-      updataMainShortcutVisibility();
+      updateMainShortcutVisibility();
     }
   }
   if (closeId != undefined) {
@@ -1861,6 +1861,9 @@ function age2Text(age) {
 *
 */
 var note = {
+  ContentTypePlaylist: 1,
+  ContentTypeNowPlayling: 2,
+
   attach: function(elemName) {
     note.element = document.getElementById(elemName);
   },
