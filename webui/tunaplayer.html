@@ -944,9 +944,8 @@ function createArtistSingleAlbumTrackList() {
   initData["firstTrack"] = currentTrackIndex;
   initData["lastTrack"] = currentTrackIndex + visibleTracks;
   initData["items"] = currentAlbumTracks["items"];
-alert("INITDATA: " + JSON.stringify(initData));
   var html = $.jqote(templates.tmpl_artist_single_album_tracklist_content, initData);
-console.log("TRACKLIST: " + html);
+
   return html;
 }
 
