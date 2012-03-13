@@ -151,9 +151,6 @@ downtimer = +new Date();
 }
 
 function playlistTrackMouseUp(object) {
-
-var span = +new Date() - downtimer;
-note.show("mouse: " + span + "ms");
   var id = object.getAttribute("data-track-id");
   if (!id || id.length < 1) {
     return;
@@ -252,6 +249,7 @@ function setImage(json, objectId) {
 }
 
 function openArtist(object, openedByView) {
+  console.log("openArtist");
   var id = object.getAttribute("data-artist-id");
   if (id != undefined && id.length > 0) {
     openView(openedByView, 'artist_albums_container', object);
@@ -1045,64 +1043,171 @@ function createRecentAlbumsPageContent(json) {
   return html;
 }
 
-/* Timer used to delay search execution */
-var searchTriggerTimer = null;
-/* Timeout after last input when the search gets executed */
-var searchTriggerTimeout = 500;
-/* Is search currently in progress */
-var searchInProgress = false;
-/* Should we perform a new search immediately after currently executed search finished (i.e. has the criteria changed while search in progress) */
-var searchPending = false;
+/**
+* SearchContext is main object that is responsible of making the searches
+* towards the tunadaemon.
+*/
+var searchContext = {
+  results: {},
+  triggerTimer: null,
+  triggerTimeout: 500,
+  inProgress: false,
+  pending: false,
+  criteria: "",
 
-function startSearch() {
-   searchPending = false;
-   var elem = document.getElementById("searchcriteria");
-    if (elem)
-      executeSearch(elem.value);
- }
+  clear: function() {
+    results = {};
+  },
 
-function searchCriteriaChanged(inp) {
-  clearTimeout(searchTriggerTimer);
-  if (inp.value.length <= 1)
-    return;
+  /* Starts to execute the search operation */
+  start: function() {
+    searchContext.pending = false;
+    var elem = document.getElementById("searchcriteria");
+    if (elem) {
+      searchContext.execute(elem.value);
+    }
+  },
 
-  searchTriggerTimer = setTimeout(function() { 
-    searchTriggerTimer = null;
-    startSearch();
-  }, searchTriggerTimeout);  
+  /* Called if/when user has typed something to the search criteria input box. */
+  criteriaChanged: function(inp) {
+    clearTimeout(searchContext.triggerTimer);
+    if (inp.value.length <= 1) {
+      searchContext.criteria = "";
+      return;
+    }
+
+    searchContext.triggerTimer = setTimeout(function() { 
+      searchContext.triggerTimer = null;
+      searchContext.start();
+    }, searchContext.triggerTimeout);  
+  },
+
+  /* Private function: Performs the actual search. */
+  execute: function(criteria) {
+    console.log("executeSearch(" + criteria + ")");
+    if (searchContext.inProgress) {
+      searchContext.pending = true;
+      return;
+    }
+
+    searchContext.inProgress = true;
+    tunaPlayer.searchArtist(criteria, function(json) { 
+      searchContext.results["artists"] = json["args"].items;
+      tunaPlayer.searchAlbum(criteria, function(json) {
+        searchContext.results["albums"] = json["args"].items;
+        tunaPlayer.searchTrack(criteria, function(json) {
+          searchContext.criteria = criteria;
+          searchContext.results["tracks"] = json["args"].items;
+          searchContext.inProgress = false;
+          searchViewData.reset();
+          renderView("search_container", {"renderHint": "resultsonly", "renderContext": searchContext.results } );
+          if (searchContext.pending) {
+            searchContext.startSearch();
+          }
+        });
+      }); 
+    });
+  }
+};
+
+/**
+* Contains a definition of the data and methods used to manage contents within the search
+* view (artists, albums, tracks and visible stuff in related).
+*/
+var searchViewData = {
+  artistTopIndex: 0,
+  albumTopIndex: 0,
+  trackTopIndex: 0,
+  artistItems: 0,
+  albumItems: 0,
+  trackItems: 0,
+  visibleArtistItems: 6,
+  visibleAlbumItems: 3,
+  visibleTrackItems: 3,
+  cachedResults: undefined,
+
+  reset: function() {
+    if (isN9())
+      return;
+
+    searchViewData.cachedResults = undefined;
+    searchViewData.artistTopIndex = 0;
+    searchViewData.albumTopIndex = 0;
+    searchViewData.trackTopIndex = 0;
+    searchViewData.artistItems = 0;
+    searchViewData.albumItems = 0;
+    searchViewData.trackItems = 0;
+  },
+
+  rotateArtists: function() {
+    searchViewData.artistTopIndex += searchViewData.visibleArtistItems;
+    if (searchViewData.artistTopIndex >= searchViewData.artistItems) {
+      searchViewData.artistTopIndex = 0;
+    }
+    renderView("search_container", {renderHint: "resultsonly"});
+  },
+
+  rotateAlbums: function() {
+    searchViewData.albumTopIndex += searchViewData.visibleAlbumItems;
+    if (searchViewData.albumTopIndex >= searchViewData.albumItems) {
+      searchViewData.albumTopIndex = 0;
+    }
+    renderView("search_container", {renderHint: "resultsonly"});
+  },
+ 
+  rotateTracks: function() {
+    searchViewData.trackTopIndex += searchViewData.visibleTrackItems;
+    if (searchViewData.trackTopIndex >= searchViewData.trackItems) {
+      searchViewData.trackTopIndex = 0;
+    }
+    renderView("search_container", {renderHint: "resultsonly"});
+  }
 }
 
-function executeSearch(criteria) {
-  if (searchInProgress) {
-    searchPending = true;
-    return;
+function isMapEmpty(map) {
+  for (var key in map) {
+    if (map.hasOwnProperty(key)) {
+      return false;
+    }
   }
-
-  searchInProgress = true;
-  tunaPlayer.searchArtist(criteria, function(json) { 
-    searchResults["artists"] = json["args"].items;
-    tunaPlayer.searchAlbum(criteria, function(json) {
-      searchResults["albums"] = json["args"].items;
-      tunaPlayer.searchTrack(criteria, function(json) {
-        searchResults["tracks"] = json["args"].items;
-        searchInProgress = false;
-        renderView("search_container", {"renderHint": "resultsonly", "renderContext": searchResults } );
-        if (searchPending) {
-          startSearch();
-        }
-      });
-    }); 
-  });
+  return true;
 }
 
 function createSearchResultsContent(json) {
-  if (!json) {
-    return "<div style='color: white'><center>(No results)</center></div>";
+  if (isMapEmpty(json)) {
+    if (searchViewData.cachedResults != undefined) {
+      json = searchViewData.cachedResults;
+    }
+  } else {
+    searchViewData.cachedResults = json;
   }
 
   var artists = json["artists"];
   var albums = json["albums"];
   var tracks = json["tracks"];
+
+  if (!isN9()) {
+    json["artistTop"] = searchViewData.artistTopIndex;
+    json["albumTop"] = searchViewData.albumTopIndex;
+    json["trackTop"] = searchViewData.trackTopIndex;
+    json["artistBottom"] = searchViewData.artistTopIndex + searchViewData.visibleArtistItems;
+    json["albumBottom"] = searchViewData.albumTopIndex + searchViewData.visibleAlbumItems;
+    json["trackBottom"] = searchViewData.trackTopIndex + searchViewData.visibleTrackItems;
+
+    searchViewData.artistItems = artists ? artists.length : 0;
+    searchViewData.albumItems = albums ? albums.length : 0;
+    searchViewData.trackItems = tracks ? tracks.length : 0;
+
+    json["artistItemCount"] = searchViewData.artistItems;
+    json["albumItemCount"] = searchViewData.albumItems;
+    json["trackItemCount"] = searchViewData.trackItems;
+
+    json["artistRotatePossible"] = searchViewData.artistItems > searchViewData.visibleArtistItems;
+    json["albumRotatePossible"] = searchViewData.albumItems > searchViewData.visibleAlbumItems;
+    json["trackRotatePossible"] = searchViewData.trackItems > searchViewData.visibleTrackItems;
+
+/*    console.log("SearchResultData: " + JSON.stringify(json));*/
+  }
 
   var html = $.jqote(templates.tmpl_search_results, json);
 
@@ -1110,7 +1215,11 @@ function createSearchResultsContent(json) {
 }
 
 function createSearchHeaderContent(json) {
-  return '<input onkeyup="searchCriteriaChanged(this);" type="text" style="margin-bottom: 5px; background-color: black; color: white; -webkit-border-radius: 15px; padding: 4px; font-size: 40px; position: absolute; top: 3%; width:80%; left:10%;" placeholder="search.." id="searchcriteria" autofocus="autofocus"/>';
+/*  json["value"] = searchContext.criteria;*/
+
+  var html = $.jqote(templates.tmpl_search_header, json);
+
+  return html;
 }
 
 function renderView(viewId, arg) {
@@ -1167,9 +1276,9 @@ function renderView(viewId, arg) {
     if (renderHint !== "resultsonly") {
       search_header_container.innerHTML = createSearchHeaderContent(renderContext);
     }
-    
     if (search_result_container)
       search_result_container.innerHTML = createSearchResultsContent(renderContext);
+/*console.log("GENERATED HTML=" + search_result_container.innerHTML);*/
   }
 
   if (isN9() && targetObject.innerHTML.length > 0) {
@@ -1203,7 +1312,7 @@ function toggleClassById(id, _class) {
 */
 function openView(oldId, newId, initData) {
 
-  console.log("OPEN " + newId + " from " + oldId);
+  console.log("OPEN '" + newId + "' FROM '" + oldId + "'");
 
   $("#" + oldId).addClass("div_hidden");
   $("#" + oldId).removeClass("tile_opened");
@@ -1219,6 +1328,8 @@ function openView(oldId, newId, initData) {
       elem.setAttribute("data-cached-y-position", window.pageYOffset);
       elem.innerHTML = "";
     }
+  } else {
+    console.log("OPEN '" + newId + "' from ROOT");
   }
 
   /* Page stack holds pairs. -> Thus when popping we get first the page to close and then the page to open 
@@ -1265,6 +1376,17 @@ function closeView() {
       }
       $(object).removeClass("div_hidden");
       $(object).addClass("tile_opened");
+      if (openId == "search_container" && closeId != "root") {
+        /* This is the case when returning BACK to search view from a view opened from the search view -> restore the search criteria (content otherwise OK already). */
+        var selem = document.getElementById("searchcriteria");
+        if (selem) {
+          selem.setAttribute("value", searchContext.criteria);
+          if (document.selection)
+            document.selection.empty();
+          selem.setSelectionRange(selem.value.length, selem.value.length);
+          selem.focus();
+        }
+      }
     } else {
       // Likely the main view -> update the visibility of the main shortcuts.
       updateMainShortcutVisibility();
@@ -1302,7 +1424,7 @@ function loadArtistAlbums(object, renderer) {
 
 function loadViewContent(oldid, newid, initData, renderer) {
 
-  console.log("LOAD-DATA to OPEN view " + newid + " (old view " + oldid + ")");
+  console.log("LOADVIEWCONTENT to OPEN view '" + newid + "' FROM '" + oldid + "'");
 
   /* When set to true, page will not be rendered at the end of this function
      but will be done "later on" when data is available. */
@@ -1379,6 +1501,12 @@ function loadViewContent(oldid, newid, initData, renderer) {
     });
   }
   if (newid == "search_container") {
+    if (oldid == "root") {
+      searchContext.results = {};
+      searchContext.criteria = "";
+      searchViewData.cachedResults = {};
+      console.log("OPEN SEARCH VIEW from ROOT");
+    }
   }
   if (isN9()) {
     if (newid == "player_container") {

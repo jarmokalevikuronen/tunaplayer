@@ -45,7 +45,7 @@ _TUNA_BEGIN_TEMPLATE
     <% for (var i=this.firstVisible;i<this.items.length && i<this.lastVisible;i++) { %>
       <div class="artist_albums_container_item" data-album-index="<%=i%>" data-artist-id="<%=this.items[i]['artist.id']%>" data-album-id="<%=this.items[i]['id']%>" onclick="openView('artist_albums_container', 'artist_single_album_container', this);" onmousedown="startWaitLongMousePress(this); return false;" onmouseup="stopWaitLongMousePress(this); return false;">
         <img class="artist_albums_container_item_image" data-album-id="<%=this.items[i]['id']%>" <% if (this.items[i]['album.arts'] != undefined) { %>src="<%=this.items[i]['album.arts']%>" <% } else { %> alt="(No album art)" <% }  %> />
-        <center><p class="artist_albums_container_item_name"><%=this.items[i]['name']%></p></center>
+        <center><p class="artist_albums_container_item_name"><%=this.items[i]['name'].toLowerCase()%></p></center>
       </div>
     <% } %>
     </div>
@@ -241,6 +241,10 @@ _TUNA_BEGIN_TEMPLATE
 _TUNA_END_TEMPLATE=tmpl_recent_albums
 
 _TUNA_BEGIN_TEMPLATE
+<input onkeyup="searchContext.criteriaChanged(this);" type="text" class="search_header" placeholder="search.." id="searchcriteria" autofocus="autofocus" value="<%=this.value ? this.value : ''%>" />
+_TUNA_END_TEMPLATE=tmpl_search_header
+
+_TUNA_BEGIN_TEMPLATE
 <%
   var cnt_artists = this.artists ? this.artists.length : 0;
   var cnt_albums = this.albums ? this.albums.length : 0;
@@ -252,7 +256,7 @@ _TUNA_BEGIN_TEMPLATE
       <div class="search_result_hor_delimiter"></div>
       <div class="search_result_item_container">
 <%    if (cnt_artists <= 0) { %>
-        <p class="search_result_item"><i><b>(no items)</b></i></p>
+        <p class="search_result_item"><i><b>(no matches)</b></i></p>
 <%    } else {
         for (var i=0;i<cnt_artists;i++) { %>
           <p onclick="openArtist(this, 'search_container');" class="search_result_item" data-artist-id="<%=this.artists[i].id%>"><i><b><%=this.artists[i].name.toLowerCase()%></b></i></p>
@@ -266,7 +270,7 @@ _TUNA_BEGIN_TEMPLATE
     <div class="search_result_hor_delimiter"></div>
     <div class="search_result_item_container">
 <%  if (cnt_albums <= 0) { %>
-      <p class="search_result_item"><i><b>(no items)</b></i></p>
+      <p class="search_result_item"><i><b>(no matches)</b></i></p>
 <%  } else {
       for (var i=0;i<cnt_albums;i++) { %>
         <p onclick="openAlbum(this, 'search_container');" class="search_result_item" data-album-id="<%=this.albums[i].id%>"><i><b><%=this.albums[i].name.toLowerCase()%></b></i><br><small>&nbsp;<%=this.albums[i]["artist.name"].toLowerCase()%></small></p>
@@ -280,7 +284,7 @@ _TUNA_BEGIN_TEMPLATE
     <div class="search_result_hor_delimiter"></div>
     <div class="search_result_item_container">
 <%  if (cnt_tracks <= 0) { %>
-      <p class="search_result_item"><i><b>(no items)</b></i></p>
+      <p class="search_result_item"><i><b>(no matches)</b></i></p>
 <%  } else {
       for (var i=0;i<cnt_tracks;i++) { %>
         <p onclick="openAlbum(this, 'search_container');" class="search_result_item" data-album-id="<%=this.tracks[i]['album.id']%>"><i><b><%=this.tracks[i].name.toLowerCase()%></b></i><br><small>&nbsp;<%=this.tracks[i]["album.artist.name"].toLowerCase()%></small></p>

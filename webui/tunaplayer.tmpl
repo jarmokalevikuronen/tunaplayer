@@ -76,7 +76,7 @@ _TUNA_BEGIN_TEMPLATE
     <% for (var i=this.firstVisible;i<this.items.length && i<this.lastVisible;i++) { %>
       <div class="artist_albums_container_item" data-album-index="<%=i%>" data-artist-id="<%=this.items[i]['artist.id']%>" data-album-id="<%=this.items[i]['id']%>" onclick="openView('artists_albums_container', 'artist_single_album_container', this);" onmousedown="startWaitLongMousePress(this); return false;" onmouseup="stopWaitLongMousePress(this); return false;">
         <img class="artist_albums_container_item_image" data-album-id="<%=this.items[i]['id']%>" <% if (this.items[i]['album.arts'] != undefined) { %>src="<%=this.items[i]['album.arts']%>" <% } else { %> alt="(No album art)" <% }  %> />
-        <center><p class="artist_albums_container_item_name"><%=this.items[i]['name']%></p></center>
+        <center><p class="artist_albums_container_item_name"><%=this.items[i]['name'].toLowerCase()%></p></center>
       </div>
     <% } %>
     </div>
@@ -103,7 +103,7 @@ _TUNA_END_TEMPLATE=tmpl_artist_albums
 
 _TUNA_BEGIN_TEMPLATE
  <div class="artist_single_album_page">
-   <div class="artist_single_album_header_artist"><%=this.items[0]['album.artist.name'].toLowerCase()%> - <small><%=this.items[0]['album.name'].toLowerCase()%></small></div>
+   <div class="artist_single_album_header_artist"><%=this.items[0]['album.artist.name'].toLowerCase()%> - <small><i><%=this.items[0]['album.name'].toLowerCase()%></i></small></div>
 
    <div id="artist_single_album_image_container">
      <% var im = undefined;
@@ -165,8 +165,8 @@ _TUNA_END_TEMPLATE=tmpl_artist_single_album_tracklist_content
 
 _TUNA_BEGIN_TEMPLATE
   <div id="player_page">
-   <div id="player_playing_track" data-track-id=""></div>
-   <div id="player_playing_artist_album"></div>
+   <p id="player_playing_track" data-track-id=""></p>
+   <p id="player_playing_artist_album"></p>
    <div id="player_playing_album_image_container">
      <img alt="(Press to search albumart)" id="player_playing_album_image" onclick="openAlbum(this, 'player_container');"/>
    </div>
@@ -180,16 +180,9 @@ _TUNA_BEGIN_TEMPLATE
 
    <div id="player_volume_up" onmousedown="playerVolumePressed('up');" onmouseup="playerVolumeReleased('up');"><div id="player_volume_up_inner"><center>+</center></div></div>
    <div id="player_volume_container">
-     <div id="player_volbar_0" onclick="playerSetVolume(0);" class="player_volbar player_volbar_hidden"></div>
-     <div id="player_volbar_1" onclick="playerSetVolume(1);" class="player_volbar player_volbar_hidden"></div>
-     <div id="player_volbar_2" onclick="playerSetVolume(2);" class="player_volbar player_volbar_hidden"></div>
-     <div id="player_volbar_3" onclick="playerSetVolume(3);" class="player_volbar player_volbar_hidden"></div>
-     <div id="player_volbar_4" onclick="playerSetVolume(4);" class="player_volbar player_volbar_hidden"></div>
-     <div id="player_volbar_5" onclick="playerSetVolume(5);" class="player_volbar player_volbar_hidden"></div>
-     <div id="player_volbar_6" onclick="playerSetVolume(6);" class="player_volbar player_volbar_hidden"></div>
-     <div id="player_volbar_7" onclick="playerSetVolume(7);" class="player_volbar player_volbar_hidden"></div>
-     <div id="player_volbar_8" onclick="playerSetVolume(8);" class="player_volbar player_volbar_hidden"></div>
-     <div id="player_volbar_9" onclick="playerSetVolume(9);" class="player_volbar player_volbar_hidden"></div>
+     <% var i; for (i=0;i<10;i++) { %>
+       <div id="player_volbar_<%=i%>" onclick="playerSetVolume(<%=i%>);" class="player_volbar player_volbar_hidden"></div>
+     <% } %>
    </div>
    <div id="player_volume_down" onmousedown="playerVolumePressed('down');" onmouseup="playerVolumeReleased('down');"><div id="player_volume_down_inner"><center>-</center></div></div>
 
@@ -341,6 +334,9 @@ _TUNA_END_TEMPLATE=tmpl_album_art_search
 _TUNA_BEGIN_TEMPLATE
 <div style="position: absolute; display: table-cell; width: 96%; height: 96%; left: 2%; top: 2%;">
 <% var loops = this.items.length; 
+   if (loops <= 0) { %>
+     <center><p style="color: white; font-size: 2em;">(no new albums)</p></center>
+   <% }
    for (var i=0;i<loops;i++) {
      var art = this.items[i]["album.artl"] ? this.items[i]["album.artl"] : this.items[i]["album.arts"];
      if (art == undefined || art == null || art.length < 1) art = "bogus-art-not-found";
@@ -367,4 +363,82 @@ _TUNA_BEGIN_TEMPLATE
      </div>
    </div>
 _TUNA_END_TEMPLATE=tmpl_recent_albums
+
+_TUNA_BEGIN_TEMPLATE
+<input onload="this.selection.empty();" onkeyup="searchContext.criteriaChanged(this);" type="text" class="search_header" placeholder="search.." id="searchcriteria" autofocus="autofocus" value="<%=this.value ? this.value : ''%>" />
+_TUNA_END_TEMPLATE=tmpl_search_header
+
+_TUNA_BEGIN_TEMPLATE
+<div class="search_results">
+
+  <!-- First column contains the matched artists -->
+  <div class="search_result_column">
+    <div class="search_result_column_header">
+      <p class="search_result_column_header_text" onclick="searchViewData.rotateArtists();">Artists</p>
+    </div>
+    <div class="search_result_column_item">
+      <% if (this.artistItemCount <= 0) { %>
+        <p class="search_result_column_item_text"><b><i>(no matches)</i></b></p>
+      <% } else { 
+        for (var i=this.artistTop;i<this.artistBottom && i<this.artistItemCount;i++) { %>
+          <p onclick="openArtist(this, 'search_container');" data-artist-id="<%=this.artists[i]['id']%>" class="search_result_column_item_text"><b><i><%=this.artists[i]["name"].toLowerCase()%></i></b></p>
+        <% } %>
+      <% } %>
+    </div>
+  </div>
+  <% if(this.artistRotatePossible) { %>
+    <div class="search_result_column_artists_rotate" onclick="searchViewData.rotateArtists();"></div>
+  <% } %>
+
+  <!-- Second column contains the matched albums -->
+  <div class="search_result_column">
+    <div class="search_result_column_header">
+      <p class="search_result_column_header_text" onclick="searchViewData.rotateAlbums();">Albums</p>
+    </div>
+    <div class="search_result_column_item">
+      <% if (this.albumItemCount <= 0) { %>
+        <p class="search_result_column_item_text"><b><i>(no matches)</i></b></p>
+      <% } else { 
+        for (var i=this.albumTop;i<this.albumBottom && i<this.albumItemCount;i++) { %>
+          <p onclick="openAlbum(this, 'search_container');" data-album-id="<%=this.albums[i]['id']%>" class="search_result_column_item_text"><b><i><%=this.albums[i]["name"].toLowerCase()%></i></b><br>&nbsp;<small><%=this.albums[i]["artist.name"].toLowerCase()%></small></p>
+        <% } %>
+      <% } %>
+    </div>
+  </div>
+  <% if (this.albumRotatePossible) { %>
+    <div class="search_result_column_albums_rotate" onclick="searchViewData.rotateAlbums();"></div>
+  <% } %>
+
+  <!-- Third column contains the matched tracks -->
+  <div class="search_result_column">
+    <div class="search_result_column_header">
+      <p class="search_result_column_header_text" onclick="searchViewData.rotateTracks();">Tracks</p>
+    </div>
+    <div class="search_result_column_item">
+      <% if (this.trackItemCount <= 0) { %>
+        <p class="search_result_column_item_text"><b><i>(no matches)</i></b></p>
+      <% } else { 
+        for (var i=this.trackTop;i<this.trackBottom && i<this.trackItemCount;i++) { %>
+          <p onclick="openAlbum(this, 'search_container');" data-album-id="<%=this.tracks[i]['album.id']%>" class="search_result_column_item_text"><b><i><%=this.tracks[i]["name"].toLowerCase()%></i></b><br>&nbsp;<small><%=this.tracks[i]["album.artist.name"].toLowerCase()%></small></p>
+        <% } %>
+      <% } %>
+    </div>
+  </div>
+  <% if (this.trackRotatePossible) { %>
+    <div class="search_result_column_tracks_rotate" onclick="searchViewData.rotateTracks();"></div>
+  <% } %>
+  </div>
+
+   <div class="shortcut_button close_button" onclick="closeView();">
+     <div class="shortcut_button_inner">
+       <center>&#x21d0;</center>
+     </div>
+   </div>
+   <div class="shortcut_button home_button" onclick="closeAllViews();">
+     <div class="shortcut_button_inner">
+       <center>&#x21da;</center>
+     </div>
+   </div>
+</div>
+_TUNA_END_TEMPLATE=tmpl_search_results
 

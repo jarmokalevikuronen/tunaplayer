@@ -1561,3 +1561,16 @@ body {
   color: -webkit-gradient(linear, left top, right bottom, from(gray), to(black));
 }
 
+.search_header {
+  margin-bottom: 5px;
+  background-color: black;
+  color: white;
+  -webkit-border-radius: 15px;
+  padding: 4px;
+  font-size: 40px;
+  position: absolute;
+  top: 3%;
+  width:80%;
+  left:10%;"
+}
+
