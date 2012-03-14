@@ -3,7 +3,6 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
-    <meta name="viewport" content="width=380; height=800; initial-scale=0.85; maximum-scale=0.85; user-scalable=0;" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   </head>
@@ -15,15 +14,17 @@
 
 
 (function() {
-  if (isN9()) {
+  if (isMobile()) {
     document.write('<link rel="stylesheet" href="tunaplayer_n9.css"/>');
+    document.write('<meta name="viewport" content="width=device-width, height=device-height, initial-scale=0.85, maximum-scale=0.85, user-scalable=0" />');
+
     visibleTracks = 600000;
     artistShortcutVisibleItems = 4;
   } else {
-    window.resizeTo(800,480);
+    window.resizeTo(825,520);
     artistShortcutVisibleItems = 7;
     document.write('<link rel="stylesheet" href="tunaplayer.css"/>');   
-    document.write('<meta name="viewport" content="width=800, height=480, initial-scale=1.0, maximum-scale=1.0, user-scalable=0," />');
+    document.write('<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0," />');
   }
 })();
 
@@ -55,7 +56,7 @@ var visibleTracks = 8;
 View: ArtistList
 Description: How many artist shortcuts visible at @ time.
 */
-var artistShortcutVisibleItems = isN9() ? 4 : 7;
+var artistShortcutVisibleItems = isMobile() ? 4 : 7;
 
 /**
 Context: Global
@@ -106,7 +107,7 @@ var playerVolumeUpLongPressTimer = null;
 var longPressTimer = null;
 
 /* Amount of visible items in radio stations page */
-var radioVisibleCount = isN9() ? 128 : 6;
+var radioVisibleCount = isMobile() ? 128 : 6;
 /* Currently visible item in radio stations page */
 var radioVisibleStart = 0;
 
@@ -118,7 +119,7 @@ function playlistPlayTrackNow(id) {
     if (json["status"] != "OK") {
       tunaPlayer.next();
     }
-    if (!isN9()) {
+    if (!isMobile()) {
       closeView();
     }
   });
@@ -132,7 +133,6 @@ function playlistMoveTrackToTop(id) {
     }
   });
 }
-var downtimer = 0;
 
 function playlistTrackMouseDown(object) {
   var id = object.getAttribute("data-track-id");
@@ -140,8 +140,6 @@ function playlistTrackMouseDown(object) {
   if (!id || id.length < 1) {
     return;
   }
-
-downtimer = +new Date();
 
   if (playlistLongPressTimer) {
     clearTimeout(playlistLongPressTimer);
@@ -216,8 +214,14 @@ function handleSearchAlbumArtComplete() {
   $("#search_album_arts_status").html("search complete");
 }
 
-function isN9() {
-  return navigator.userAgent.toLowerCase().indexOf('nokian9') > -1;
+function isMobile() {
+  if (navigator.userAgent.toLowerCase().indexOf('nokian9') > -1)
+    return true;
+
+  if (screen.width < 500)
+    return true;
+
+  return false;
 }
 
 function isChrome() {
@@ -462,7 +466,7 @@ function playerUpdateCurrentPlaylist(json) {
 
   var oldPlaylistItemCount = currentPlaylist ? currentPlaylist["args"]["items"].length : 0;
 
-  if (isN9()) {
+  if (isMobile()) {
     /* on mobile(s), the playlist is placed below the actual player */
     currentPlaylist = json;
     if (isForegroundView("player_container")) {
@@ -480,7 +484,7 @@ function playerUpdateCurrentPlaylist(json) {
   }
 
   var playlistItemCount = currentPlaylist ? currentPlaylist["args"]["items"].length : 0;
-  if (playlistItemCount > 0 && playlistItemCount != oldPlaylistItemCount) {
+  if (playlistItemCount > 0 && playlistItemCount != oldPlaylistItemCount && !isForegroundView('player_container')) {
     note.show("Playlist has <b>" + playlistItemCount + "</b> tracks", 5000);
   }
 
@@ -861,7 +865,7 @@ function createArtistListbox() {
   var initData = {};
   var html;
 
-  if (isN9()) {
+  if (isMobile()) {
     initData["items"] = artistShortcuts;
     html = $.jqote(templates.tmpl_artist_listbox, initData);
   } else {
@@ -883,7 +887,7 @@ function createArtistListbox() {
 function createArtistsPageContent(rootElement) {
   var html;
 
-  if (isN9()) {
+  if (isMobile()) {
     html = createArtistListbox();
   } else {
     var shortcutBarHtml = createArtistShortcutBar();
@@ -903,7 +907,7 @@ function createArtistAlbumsPageContent(artistDefinition) {
     return;
   }
   var initData = {};
-  var imagesToShow = isN9() ? 600000 : 6;
+  var imagesToShow = isMobile() ? 600000 : 6;
 
   initData["items"] = artistAlbums;
   initData["firstVisible"] = artistAlbumArtVisibleIndex;
@@ -918,7 +922,7 @@ function createArtistAlbumsPageContent(artistDefinition) {
 function createArtistSingleAlbumPageContent(albumId) {
   var initData = {};
 
-  if (isN9())
+  if (isMobile())
     visibleTracks = 600000;
 
   initData["firstTrack"] = currentTrackIndex;
@@ -936,7 +940,7 @@ function createArtistSingleAlbumPageContent(albumId) {
 function createArtistSingleAlbumTrackList() {
   var initData = {};
 
-  if (isN9())
+  if (isMobile())
     visibleTracks = 600000;
 
   initData["firstTrack"] = currentTrackIndex;
@@ -950,7 +954,7 @@ function createArtistSingleAlbumTrackList() {
 function createPlayerPageContent() {
   var initData = {};
 
-  if (isN9()) {
+  if (isMobile()) {
     initData["items"] = currentPlaylist["args"]["items"];
   }
 
@@ -962,7 +966,7 @@ function createPlayerPageContent() {
 function createPlayerCurrentPlaylistPageContent() {
   var initData = {};
   
-  if (isN9())
+  if (isMobile())
     playlistVisibleItems = 600000;
 
   initData["items"] = currentPlaylist["args"]["items"];
@@ -1127,7 +1131,7 @@ var searchViewData = {
   cachedResults: undefined,
 
   reset: function() {
-    if (isN9())
+    if (isMobile())
       return;
 
     searchViewData.cachedResults = undefined;
@@ -1186,7 +1190,7 @@ function createSearchResultsContent(json) {
   var albums = json["albums"];
   var tracks = json["tracks"];
 
-  if (!isN9()) {
+  if (!isMobile()) {
     json["artistTop"] = searchViewData.artistTopIndex;
     json["albumTop"] = searchViewData.albumTopIndex;
     json["trackTop"] = searchViewData.trackTopIndex;
@@ -1281,7 +1285,7 @@ function renderView(viewId, arg) {
 /*console.log("GENERATED HTML=" + search_result_container.innerHTML);*/
   }
 
-  if (isN9() && targetObject.innerHTML.length > 0) {
+  if (isMobile() && targetObject.innerHTML.length > 0) {
     new Swipe(targetObject, function(event) { if (event === "move.previous") closeView(); } );
 
     if (scrollToTop === true) {
@@ -1491,7 +1495,7 @@ function loadViewContent(oldid, newid, initData, renderer) {
   }
   if (newid == "recent_albums_container") {
     delayedRender = true;
-    tunaPlayer.getRecentAlbums(isN9() ? 20 : 3, function(json) {
+    tunaPlayer.getRecentAlbums(isMobile() ? 20 : 3, function(json) {
       console.log("RECENTALBUMS: " + JSON.stringify(json)); 
       if (json["status"] == "OK") {
         renderView(newid, {"renderContext": json});
@@ -1508,7 +1512,7 @@ function loadViewContent(oldid, newid, initData, renderer) {
       console.log("OPEN SEARCH VIEW from ROOT");
     }
   }
-  if (isN9()) {
+  if (isMobile()) {
     if (newid == "player_container") {
       delayedRender = true;
       playlistVisibleTopIndex = 0;
@@ -1863,7 +1867,7 @@ function processAlbumChanged(json) {
 
 function compileTemplates() {
   var docname = "tunaplayer.tmpl";
-  if (isN9()) {
+  if (isMobile()) {
     docname = "tunaplayer_n9.tmpl";
   }
   $.get(docname, function(document) {
@@ -2018,7 +2022,7 @@ var note = {
       note.element.innerHTML += "<br>";
     }
     note.element.innerHTML += text;
-    if (isN9()) {
+    if (isMobile()) {
       $(note.element).css('top', window.pageYOffset + 30);
     }
     if (hadContent) {
@@ -2140,13 +2144,9 @@ Swipe.prototype = {
   }
 };
 
+</script>
 
-
-
-
-</script>	  
-
-  <body onload="connectToDaemon(); note.attach('notificationdialog');" onkeypress="handleKeyPress(event);" style="background: black; z-index:1; width:380px; height:800px;">
+  <body onload="connectToDaemon(); note.attach('notificationdialog');" onkeypress="handleKeyPress(event);" style="background: black; z-index:1;">
     <div class="playercontainer" id="root">
 
       <div id=radio_launcher class="tile_00 tile_closed"  onclick="openView('root', 'radio_container');">

@@ -57,8 +57,7 @@ _TUNA_END_TEMPLATE=tmpl_artist_listbox
 _TUNA_BEGIN_TEMPLATE
   <div class="artist_albums_page">
     
-    <div class="artist_albums_header"><%= this.items[0]["artist.name"].toLowerCase()%>
-    </div>
+    <div class="artist_albums_header"><i><%= this.items[0]["artist.name"].toLowerCase()%></i></div>
 
     <div class="button artist_albums_button_play" data-artist-id="<%=this.items[0]['artist.id']%>" onclick="artistCommand('play', this, 'artist_albums_container');">
       <div class="artist_albums_button_inner">

@@ -4,7 +4,7 @@ _TUNA_BEGIN_TEMPLATE
     <div id="artist_listbox">
     <% for (var letterIdx=0;letterIdx<this.items.length;letterIdx++) { %>
      <div class="artist_listbox_letter" onclick="this.scrollIntoView(true);toggleClassById('artist_listbox_letter_container_<%=letterIdx%>', 'artist_listbox_letter_container_hidden');">
-      <div class="artist_listbox_header_letter"><b><center><%=this.items[letterIdx][0]["name"].charAt(0)%></center></b></div>
+      <div class="artist_listbox_header_letter"><b><center><%=this.items[letterIdx][0]["name"].charAt(0)%></b><small>&nbsp;(<%=this.items[letterIdx].length%>)</small></center></div>
            <div id="artist_listbox_letter_container_<%=letterIdx%>" class="artist_listbox_letter_container artist_listbox_letter_container_hidden">
             <%
               for (var artistIdx=0;artistIdx<this.items[letterIdx].length;artistIdx++) {
@@ -26,8 +26,7 @@ _TUNA_END_TEMPLATE=tmpl_artist_listbox
 _TUNA_BEGIN_TEMPLATE
   <div class="artist_albums_page">
     
-    <div class="artist_albums_header"><%= this.items[0]["artist.name"].toLowerCase()%>
-    </div>
+    <p class="artist_albums_header"><i><%= this.items[0]["artist.name"].toLowerCase()%></i></p>
 
     <div class="button artist_albums_button_play" data-artist-id="<%=this.items[0]['artist.id']%>" onclick="artistCommand('play', this, 'artist_albums_container');">
       <div class="artist_albums_button_inner">
@@ -60,7 +59,7 @@ _TUNA_END_TEMPLATE=tmpl_artist_albums
 
 _TUNA_BEGIN_TEMPLATE
  <div class="artist_single_album_page">
-   <div class="artist_single_album_header_artist"><%=this.items[0]['album.artist.name'].toLowerCase()%> - <small><%=this.items[0]['album.name'].toLowerCase()%></small></div>
+   <div class="artist_single_album_header_artist"><%=this.items[0]['album.artist.name'].toLowerCase()%> - <small><i><%=this.items[0]['album.name'].toLowerCase()%></i></small></div>
 
    <div id="artist_single_album_image_container">
      <% var im = undefined;
