@@ -1450,8 +1450,7 @@ function loadViewContent(oldid, newid, initData, renderer) {
     if (!id) {
       id = initData.getAttribute("data-album-id");
     }
-    if (oldid == "player_container")
-      currentTrackIndex = 0;
+    currentTrackIndex = 0;
 
     delayedRender = true;
     tunaPlayer.getAlbumTracks(id, function(json) {
@@ -1465,7 +1464,7 @@ function loadViewContent(oldid, newid, initData, renderer) {
       }
     });
   }
-  if (newid == "artist_single_album_container" && oldid == "artist_albums_container") {
+  if (newid == "artist_single_album_container" && (oldid == "artist_albums_container" || oldid == "search_container")) {
     currentTrackIndex = 0;
   }
   if (newid == "player_current_playlist") {
