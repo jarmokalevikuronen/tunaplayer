@@ -306,8 +306,12 @@ var tunaPlayer = {
   // Args:
   //  callback: functigon to be called once completed.
   //
-  getCurrentPlaylist: function(callback) {
-    this.callSP("get_current_playlist", callback);
+  getCurrentPlaylist: function(callback, count) {
+    args = {};
+    if (count != undefined) {
+      args["result-count"] = count;
+    }
+    this.callSP("get_current_playlist", callback, args);
   },
   getArtistAlbums: function(id, callback) {
     this.callSP("get_artist_albums", callback, { "artistid": id } );

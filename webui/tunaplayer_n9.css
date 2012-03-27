@@ -212,24 +212,28 @@ body {
 }
 
 .artist_listbox_header_letter {
-  color: #f8ce51;
+  color: white;
+/*  color: #f8ce51;*/
   font-size: 4em;
   background: black;
+  border: solid 3px #f8ce51;
+  margin-top: 10px;
+  margin-top: 10px;
+  width: 30%;
+  vertical-align: center;
+
   -webkit-border-radius: 10px;
 }
 
-/*.artist_listbox_header_letter:active {
+.artist_listbox_header_letter:active {
   background: -webkit-gradient(linear, left top, left bottom, from(#f88e11), to(#f06015));
   background: -moz-linear-gradient(top, #f88e11, #f06015);
   background: -o-linear-gradient(top, #f88e11, #f06015);
-}*/
+}
 
 .artist_listbox_letter_container {
-/*  -webkit-border-radius: 10px; 
-  border: solid 2px darkgray;
-*/
-  left: 1%;
-  width: 98%;
+  left: 5%;
+  width: 95%;
 }
 
 .artist_listbox_letter_container_hidden {
@@ -1245,9 +1249,9 @@ body {
   top: 15%;
   left: 1%;
   width: 80%;
-  height: 7%;
+/*  height: 7%;*/
   float: left;
-  border-bottom: solid 2px darkgray;
+/*  border-bottom: solid 2px darkgray;*/
 /*  -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   -o-border-radius: 5px;
@@ -1269,8 +1273,10 @@ body {
   font-size: 1.4em;
   left: 1%;
   float: top;
-  overflow: hidden;
-  white-space: nowrap;
+  margin-bottom: 0;
+  margin-top: 10px;
+/*  overflow: hidden;*/
+/*  white-space: nowrap;*/
 }
 
 .player_current_playlist_item_artistalbum_name {
@@ -1279,8 +1285,10 @@ body {
   display: block;
   left: 2%;
   font-size: 1.2em;
-  overflow: hidden;
-  white-space: nowrap;
+  margin-bottom: 10px;
+  margin-top: 3px;
+/*  overflow: hidden;*/
+/*  white-space: nowrap;*/
 }
 
 .player_current_playlist_item_buttons {

@@ -469,6 +469,10 @@ function playerUpdateCurrentPlaylist(json) {
   if (isMobile()) {
     /* on mobile(s), the playlist is placed below the actual player */
     currentPlaylist = json;
+    /* limit the playlist length 100 on mobile.. */
+    if (currentPlaylist.args.items.length > 100) {
+      currentPlaylist.args.items.length = 100;
+    }
     if (isForegroundView("player_container")) {
       renderView("player_container", {"scrollToTop": false } );
     }
@@ -1470,6 +1474,9 @@ function loadViewContent(oldid, newid, initData, renderer) {
   if (newid == "player_current_playlist") {
     delayedRender = true;
     playlistVisibleTopIndex = 0;
+    var count = undefined;
+    if (isMobile())
+      count = 100;
     tunaPlayer.getCurrentPlaylist(function(json) {
       if (json["status"] == "OK") {
         currentPlaylist = json;
@@ -1479,7 +1486,7 @@ function loadViewContent(oldid, newid, initData, renderer) {
       } else { 
         console.log("ERROR: Failed to get playlist: " + JSON.stringify(json));
       }
-    });
+    }, count);
   }
   if (newid == 'artist_albums_container') {
     artistAlbumArtVisibleIndex = 0;
@@ -1524,7 +1531,7 @@ function loadViewContent(oldid, newid, initData, renderer) {
         } else { 
           console.log("ERROR: Failed to get playlist: " + JSON.stringify(json));
         }
-      });
+      }, 100);
     }
   }
   

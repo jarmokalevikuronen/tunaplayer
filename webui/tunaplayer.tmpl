@@ -6,7 +6,7 @@ _TUNA_BEGIN_TEMPLATE
   <div class="artist_shortcut" onclick="seekActiveArtistShortcutPage(-1);">&lt;</div>
   <% } else { %>
   <div class="artist_shortcut artist_shortcut_disabled"></div>
-  <% } %>
+  <% } %>pla
     
   <% for (var i=0;i<this.items.length;i++) { %>
   <div class="artist_shortcut <%= this.selectedIndex == i ? "artist_shortcut_hili" : " " %>" data-shortcut-index="<%=this.items[i]['index']%>" onclick="selectArtistShortcut(this);"> <%=this.items[i]["key"]%>
@@ -154,9 +154,9 @@ _TUNA_BEGIN_TEMPLATE
      <% var visible = true; %>
      <% if (i<this.firstTrack || i>=this.lastTrack) { visible = false; } %>
        <% if (visible) { %>
-         <div class="artist_single_album_track" data-track-id="<%=this.items[i]['id']%>" onclick="trackClicked(this);"><%=this.items[i]['idx']%>. <%=this.items[i]['name'].toLowerCase()%></div> 
+         <p class="artist_single_album_track" data-track-id="<%=this.items[i]['id']%>" onclick="trackClicked(this);"><%=this.items[i]['idx']%>. <%=this.items[i]['name'].toLowerCase()%></p> 
        <% } else { %>
-         <div class="artist_single_album_track" style="display: none;" data-track-id="<%=this.items[i]['id']%>" onclick="trackClicked(this);"><%=this.items[i]['idx']%>. <%=this.items[i]['name'].toLowerCase()%></div> 
+         <p class="artist_single_album_track" style="display: none;" data-track-id="<%=this.items[i]['id']%>" onclick="trackClicked(this);"><%=this.items[i]['idx']%>. <%=this.items[i]['name'].toLowerCase()%></p> 
        <% } %>
    <% } %> 
 _TUNA_END_TEMPLATE=tmpl_artist_single_album_tracklist_content
@@ -238,10 +238,10 @@ _TUNA_BEGIN_TEMPLATE
         <% if (visible) { console.log("object: " + JSON.stringify(this));%>
           <div class="player_current_playlist_item_container" data-track-id="<%=this.items[i]['id']%>">
             <div class="player_current_playlist_item_names">
-              <div class="player_current_playlist_item_track_name" onmousedown="playlistTrackMouseDown(this);" onmouseup="playlistTrackMouseUp(this);" data-track-id="<%=this.items[i]['id']%>"><%=i+1%>. <%=this.items[i]['name'].toLowerCase()%></div>
+              <p class="player_current_playlist_item_track_name" onmousedown="playlistTrackMouseDown(this);" onmouseup="playlistTrackMouseUp(this);" data-track-id="<%=this.items[i]['id']%>"><i><b><%=i+1%>. <%=this.items[i]['name'].toLowerCase()%></i></b></p>
               <% artistName = this.items[i]['album.artist.name']; if (artistName == undefined) artistName = ""; else artistName += " - "; %>
               <% albumName = this.items[i]['album.name']; if (albumName == undefined) albumName = ""; %>
-              <div class="player_current_playlist_item_artistalbum_name" onmousedown="playlistTrackMouseDown(this);" onmouseup="playlistTrackMouseUp(this);" data-track-id="<%=this.items[i]['id']%>"><%=artistName.toLowerCase()%><%=albumName.toLowerCase()%></div>
+              <p class="player_current_playlist_item_artistalbum_name" onmousedown="playlistTrackMouseDown(this);" onmouseup="playlistTrackMouseUp(this);" data-track-id="<%=this.items[i]['id']%>"><%=artistName.toLowerCase()%><%=albumName.toLowerCase()%></p>
             </div>
             <div class="player_current_playlist_item_buttons">
 <!-- &#x2719; plussa -->
