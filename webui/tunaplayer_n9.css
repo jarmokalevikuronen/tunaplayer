@@ -586,12 +586,13 @@ body {
   color: white;
   position: relative;
   display: block;
-  overflow: hidden;
+/*  overflow: hidden;*/
   font-size: 1.7em;
   margin-left: 2%;
   margin-top: 5px;
+  margin-bottom: 5px;
   width: 92%;
-  height: 8.5%;
+/*  height: 8.5%;*/
   padding: 2px;
   border: solid 3px #101010;
   padding-left: 1%;
@@ -605,6 +606,7 @@ body {
 .artist_single_album_track_selected {
 /*  border: solid 5px #fca51a;*/
   font-weight: bold;
+  font-style: italic;
   color: #faa51a;
 }
 
