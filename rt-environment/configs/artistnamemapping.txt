@@ -1,0 +1,13 @@
+#
+# This file can contain manual information to map artist names
+# E.g. j.j. Cale = jj. Cale
+#
+# Basic filling idea is that
+# badname=goodname
+# And if your good or bad name contains '=', you are out of luck.
+#
+j karjalainen=j. karjalainen
+yello one second=yello
+coverdale page=coverdale & page
+vesa matti loiri=vesa-matti loiri
+adams, bryan=bryan adams
