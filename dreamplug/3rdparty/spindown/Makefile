@@ -41,6 +41,7 @@ clean:
 install: all
 	install -D -m 755 spindownd $(SBINDIR)/spindownd
 	install -D -m 755 spindown $(ETCDIR)/init.d/spindown
+	install -D -m 755 spindown.conf $(ETCDIR)/
 
 #make the links in rc.d
 	mkdir -p $(ETCDIR)/rc0.d
