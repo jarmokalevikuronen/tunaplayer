@@ -220,6 +220,8 @@ void TPMusicPlayerCore::mediaScannerComplete(TPDatabases *_db)
     connect(player, SIGNAL(currentPlaybackPositionChanged(TPTrack*,int)), statCollector, SLOT(playbackPositionChanged(TPTrack*,int)));
 
     autoArtLoader = new TPAutomaticAlbumArtDownloader(this);
+    connect(autoArtLoader, SIGNAL(albumArtDownloadComplete()), this, SLOT(albumArtDownloadComplete()));
+
     // Do execute automatic album art loader
     // if not explicitly instructed not to.
 
@@ -964,6 +966,7 @@ void TPMusicPlayerCore::createMaintainTask()
     connect(&maintainTimer, SIGNAL(timeout()), this, SLOT(startMaintainTask()));
     maintainTimer.setSingleShot(false);
     int maintainInterval = TPCLArgs::instance().arg(TPCLArgs::cliArgMaintainInterval, 30).toInt();
+
     // Range the maintain interval to 1min...24hrs..
     maintainInterval = qMax(maintainInterval, 1);
     maintainInterval = qMin(maintainInterval, 60 * 24);
@@ -1055,9 +1058,6 @@ void TPMusicPlayerCore::startupProgress(int percents, bool force)
         protocolReportEvent(protocolEventStartupProgress, args);
     }
 }
-
-
-
 
 bool TPMusicPlayerCore::searchAlbumArt(const QString id)
 {

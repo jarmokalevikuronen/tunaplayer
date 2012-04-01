@@ -1,5 +1,11 @@
 Subfolders under this folder contains various 3rd party components
-that are compiled "in" to the tunaplayer.
+that are compiled "in" to the tunaplayer, or used by it.
 
-json: From: https://github.com/ereilin/qt-json. License: Unknown
-libwebsocket: Lisence LGPL.
+Compiled into tuna* binaries:
+
+  json: From https://github.com/ereilin/qt-json. License: Unknown
+  libwebsocket: From http://git.warmcat.com/cgi-bin/cgit/libwebsockets/
+
+Used as external apps:
+
+  spindown: From http://code.google.com/p/spindown/

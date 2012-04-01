@@ -40,12 +40,13 @@ public:
     explicit TPAutomaticAlbumArtDownloader(QObject *parent = 0);
     ~TPAutomaticAlbumArtDownloader();
 
-    void execute(TPAlbumDB *albumDB);
+    //! @brief Returns true in case asynchronous operation started, false otherwise.
+    bool execute(TPAlbumDB *albumDB);
 
 signals:
 
     void albumArtDownloaded(TPAlbum *album);
-    void complete();
+    void albumArtDownloadComplete();
 
 public slots:
 

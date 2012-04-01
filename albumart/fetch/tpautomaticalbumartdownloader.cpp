@@ -50,12 +50,12 @@ TPAutomaticAlbumArtDownloader::~TPAutomaticAlbumArtDownloader()
     delete is;
 }
 
-void TPAutomaticAlbumArtDownloader::execute(TPAlbumDB *db)
+bool TPAutomaticAlbumArtDownloader::execute(TPAlbumDB *db)
 {
     if (albumsToDownload.count() > 0 || is)
     {
         ERROR() << "ALBUMART: Automatic album art loader busy\n";
-        return;
+        return false;
     }
 
     for (int i=0;i<db->count();++i)
@@ -93,8 +93,10 @@ void TPAutomaticAlbumArtDownloader::execute(TPAlbumDB *db)
         connect(is, SIGNAL(complete(QObject*)), this, SLOT(complete(QObject*)));
         connect(is, SIGNAL(connectivityLost(QObject*)), this, SLOT(connectivityLost(QObject*)));
 
-        startDownloadNextAlbum();
+        return startDownloadNextAlbum();
     }
+
+    return false;
 }
 
 void TPAutomaticAlbumArtDownloader::expectedImageCount(QObject */*caller*/, int count)
@@ -136,7 +138,7 @@ void TPAutomaticAlbumArtDownloader::complete(QObject */*caller*/)
         if (is)
             is->deleteLater();
         is = 0;
-        emit complete();
+        emit albumArtDownloadComplete();
     }
 }
 
@@ -151,6 +153,8 @@ void TPAutomaticAlbumArtDownloader::connectivityLost(QObject */*caller*/)
 
     TPDecForAll(albumsToDownload);
     albumsToDownload.clear();
+
+    emit albumArtDownloadComplete();
 }
 
 bool TPAutomaticAlbumArtDownloader::startDownloadNextAlbum()
