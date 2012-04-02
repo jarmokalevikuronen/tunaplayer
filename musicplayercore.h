@@ -40,6 +40,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpsearchobjectprovider.h"
 #include "tpsearchresults.h"
 #include "tpalsavolume.h"
+#include "tpwebsocketprotocoleventfilter.h"
 
 class TPMusicPlayerCore : public QObject
 {
@@ -97,6 +98,7 @@ private: // PLAYLIST FUNCTIONALITY
 private slots:
 
     void onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSocketProtocolMessage message);
+    void onProtocolClientDisconnected(TPWebSocketProtocol *protocol, int clientCount, void *clientHandle);
 
 public:
 
@@ -238,6 +240,11 @@ private:
 
     //! Volume control for ALSA
     TPALSAVolume *volumeCtrl;
+
+    //! Event filters that clients can be used to restrict certain messages from
+    //! being distributed to them (E.g. no reason to receive playback position every second
+    //! if not showing such a view that would require that information).
+    TPWebSocketProtocolEventFilter evtFilters;
 };
 
 #endif // MUSICPLAYERCORE_H

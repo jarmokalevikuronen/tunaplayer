@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpclargs.h"
 #include "tpsignalhandler.h"
 #include "tplog.h"
+#include "tpclientconnectionmonitor.h"
 
 static int lock_fd = -1;
 
@@ -142,6 +143,10 @@ int main(int argc, char *argv[])
     server->addVirtualFolder(virtualFolderAccount);
     server->addIpFilter(ipFilter);
 
+    TPClientConnectionMonitor *connMon = new TPClientConnectionMonitor;
+    QObject::connect(server, SIGNAL(clientConnected(int,void*)), connMon, SLOT(onClientConnected(int)));
+    QObject::connect(server, SIGNAL(clientDisconnected(int,void*)), connMon, SLOT(onClientDisconnected(int)));
+
     TPWebSocketProtocol *protocol =
             new TPWebSocketProtocol(server);
 
@@ -158,6 +163,7 @@ int main(int argc, char *argv[])
     delete sh;
     delete player;
     delete protocol;
+    delete connMon;
     delete server;
     delete virtualFolderGlobal;
     delete virtualFolderAccount;

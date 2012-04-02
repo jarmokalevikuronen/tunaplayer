@@ -21,7 +21,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 TPWebSocketProtocolMessage::TPWebSocketProtocolMessage()
 {
+    filter = 0;
 }
+
+TPWebSocketProtocolMessage::TPWebSocketProtocolMessage(TPWebSocketProtocolEventFilter *_filter) : filter(_filter)
+{
+}
+
 
 void TPWebSocketProtocolMessage::initializeResponseTo(TPWebSocketProtocolMessage message)
 {

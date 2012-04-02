@@ -35,6 +35,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define TP_FEEDITEM_SETTINGS_DB_FILE    "feeditemdata.db"
 #define TP_ARTIST_NAME_MAPPING_CONFIG_FILE     "artistnamemapping.txt"
 
+#define TRIGGER_TESTFILE                ".triggertestfile.removeme"
+
+
 QString TPPathUtils::ensureBasePath(QString subdir)
 {
     QString home = QDir::homePath();
@@ -224,6 +227,23 @@ QStringList TPPathUtils::getMediaPaths()
     listOfPaths << TPCLArgs::instance().arg(TPCLArgs::cliArgMediaPath, d.homePath()).toString().split(';');
     return listOfPaths;
 }
+
+QStringList TPPathUtils::getMediaTriggerFiles()
+{
+    QStringList files = getMediaPaths();
+    for (int i=0;i<files.count();i++)
+    {
+        QString file = files.at(i);
+        if (!file.endsWith(QDir::separator()))
+            file.append(QDir::separator());
+        file.append(TRIGGER_TESTFILE);
+
+        files[i] = file;
+    }
+
+    return files;
+}
+
 
 QString TPPathUtils::getArtistNameMappingConfigFile()
 {

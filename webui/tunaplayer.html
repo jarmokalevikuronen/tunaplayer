@@ -422,6 +422,7 @@ function playerUpdateButtons(json) {
 }
 
 function playerUpdatePlaybackPosition(json) {
+console.log("playerUpdatePlaybackPosition");
   if (ignorePositionReportsTimer != null)
     return;
 
@@ -1333,6 +1334,13 @@ function toggleClassById(id, _class) {
 */
 function openView(oldId, newId, initData) {
 
+  if (newId == "player_container") {
+    tunaPlayer.enablePlaybackPositionEvents();
+  }
+  if (oldId == "player_container") {
+    tunaPlayer.disablePlaybackPositionEvents();
+  }
+
   console.log("OPEN '" + newId + "' FROM '" + oldId + "'");
 
   $("#" + oldId).addClass("div_hidden");
@@ -1383,6 +1391,11 @@ function closeView() {
   console.log("CLOSE " + closeId + " in order to OPEN " + openId);
 
   if (openId != undefined) {
+
+    if (openId == "player_container") {
+      tunaPlayer.enablePlaybackPositionEvents();
+    }
+
     var object = document.getElementById(openId);
     if (object) {
       var ypos = object.getAttribute("data-cached-y-position");
@@ -1414,6 +1427,9 @@ function closeView() {
     }
   }
   if (closeId != undefined) {
+    if (closeId == "player_container") {
+      tunaPlayer.disablePlaybackPositionEvents();
+    }
     var object = document.getElementById(closeId);
     if (object != undefined) {
       object.innerHTML = ""; /* Clear the contents of the page to be closed so that it wont affect */

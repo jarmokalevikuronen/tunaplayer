@@ -439,6 +439,14 @@ var tunaPlayer = {
   },
   searchTrack: function(criteria, callback) {
     this.search("track", criteria, callback);
+  },
+  disablePlaybackPositionEvents: function(callback) {
+    var args = { "eventname": "playbackpositionchanged" };
+    this.callFunc("addeventfilter", callback, args);
+  },
+  enablePlaybackPositionEvents: function(callback) {
+    var args = { "eventname": "playbackpositionchanged" };
+    this.callFunc("removeeventfilter", callback, args);
   }
 };
 

@@ -52,6 +52,11 @@ static const QString protocolCommandShufflePlaylist("shuffleplaylist");
 static const QString protocolCommandSeekToTrack("seektotrack");
 static const QString protocolCommandSeekToTrackArgIdKey("id");
 
+static const QString protocolCommandAddEventFilter("addeventfilter");
+static const QString protocolCommandRemoveEventFilter("removeeventfilter");
+
+static const QString protocolCommandAddRemoveEventFilterArgIdEventId("eventname");
+
 //! This command will effectively shutdown the whole application.
 static const QString protocolCommandQuit("quit");
 

@@ -37,16 +37,29 @@ public:
     explicit TPWebSocketProtocol(TPWebSocketServer *_server, QObject *parent = 0);
     ~TPWebSocketProtocol();
 
+    inline TPWebSocketServer *getServer()
+    {
+        return server;
+    }
+
 signals:
 
     //! @brief emitted when ever a protocol message has been received.
     void protocolMessageReceived(TPWebSocketProtocol *protocol, TPWebSocketProtocolMessage message);
 
-public slots:
+    //! @brief Emit when websocket client disconnects.
+    void protocolClientDisconnected(TPWebSocketProtocol *protocol, int clientCount, void *clientHandle);
+
+private slots:
 
     //! @brief handles a received protocol data unit by
     //! converting it to message instance.
     void handleDataReceived(const QByteArray data, void *origin);
+
+    //! @brief Called if/when client is disconnected.
+    void handleClientDisconnected(int, void *);
+
+public slots:
 
     //! @brief Can be used to report events that will be delivered
     //! to all connected clients. Such events are for example state changes and alike.

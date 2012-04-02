@@ -102,13 +102,13 @@ int TPWebSocketServer::callback_tp_json_protocol(struct libwebsocket_context *co
     if (reason == LWS_CALLBACK_ESTABLISHED)
     {
         ++gWebSocketServer->clientCount;
-        emit gWebSocketServer->clientConnected(wsi);
+        emit gWebSocketServer->clientConnected(gWebSocketServer->clientCount, wsi);
         DEBUG() << "WEBSOCKET: Connected. Total " << gWebSocketServer->clientCount << " clients";
     }
     else if (reason == LWS_CALLBACK_CLOSED)
     {
         --gWebSocketServer->clientCount;
-        emit gWebSocketServer->clientDisconnected(wsi);
+        emit gWebSocketServer->clientDisconnected(gWebSocketServer->clientCount, wsi);
         DEBUG() << "WEBSOCKET: Disconnected. Total " << gWebSocketServer->clientCount << " clients";
     }
     else if (reason == LWS_CALLBACK_RECEIVE)
@@ -121,16 +121,6 @@ int TPWebSocketServer::callback_tp_json_protocol(struct libwebsocket_context *co
         libwebsocket_callback_on_writable(context, wsi);
         DEBUG() << "WEBSOCKET: ServerWriteable: " << wsi;
     }
-/*    else if (LWS_EXT_CALLBACK_REQUEST_ON_WRITEABLE == reason)
-    {
-        DEBUG() << "WEBSOCKET: RequestOnWritable";
-        return 1;
-    }
-    else if (LWS_EXT_CALLBACK_IS_WRITEABLE == reason)
-    {
-        DEBUG() << "WEBSOCKET: CallbackIsWritable";
-        return 1;
-    }*/
 
     return 0;
 }
@@ -242,6 +232,17 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
     return 0;
 }
 
+TPWebSocketServerNotifier* TPWebSocketServer::notifierForFd(int fd)
+{
+    QMap<int, TPWebSocketServerNotifier *>::iterator it = notifiers.find(fd);
+    if (it == notifiers.end())
+        return NULL;
+
+    TPWebSocketServerNotifier *notifier = it.value();
+    return notifier;
+}
+
+
 void TPWebSocketServer::notifierActivated(int fd)
 {
     TPWebSocketServerNotifier* notifier = notifierForFd(fd);
@@ -257,27 +258,53 @@ void TPWebSocketServer::notifierActivated(int fd)
     }
 }
 
-void TPWebSocketServer::sendMessageToAll(const QByteArray content)
+void TPWebSocketServer::sendFilteredEvent(TPWebSocketProtocolMessage message)
 {
-    sendMessage(content, NULL, NULL);
+    QString eventId = message.id();
+
+    QVector<void *>  targets;
+
+    QMap<int, TPWebSocketServerNotifier *>::iterator it = notifiers.begin();
+    while (it != notifiers.end())
+    {
+        TPWebSocketServerNotifier *notifier = it.value();
+        void *clientHandle = notifier->getWsi();
+        if (!message.eventFilter()->isEventFiltered(clientHandle, eventId))
+            targets.append(clientHandle);
+
+        ++it;
+    }
+
+    if (targets.count())
+    {
+        QByteArray content = message.serialize();
+
+        char *buffer = new char [content.length() + LWS_SEND_BUFFER_PRE_PADDING + LWS_SEND_BUFFER_POST_PADDING];
+        if (!buffer)
+            return; // false maybe.
+
+        memcpy(&buffer[LWS_SEND_BUFFER_PRE_PADDING], content.constData(), content.length());
+
+        foreach(void *wsi, targets)
+        {
+            libwebsocket_write((struct libwebsocket *)wsi, (unsigned char *) &buffer[LWS_SEND_BUFFER_PRE_PADDING], content.length(), LWS_WRITE_TEXT);
+        }
+
+        delete [] buffer;
+    }
 }
 
-void TPWebSocketServer::sendMessage(const QByteArray content, void *target, void *except)
+void TPWebSocketServer::sendMessage(TPWebSocketProtocolMessage message)
 {
+    QByteArray content = message.serialize();
+
     char *buffer = new char [content.length() + LWS_SEND_BUFFER_PRE_PADDING + LWS_SEND_BUFFER_POST_PADDING];
     if (!buffer)
         return; // false maybe.
 
     memcpy(&buffer[LWS_SEND_BUFFER_PRE_PADDING], content.constData(), content.length());
 
-    QMap<int, TPWebSocketServerNotifier *>::iterator it = notifiers.begin();
-    while (it != notifiers.end())
-    {
-        TPWebSocketServerNotifier *notifier = it.value();
-        if ((!target || target == notifier->getWsi()) && notifier->getWsi() != except)
-            libwebsocket_write(notifier->getWsi(), (unsigned char *) &buffer[LWS_SEND_BUFFER_PRE_PADDING], content.length(), LWS_WRITE_TEXT);
-        ++it;
-    }
+    libwebsocket_write((struct libwebsocket *)message.getOrigin(), (unsigned char *) &buffer[LWS_SEND_BUFFER_PRE_PADDING], content.length(), LWS_WRITE_TEXT);
 
     delete [] buffer;
 }

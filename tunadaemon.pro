@@ -80,7 +80,9 @@ SOURCES += player.cpp \
     search/sort/tpsortimplementationnumbase.cpp \
     search/sort/tpsortimplementationstringbase.cpp \
     search/sort/tpsortimplementationstring.cpp \
-    search/sort/tpsortimplementationnum.cpp
+    search/sort/tpsortimplementationnum.cpp \
+    tpclientconnectionmonitor.cpp \
+    webserver/tpwebsocketprotocoleventfilter.cpp
 
 HEADERS += player.h \
     tpreferencecounted.h \
@@ -156,7 +158,9 @@ HEADERS += player.h \
     search/sort/tpsortimplementationstring.h \
     search/sort/tpsortimplementationnum.h \
     search/sort/tpsort.h \
-    basictypes/tpcachedvalues.h
+    basictypes/tpcachedvalues.h \
+    tpclientconnectionmonitor.h \
+    webserver/tpwebsocketprotocoleventfilter.h
 ##### END PLAYER
 
 ##### BEGIN JSON

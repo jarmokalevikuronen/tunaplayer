@@ -40,7 +40,10 @@ TPMusicPlayerCore::TPMusicPlayerCore(TPWebSocketProtocol *_protocol) : QObject(N
 {
     protocol = _protocol;
     if (protocol)
+    {
         connect(protocol, SIGNAL(protocolMessageReceived(TPWebSocketProtocol*,TPWebSocketProtocolMessage)), this, SLOT(onProtocolMessage(TPWebSocketProtocol*,TPWebSocketProtocolMessage)));
+        connect(protocol, SIGNAL(protocolClientDisconnected(TPWebSocketProtocol*,int,void*)), this, SLOT(onProtocolClientDisconnected(TPWebSocketProtocol*,int,void*)));
+    }
 
     applyDefaultSettings();
 
@@ -501,7 +504,7 @@ bool TPMusicPlayerCore::saveCurrentPlaylist(const QString name)
 
 void TPMusicPlayerCore::protocolReportEvent(const QString eventId, QVariantMap args)
 {
-    TPWebSocketProtocolMessage event;
+    TPWebSocketProtocolMessage event(&evtFilters);
     event.initializeEvent(eventId);
     event.setArgs(args);
     protocol->sendEvent(event);
@@ -588,7 +591,7 @@ bool TPMusicPlayerCore::protocolReportVolumeLevel()
         QVariantMap args;
         args.insert(protocolEventVolumeChangedArgPercentsKey, percents);
 
-        TPWebSocketProtocolMessage event;
+        TPWebSocketProtocolMessage event(&evtFilters);
         event.initializeEvent(protocolEventVolumeChanged);
         event.setArgs(args);
         protocol->sendEvent(event);
@@ -612,7 +615,7 @@ void TPMusicPlayerCore::protocolReportPlaybackControls()
 
     args.insert(protocolEventPlaybackControlsChangedArgControlsKey, argItems);
 
-    TPWebSocketProtocolMessage event;
+    TPWebSocketProtocolMessage event(&evtFilters);
     event.initializeEvent(protocolEventPlaybackControlsChanged);
     event.setArgs(args);
     protocol->sendEvent(event);
@@ -715,6 +718,14 @@ QVariantMap TPMusicPlayerCore::processSearchResults(TPSearchResults *searchResul
     result[protocolCommandExecSPResponseArgItemsKey] = items;
 
     return result;
+}
+
+void TPMusicPlayerCore::onProtocolClientDisconnected(TPWebSocketProtocol *protocol, int clientCount, void *clientHandle)
+{
+    Q_UNUSED(protocol);
+    Q_UNUSED(clientCount);
+
+    evtFilters.removeClient(clientHandle);
 }
 
 void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSocketProtocolMessage message)
@@ -914,6 +925,34 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
                 protocolRespondACK(protocol, message);
             else
                 protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
+        }
+        else if (msgId == protocolCommandAddEventFilter)
+        {
+            QVariantMap args = message.arguments();
+            QString eventName = args[protocolCommandAddRemoveEventFilterArgIdEventId].toString();
+            if (eventName.length())
+            {
+                evtFilters.addFilteredEvent(message.getOrigin(), eventName);
+                protocolRespondACK(protocol, message);
+            }
+            else
+            {
+                protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
+            }
+        }
+        else if (msgId == protocolCommandRemoveEventFilter)
+        {
+            QVariantMap args = message.arguments();
+            QString eventName = args[protocolCommandAddRemoveEventFilterArgIdEventId].toString();
+            if (eventName.length())
+            {
+                evtFilters.removeFilteredEvent(message.getOrigin(), eventName);
+                protocolRespondACK(protocol, message);
+            }
+            else
+            {
+                protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
+            }
         }
         else if (msgId == protocolCommandExecSP)
         {

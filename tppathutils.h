@@ -57,6 +57,7 @@ public:
     static QString getFeedItemsSettingsDbFilename();
     static QString getTspFolder();
     static QStringList getMediaPaths();
+    static QStringList getMediaTriggerFiles();
     static QString getRootPath();
     static QString getArtistNameMappingConfigFile();
 };

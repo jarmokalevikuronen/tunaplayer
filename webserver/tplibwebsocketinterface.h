@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "tplog.h"
 #include "tpwebsocketipaddressmask.h"
+#include "tpwebsocketprotocolmessage.h"
 #include <QVector>
 
 extern "C"
@@ -87,27 +88,21 @@ public:
         filter = new TPWebSocketIPAddressMask(ipFilter);
     }
 
-    TPWebSocketServerNotifier* notifierForFd(int fd)
-    {
-        QMap<int, TPWebSocketServerNotifier *>::iterator it = notifiers.find(fd);
-        if (it == notifiers.end())
-            return NULL;
-
-        TPWebSocketServerNotifier *notifier = it.value();
-        return notifier;
-    }
+    TPWebSocketServerNotifier* notifierForFd(int fd);
 
     void removeNotifier(int fd)
     {
         notifiers.remove(fd);
     }
 
-    //! Sends specific information to all connected clients
-    //! connected using the tp-json protocol
-    void sendMessageToAll(const QByteArray content);
+    //! Sends a event to one or more recipients. In practise event is delivered
+    //! to all connected clients, but certain events can be filtered (filter passed
+    //! as member variable of the message).
+    void sendFilteredEvent(TPWebSocketProtocolMessage message);
 
-    //! Sends a message to one or more connected clients.
-    void sendMessage(const QByteArray dataToSend, void *target, void *except);
+    //! Sends a message to one client (response to a command). Target
+    //! is specified by the message.getOrigin().
+    void sendMessage(TPWebSocketProtocolMessage message);
 
     //! Returns the amount of client connections currently present.
     int countClients();
@@ -122,10 +117,10 @@ signals:
     void messageReceived(const QByteArray content, void *source);
 
     //! Emit if/when client gets disconnected.
-    void clientDisconnected(void *source);
+    void clientDisconnected(int countConnected, void *source);
 
     //! Emit if/when client gets connected
-    void clientConnected(void *source);
+    void clientConnected(int countConnected, void *source);
 
 private:
 

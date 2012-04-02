@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QVariantMap>
 #include "json.h"
 #include <QDebug>
+#include "tpwebsocketprotocoleventfilter.h"
 
 using namespace QtJson;
 
@@ -37,6 +38,8 @@ class TPWebSocketProtocolMessage
 public:
 
     TPWebSocketProtocolMessage();
+
+    TPWebSocketProtocolMessage(TPWebSocketProtocolEventFilter *_filter);
 
     void initializeResponseTo(TPWebSocketProtocolMessage message);
     void initializeEvent(const QString id)
@@ -163,7 +166,16 @@ public:
         return origin;
     }
 
+    inline TPWebSocketProtocolEventFilter* eventFilter() const
+    {
+        return filter;
+    }
+
 private:
+
+    //! Currently active event filter(s) used to specify where to possibly send the message and where to not.
+    //! This is only referred, not owned.
+    TPWebSocketProtocolEventFilter *filter;
 
     //! Cookie value used to know where to send responses
     void *origin;

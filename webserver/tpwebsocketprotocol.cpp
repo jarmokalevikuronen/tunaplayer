@@ -27,6 +27,7 @@ TPWebSocketProtocol::TPWebSocketProtocol(TPWebSocketServer *_server, QObject *pa
     Q_ASSERT(server);
 
     connect(server, SIGNAL(messageReceived(QByteArray,void*)), this, SLOT(handleDataReceived(QByteArray, void*)));
+    connect(server, SIGNAL(clientDisconnected(int,void*)), this, SLOT(handleClientDisconnected(int,void *)));
 
     sendTimer = new QTimer(this);
     sendTimer->setSingleShot(true);
@@ -50,14 +51,21 @@ void TPWebSocketProtocol::handleDataReceived(const QByteArray data, void *origin
         emit protocolMessageReceived(this, msg);
 }
 
+void TPWebSocketProtocol::handleClientDisconnected(int clientCount, void *clientHandle)
+{
+    emit protocolClientDisconnected(this, clientCount, clientHandle);
+}
+
 void TPWebSocketProtocol::sendEvent(TPWebSocketProtocolMessage event)
 {
+    Q_ASSERT(event.eventFilter() != 0);
+
     if (server->countClients())
     {
         // TODO: Check here.
         pendingEvents.append(event);
         if (!sendTimer->isActive())
-            sendTimer->start(1);
+            sendTimer->start(5);
     }
 }
 
@@ -70,7 +78,7 @@ void TPWebSocketProtocol::sendResponse(TPWebSocketProtocolMessage response)
         {
             pendingResponses.append(response);
             if (!sendTimer->isActive())
-                sendTimer->start(1);
+                sendTimer->start(5);
         }
     }
 }
@@ -80,19 +88,17 @@ void TPWebSocketProtocol::sendNow()
     // Firstly, always process events to keep UI as up to date as possible.
     if (pendingEvents.count())
     {
-        TPWebSocketProtocolMessage event = pendingEvents.takeFirst();
-        server->sendMessageToAll(event.serialize());
+        server->sendFilteredEvent(pendingEvents.takeFirst());
     }
     else if (pendingResponses.count())
     {
-        TPWebSocketProtocolMessage response = pendingResponses.takeFirst();
-        server->sendMessage(response.serialize(), response.getOrigin(), 0);
+        server->sendMessage(pendingResponses.takeFirst());
     }
 
     // Start sending in deferred manner... give some time for sending in
     // order not to choke on modest hardware.
     if (pendingResponses.count() || pendingEvents.count())
-        sendTimer->start(3);
+        sendTimer->start(5);
 }
 
 
