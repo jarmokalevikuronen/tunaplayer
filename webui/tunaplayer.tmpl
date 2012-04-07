@@ -152,7 +152,7 @@ _TUNA_BEGIN_TEMPLATE
 
    <% for (var i=0;i<this.items.length;i++) { %>
      <% var visible = true; %>
-     <% if (i<this.firstTrack || i>=this.lastTrack) { visible = false; } %>
+     <% if (i<this.firstTrack || i>this.lastTrack) { visible = false; } %>
        <% if (visible) { %>
          <p class="artist_single_album_track" data-track-id="<%=this.items[i]['id']%>" onclick="trackClicked(this);"><%=this.items[i]['idx']%>. <%=this.items[i]['name'].toLowerCase()%></p> 
        <% } else { %>
