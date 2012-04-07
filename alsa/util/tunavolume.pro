@@ -9,7 +9,7 @@ TEMPLATE = app
 
 SOURCES += tunavolume.cpp
 
-TARGET = tunavolume
-TARGET.path = $$(DESTDIR)/usr/bin
+target = tunavolume
+target.path = $$(DESTDIR)/usr/bin
 
-INSTALLS += TARGET
+INSTALLS += target

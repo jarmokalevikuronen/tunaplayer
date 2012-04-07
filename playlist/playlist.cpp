@@ -441,6 +441,9 @@ TPPlaylist* TPPlaylist::getClonedFrom() const
 
 TPTrack *TPPlaylist::getRandomTrackNotInList()
 {
+    if (db->count() < 1)
+        return 0;
+
     int startPosition = (qrand() % db->count());
     for (int i=0;i<db->count();i++)
     {
