@@ -89,19 +89,36 @@ public:
         return ret;
     }
 
+    inline QVector<TPUserTag *>* maintainUserTags()
+    {
+        QVector<TPUserTag *> *ret = newUserTags;
+        newUserTags = 0;
+        return ret;
+    }
+
 private:
 
     void doFullScan();
     void doUpgradeScan();
     void doMaintainScan();
-    void listMediaFiles(QString folder, QStringList &list);
     void run();
 
     void toState(State _state);
 
     void processFinalTasks();
 
-    QStringList mediaFiles();
+    enum MediaType {
+        MediaTypeAudioAndControlFiles,
+        MediaTypeAudioFiles,
+        MediaTypeControlFiles
+    };
+
+    //! @brief Lists a media files that are located under specified folder.
+    void listMediaFiles(QString folder, MediaType type, QStringList &list);
+
+    //! @brief Will scan the disk for various types of content. By default
+    //! everything is retrieved.
+    QStringList mediaFiles(MediaType types = MediaTypeAudioAndControlFiles);
 
     bool equalItemsInList(QStringList &list1, QStringList &list2);
 
@@ -148,6 +165,10 @@ private:
     //! during maintain scan and handed over
     //! once maintain is complete.
     QVector<TPAssociativeDBItem *> *newDbItems;
+
+    //! This will contain a complete list of user tags (xxx.allow.tt | yyy.deny.tt) found
+    //! during a maintain scan.
+    QVector<TPUserTag *>    *newUserTags;
 
     //! Just a pointer to TrackDB that is used
     //! to initialize new TPAssociativeDBItem objects

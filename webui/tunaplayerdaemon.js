@@ -28,7 +28,7 @@ var tunaPlayer = {
   cachedPlaybackTrack: null,
   cachedPlaybackAlbum: null,
   cachedVolumeLevel: null,
-  userProfile: "</>",
+  userProfile: "<all>",
 
   stringify: function(ctrl) {
     var s = "";
@@ -457,6 +457,9 @@ var tunaPlayer = {
   enablePlaybackPositionEvents: function(callback) {
     var args = { "eventname": "playbackpositionchanged" };
     this.callFunc("removeeventfilter", callback, args);
+  },
+  getUserProfiles: function(callback) {
+    this.callFunc("getuserprofiles", callback);
   },
   setUserProfile: function(profilename) {
     this.userProfile = profilename;

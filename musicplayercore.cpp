@@ -1033,6 +1033,28 @@ void TPMusicPlayerCore::maintainTaskState(TPFileScanner::State state)
     QVector<TPAssociativeDBItem *> *results =
             maintainScanner->maintainResults();
 
+    QVector<TPUserTag *> *tags =
+            maintainScanner->maintainUserTags();
+
+    if (tags)
+    {
+        if (db->getUserDB()->upgrade(tags))
+        {
+            DEBUG() << "CORE: Updating track database with new access tags.";
+
+            // OK. We need to apply here new tags for the whole
+            // track DB... not so nice in the main thread but will still be done here.
+            TPTrackDB *tdb = db->getTrackDB();
+            TPUserManager *udb = db->getUserDB();
+
+            for (int i=0;i<tdb->count();++i)
+            {
+                TPTrack *t = tdb->at(i);
+                t->setString(objectAttrUserTokens_DYNAMIC, udb->tagStringForFile(t->getFilename()));
+            }
+        }
+    }
+
     if (results)
     {
         bool dbChanged = results->count() > 0;

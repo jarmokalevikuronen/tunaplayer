@@ -93,6 +93,10 @@ public:
     //! c++ destructor
     ~TPUserManager();
 
+    //! @brief Performs a upgrade from the "current snapshot". Ownership
+    //! of the data given transfers to this function.
+    bool upgrade(QVector<TPUserTag *> *items);
+
     //! @brief Adds a tag to list.
     //! @return true if succeeded, false on failure.
     bool insertTagFile(const QString &tagFilename);
@@ -109,7 +113,7 @@ public:
 
     //! Checks whether tag managers are equal.
     bool equals(const TPUserManager &other);
-
+    bool equals(const QVector<TPUserTag *> &other);
 private:
 
     //! Chceks whether _this_ object contains a equal tag definition.

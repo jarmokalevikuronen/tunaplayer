@@ -88,38 +88,6 @@ void TPFileScanner::run()
     }
 }
 
-void TPFileScanner::listMediaFiles(QString folder, QStringList &list)
-{
-    // TODO: Add more file extensions here (configurable?)
-    QStringList nameFilters; nameFilters << "*.mp3" << "*.ogg" << "*.MP3" << "*.OGG" << "*.wma" << "*.WMA" << "*.tt";
-
-    QDirIterator *dirIterator = new QDirIterator(
-                    folder,
-                    nameFilters,
-                    QDir::Readable | QDir::Files,
-                    QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
-
-    if (knownMediaFiles)
-    {
-        while (dirIterator->hasNext())
-        {
-            dirIterator->next();
-            QString filename(dirIterator->fileInfo().absoluteFilePath());
-            if (!knownMediaFiles->contains(filename))
-                list.append(filename);
-        }
-    }
-    else
-    {
-        while (dirIterator->hasNext())
-        {
-            dirIterator->next();
-            QString filename(dirIterator->fileInfo().absoluteFilePath());
-            list.append(filename);
-        }
-    }
-    delete dirIterator;
-}
 
 void TPFileScanner::toState(State _state)
 {
@@ -228,14 +196,56 @@ void TPFileScanner::processFinalTasks()
     dbs = NULL;
 }
 
-QStringList TPFileScanner::mediaFiles()
+
+void TPFileScanner::listMediaFiles(QString folder, MediaType type, QStringList &list)
+{
+    QStringList nameFilters;
+
+    // Should audio files be included?
+    if (type == MediaTypeAudioFiles || type == MediaTypeAudioAndControlFiles)
+        nameFilters << "*.mp3" << "*.ogg" << "*.MP3" << "*.OGG" << "*.wma" << "*.WMA";
+
+    // Should control files be included?
+    if (type == MediaTypeControlFiles || type == MediaTypeAudioAndControlFiles)
+        nameFilters << "*.tt";
+
+    QDirIterator *dirIterator = new QDirIterator(
+                    folder,
+                    nameFilters,
+                    QDir::Readable | QDir::Files,
+                    QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
+
+    if (knownMediaFiles)
+    {
+        while (dirIterator->hasNext())
+        {
+            dirIterator->next();
+            QString filename(dirIterator->fileInfo().absoluteFilePath());
+            // Add new if, and only if, existing one is not known!
+            if (!knownMediaFiles->contains(filename))
+                list.append(filename);
+        }
+    }
+    else
+    {
+        while (dirIterator->hasNext())
+        {
+            dirIterator->next();
+            QString filename(dirIterator->fileInfo().absoluteFilePath());
+            list.append(filename);
+        }
+    }
+    delete dirIterator;
+}
+
+QStringList TPFileScanner::mediaFiles(MediaType type)
 {
     QStringList files;
 
     QStringList::iterator it = scanFolders.begin();
     while (it != scanFolders.end())
     {
-        listMediaFiles(*it, files);
+        listMediaFiles(*it, type, files);
         ++it;
     }
 
@@ -256,7 +266,7 @@ bool TPFileScanner::doMaintainCheck()
     //
     // 1. Scan DISK.
     //
-    QStringList currentMediaFiles = mediaFiles();
+    QStringList currentMediaFiles = mediaFiles(MediaTypeAudioFiles);
 
     DEBUG() << "SCANNER: new files: " << currentMediaFiles.count();
 
@@ -272,6 +282,9 @@ bool TPFileScanner::doMaintainCheck()
 
     if (scanComplete)
     {
+        // TODO: How to deal with the user profile files
+        // -> We definitely would like to create a new
+
         //
         // No changest to previous scan -> do report the status.
         //
@@ -290,10 +303,23 @@ bool TPFileScanner::doMaintainCheck()
             }
         }
 
-        // This will notify the musicplayer core
-        // that maintain scan is completed and results, if any, are
-        // available.
+        newUserTags = new QVector<TPUserTag *>();
+        QStringList userTags = mediaFiles(MediaTypeControlFiles);
+        foreach(QString tagfile, userTags)
+        {
+            QFileInfo fi(tagfile);
+            TPUserTag *t = new TPUserTag(fi.absolutePath(), fi.fileName());
+            if (t->isValid())
+                newUserTags->append(t);
+            else
+                delete t;
+        }
+
+        //
+        // Try to reduce some memory consumption here
+        //
         maintainCachedMediaFiles.clear();
+
         toState(MediaScannerMaintainScanComplete);
 
         QThread::exit(0);

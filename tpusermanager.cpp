@@ -7,7 +7,7 @@ static const QString opAllow("allow");
 static const QString opRestrict("deny");
 
 // Default TAG -
-static const QString tagDefault("/");
+static const QString tagDefault("all");
 
 TPUserTag::TPUserTag(const QString &tagPath, const QString &tagFilename)
 {
@@ -39,6 +39,27 @@ TPUserManager::TPUserManager()
 TPUserManager::~TPUserManager()
 {
     qDeleteAll(tags);
+}
+
+bool TPUserManager::upgrade(QVector<TPUserTag *> *items)
+{
+    if (!items)
+        return false;
+
+    if (equals(*items))
+    {
+        DEBUG() << "ACCESSTOKEN: NoChanges";
+        qDeleteAll((*items));
+        delete items;
+        return false;
+    }
+
+    // Delete old ones, copy and delete the container (but not the contents).
+    qDeleteAll(tags);
+    tags = *items;
+    delete items;
+
+    return true;
 }
 
 bool TPUserManager::insertTagFile(const QString &tagFilename)
@@ -77,6 +98,9 @@ QStringList TPUserManager::allTags()
         if (!list.contains(tag->tag))
             list.append(tag->tag);
     }
+
+    list.append(tagDefault);
+    list.sort();
 
     return list;
 }
@@ -145,17 +169,23 @@ QStringList TPUserManager::tagsForFile(const QString &filename)
     return list;
 }
 
-bool TPUserManager::equals(const TPUserManager &other)
+bool TPUserManager::equals(const QVector<TPUserTag *> &other)
 {
-    if (tags.count() != other.tags.count())
+    if (tags.count() != other.count())
         return false;
 
-    foreach(TPUserTag *otherTag, other.tags)
+    foreach(TPUserTag *t, other)
     {
-        if (!hasEqualTag(*otherTag))
+        if (!hasEqualTag(*t))
             return false;
     }
+
     return true;
+}
+
+bool TPUserManager::equals(const TPUserManager &other)
+{
+    return equals(other.tags);
 }
 
 bool TPUserManager::hasEqualTag(const TPUserTag &other)
