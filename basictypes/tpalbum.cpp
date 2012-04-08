@@ -242,7 +242,7 @@ void TPAlbum::dec()
 }
 #endif
 
-QMap<QString, QVariant> TPAlbum::toMap(QStringList *filteredKeys)
+QVariantMap TPAlbum::toMap(QStringList *filteredKeys)
 {
     QMap<QString, QVariant> values =
             TPAssociativeObject::toMap(filteredKeys);
@@ -309,12 +309,22 @@ const QString TPAlbum::getString(const QString key, const QString defaultValue) 
         return artist ? artist->getString(key.mid(albumAttrArtist.length())) : QString("");
     else if (key == objectAttrIdentifier)
         return QString(const_cast<TPAlbum*>(this)->identifier());
-    else if (artist)
+    else if (artist && key == albumAttrArtistName)
+        return artist->getString(objectAttrName);
+    else if (artist && key == albumAttrArtistId)
+        return artist->getString(objectAttrIdentifier);
+    else if (key == objectAttrUserTokens_DYNAMIC)
     {
-        if (key == albumAttrArtistName)
-            return artist->getString(objectAttrName);
-        else if (key == albumAttrArtistId)
-            return artist->getString(objectAttrIdentifier);
+        QStringList userTokens;
+
+        foreach(TPTrack *t, tracks)
+        {
+            QStringList toks = t->getString(objectAttrUserTokens_DYNAMIC).split(userTokensDelimiter);
+            userTokens += toks;
+            userTokens.removeDuplicates();
+        }
+
+        return userTokens.join(userTokensDelimiter);
     }
 
     return TPAssociativeObject::getString(key, defaultValue);

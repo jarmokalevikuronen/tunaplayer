@@ -49,6 +49,11 @@ static const QString objectAttrShortPlays("shortplays");
 static const QString objectAttrDeleted("deleted");
 static const QString objectAttrAge("age");
 
+// DYNAMIC TOKENS -> NEVER SAVED TO DISK OR ANYTHING
+static const QString dynamicTokenPrefix("_d.");
+static const QString objectAttrUserTokens_DYNAMIC("_d.usr");
+static const QString userTokensDelimiter("|");
+
 //
 // TRACK SPECIFIC META INFORMATION KEYS
 //

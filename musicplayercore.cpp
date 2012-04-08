@@ -954,6 +954,17 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
                 protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
             }
         }
+        else if (msgId == protocolCommandGetUserProfiles)
+        {
+            if (!db || !db->getUserDB())
+                protocolRespondNAK(protocol, message, protocolExecErrorDescriptionNotReady);
+
+            QStringList profiles = db->getUserDB()->allTags();
+            QVariantMap args;
+
+            args.insert(protocolCommandGetUserProfilesArgProfilelist, profiles);
+            protocolRespondACK(protocol, message, QVariantMap(), args);
+        }
         else if (msgId == protocolCommandExecSP)
         {
             if (!sob)

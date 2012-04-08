@@ -295,7 +295,9 @@ QVariant Json::parseObject(const QString &json, int &index, bool &success)
                         }
 
                         //Assign the value to the key in the map
-                        map[name] = value;
+                        // Allow multiple items with same name
+//                        map[name] = value;
+                        map.insertMulti(name, value);
                 }
         }
 

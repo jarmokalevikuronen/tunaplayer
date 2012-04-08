@@ -47,7 +47,7 @@ TPSearchResults* TPStoredProcedureRunner::execute(QVariantMap &args, TPStoredPro
     if (!ok)
         maxResultCount = INT_MAX;
 
-    DEBUG() << "TSP: result-count: " << maxResultCount;
+//    DEBUG() << "TSP: result-count: " << maxResultCount;
 
     int count = op.count();
 
@@ -78,6 +78,8 @@ TPSearchResults* TPStoredProcedureRunner::execute(QVariantMap &args, TPStoredPro
 
     // Finally, after all information in sorted order, limit the result count.
     results->limitTo(maxResultCount);
+
+    DEBUG() << "TSP: Results: " << results->count();
 
     delete arguments;
 

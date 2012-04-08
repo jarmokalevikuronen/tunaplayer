@@ -51,19 +51,28 @@ TPAssociativeObject::~TPAssociativeObject()
 
 void TPAssociativeObject::setInt(const QString key, int value)
 {
-    if (item)
+    if (isDynamic(key))
+        dynamicProperties.insert(key, value);
+    else if (item)
         item->setIntValue(key, value);
 }
 
 void TPAssociativeObject::incIntValue(const QString key, int by)
 {
-    if (item)
+    if (isDynamic(key))
+    {
+        int old = dynamicProperties.value(key, QVariant(0)).toInt();
+        dynamicProperties.insert(key, old+1);
+    }
+    else if (item)
         item->incIntValue(key, by);
 }
 
 const QVariant TPAssociativeObject::get(const QString key) const
 {
-    if (item)
+    if (isDynamic(key))
+        return dynamicProperties.value(key);
+    else if (item)
         return item->value(key);
 
     return QVariant();
@@ -71,6 +80,9 @@ const QVariant TPAssociativeObject::get(const QString key) const
 
 int TPAssociativeObject::getInt(const QString key, int defaultValue) const
 {
+    if (isDynamic(key))
+        return dynamicProperties.value(key, defaultValue).toInt();
+
     //
     // Special attribute handling here - basically
     // aggregated value calculated from current time are placed here.
@@ -122,18 +134,17 @@ int TPAssociativeObject::getInt(const QString key, int defaultValue) const
 
 void TPAssociativeObject::setString(const QString key, const QString value)
 {
-    if (item)
+    if (isDynamic(key))
+        dynamicProperties.insert(key, value);
+    else if (item)
         item->setStringValue(key, value);
-}
-
-void TPAssociativeObject::setByteArray(const QString key, const QByteArray value)
-{
-    if (item)
-        item->setValue(key, value);
 }
 
 const QString TPAssociativeObject::getString(const QString key, const QString defaultValue) const
 {
+    if (isDynamic(key))
+        return dynamicProperties.value(key, defaultValue).toString();
+
     if (contains(key))
         return item->value(key).toString();
 
@@ -147,6 +158,14 @@ const QString TPAssociativeObject::getString(const QString key, const QString de
     return defaultValue;
 }
 
+void TPAssociativeObject::setByteArray(const QString key, const QByteArray value)
+{
+    if (isDynamic(key))
+        dynamicProperties.insert(key, value);
+    else if (item)
+        item->setValue(key, value);
+}
+
 bool TPAssociativeObject::save(int timeoutMs)
 {
     if (item)
@@ -155,19 +174,24 @@ bool TPAssociativeObject::save(int timeoutMs)
 }
 
 
-QMap<QString, QVariant> TPAssociativeObject::toMap(QStringList *filteredKeys)
+QVariantMap TPAssociativeObject::toMap(QStringList *filteredKeys)
 {
     if (!item)
         return QVariantMap();
 
     QVariantMap result = *item;
     result.insert(objectAttrAge, getInt(objectAttrAge, -1));
+    result.insert(objectAttrLastPlayedAgo, getInt(objectAttrLastPlayedAgo, -1));
 
     if (filteredKeys)
     {
         for (int i=0;i<filteredKeys->count();++i)
             result.remove(filteredKeys->at(i));
     }
+
+    // Unite with dynamic properties.. due the naming, dynamic properties
+    // should not collide with the static ones.
+    result.unite(dynamicProperties);
 
     return result;
 }

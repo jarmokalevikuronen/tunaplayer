@@ -422,7 +422,7 @@ function playerUpdateButtons(json) {
 }
 
 function playerUpdatePlaybackPosition(json) {
-console.log("playerUpdatePlaybackPosition");
+/*console.log("playerUpdatePlaybackPosition");*/
   if (ignorePositionReportsTimer != null)
     return;
 
@@ -965,7 +965,7 @@ function createArtistSingleAlbumTrackList() {
   initData["lastTrack"] = currentTrackIndex + visibleTracks;
   initData["items"] = currentAlbumTracks["items"];
   var html = $.jqote(templates.tmpl_artist_single_album_tracklist_content, initData);
-
+console.log("DEBUG: " + html);
   return html;
 }
 
@@ -1488,6 +1488,7 @@ function loadViewContent(oldid, newid, initData, renderer) {
     delayedRender = true;
     tunaPlayer.getAlbumTracks(id, function(json) {
       if (json["status"] == "OK") {
+/*console.log("ALBUMTRACKS: " + JSON.stringify(json));*/
         currentAlbumTracks = json["args"];
         if (renderer != undefined) {
           renderer();

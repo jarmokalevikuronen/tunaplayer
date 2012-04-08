@@ -1,11 +1,15 @@
 {
     "arguments":{
-      "criteria": ""
+      "criteria": "",
+      "userprofile": "/"
     },
     "schemes":["track://"],
     "filterkeys": ["scheme","_pk_"],
     "filters":{
-        "contains":["object://name", "parameter://criteria"]
+        "and": {
+          "contains":["object://name", "parameter://criteria"],
+          "contains":["object://_d.usr", "parameter://userprofile"]
+        }
     },
     "sorting":[
 	["ascending", "name"]

@@ -190,6 +190,25 @@ const QString TPArtist::getString(const QString key, const QString defaultValue)
 {
     if (key == objectAttrIdentifier)
         return QString(const_cast<TPArtist *>(this)->identifier());
+    else if (key == objectAttrUserTokens_DYNAMIC)
+    {
+        QStringList tokens;
+
+        // Here, the ARTIST should be shown with all the users that has
+        // configured to show at least one album from this particular artist.
+        foreach(TPAlbum *album, albums)
+        {
+            QString toks = album->getString(objectAttrUserTokens_DYNAMIC);
+            if (toks.length())
+            {
+                QStringList albumTokens = toks.split(userTokensDelimiter);
+                tokens.append(albumTokens);
+                tokens.removeDuplicates();
+            }
+        }
+
+        return tokens.join(userTokensDelimiter);
+    }
 
     return TPAssociativeObject::getString(key, defaultValue);
 }

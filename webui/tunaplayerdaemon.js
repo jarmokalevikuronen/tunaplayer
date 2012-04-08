@@ -28,6 +28,7 @@ var tunaPlayer = {
   cachedPlaybackTrack: null,
   cachedPlaybackAlbum: null,
   cachedVolumeLevel: null,
+  userProfile: "</>",
 
   stringify: function(ctrl) {
     var s = "";
@@ -208,12 +209,17 @@ var tunaPlayer = {
     var cmd = {
       "type": "command",
       "id": fname,
+      "userprofile": this.userProfile,
       "cookie": localCookie
     };
     return cmd;
   },
   execSPCreate: function(spname, callback, args) {
     var localCookie = this.setupCallback(callback);
+    if (!args)
+      args = {};
+    args["userprofile"] = this.userProfile;
+
     var cmd = {
       "type": "command",
       "id": "execsp",
@@ -232,9 +238,13 @@ var tunaPlayer = {
   },
   callFunc: function(fname, callback, args) {
     var cmd = this.cmdCreate(fname, callback);
-    if (args != undefined && args != null) {
-      cmd["args"] = args;
-    }
+    
+    if (!args)
+      args = {};
+
+    args["userprofile"] = this.userProfile;
+    cmd["args"] = args;
+
     this.socket.send(JSON.stringify(cmd));
   },
   setupCallback: function(callback) {
@@ -447,6 +457,9 @@ var tunaPlayer = {
   enablePlaybackPositionEvents: function(callback) {
     var args = { "eventname": "playbackpositionchanged" };
     this.callFunc("removeeventfilter", callback, args);
+  },
+  setUserProfile: function(profilename) {
+    this.userProfile = profilename;
   }
 };
 

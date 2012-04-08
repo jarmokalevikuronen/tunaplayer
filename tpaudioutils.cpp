@@ -93,21 +93,21 @@ const QString TPAudioUtils::normalizeArtistName(const QString &originalName)
         artistNameMappingInitialized = true;
     }
 
-    QMap<QString, QString>::iterator it = artistNameMapping.find(originalName.trimmed());
+    QString lcName = originalName.trimmed().toLower();
+
+    QMap<QString, QString>::iterator it = artistNameMapping.find(lcName);
     if (it != artistNameMapping.end())
     {
-/*        DEBUG() << "NORMALIZE: " << originalName << " mapped to " << it.value();*/
+//        DEBUG() << "NORMALIZE: " << originalName << " mapped to " << it.value();
         return it.value();
     }
 
-    QString lcName = originalName.toLower();
+    if (lcName.startsWith(a) && lcName.length() > a.length())
+        return lcName.mid(a.length());
+    else if (lcName.startsWith(the) && lcName.length() > the.length())
+        return lcName.mid(the.length());
 
-    if (lcName.startsWith(a) && originalName.length() > a.length())
-        return originalName.mid(a.length()).trimmed();
-    else if (lcName.startsWith(the) && originalName.length() > the.length())
-        return originalName.mid(the.length()).trimmed();
-
-    return originalName.trimmed();
+    return lcName;
 }
 
 void TPAudioUtils::buildArtistNameMapping()

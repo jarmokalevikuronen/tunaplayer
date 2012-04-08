@@ -82,7 +82,8 @@ SOURCES += player.cpp \
     search/sort/tpsortimplementationstring.cpp \
     search/sort/tpsortimplementationnum.cpp \
     tpclientconnectionmonitor.cpp \
-    webserver/tpwebsocketprotocoleventfilter.cpp
+    webserver/tpwebsocketprotocoleventfilter.cpp \
+    tpusermanager.cpp
 
 HEADERS += player.h \
     tpreferencecounted.h \
@@ -160,7 +161,8 @@ HEADERS += player.h \
     search/sort/tpsort.h \
     basictypes/tpcachedvalues.h \
     tpclientconnectionmonitor.h \
-    webserver/tpwebsocketprotocoleventfilter.h
+    webserver/tpwebsocketprotocoleventfilter.h \
+    tpusermanager.h
 ##### END PLAYER
 
 ##### BEGIN JSON
@@ -263,6 +265,13 @@ INSTALLS += html
 tsp.files += rt-environment/tsp/*
 tsp.path = $$PREFIX/usr/share/tunaplayer/tsp
 INSTALLS += tsp
+
+#
+# Other configuration files
+#
+cfg.files += rt-environment/configs/*
+cfg.path = $$PREFIX/usr/share/tunaplayer/configs
+INSTALLS += cfg
 
 #
 # Hardcoded playlists + their icons

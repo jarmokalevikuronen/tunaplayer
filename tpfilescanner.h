@@ -28,17 +28,34 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QEventLoop>
 #include "db/tpdatabases.h"
 #include "tpassociative.h"
+#include "tpusermanager.h"
 
 class TPAlbum;
 
+//! @class TPFileScanner
+//! @brief Object that runs in its own thread and is responsible
+//! of scanning the directories for music content. Basically operates
+//! in three different modes
+//!  INITIAL: When started and scanning for the first time (=no DB constructed just yet)
+//!  UPGRADE: When started but DB exists -> DB content is updated
+//!  MAINTAIN: When performing periodical rescans at runtime -> will just report a list
+//!  of new files (note: current expectation is that there will be no files removed from the Jukebox system).
+//! NOTE: Also scans for user access token files (*.tt) that specify which users/profiles like to
+//! see the content in that folder, or its subfolders.
+//!
 class TPFileScanner : public QThread
 {
     Q_OBJECT
 
 public:
 
+    //! C++ constructor for INITIAL and UPGRADE scans.
     TPFileScanner(TPDatabases *_db, QStringList scanFolders, QString dbFile);
+
+    //! C++ constructor for MAINTAIN scans.
     TPFileScanner(const QStringList &scanFolders, QStringList *existingFiles, TPAssociativeDB *_maintainDb);
+
+    //! C++ destructor
     ~TPFileScanner();
 
     enum State
@@ -90,6 +107,8 @@ private:
 
     bool doMaintainCheck();
 
+
+
 private slots:
 
     void doMaintainCheckSlot();
@@ -102,7 +121,8 @@ signals:
 
 private:
 
-    //! Current state of operation.
+    //! Current state of operation. volatiled as the state is read also from
+    //! another thread (=main thread).
     volatile enum State state;
 
     //! Folders to scan

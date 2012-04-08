@@ -91,7 +91,7 @@ void TPFileScanner::run()
 void TPFileScanner::listMediaFiles(QString folder, QStringList &list)
 {
     // TODO: Add more file extensions here (configurable?)
-    QStringList nameFilters; nameFilters << "*.mp3" << "*.ogg" << "*.MP3" << "*.OGG" << "*.wma" << "*.WMA";
+    QStringList nameFilters; nameFilters << "*.mp3" << "*.ogg" << "*.MP3" << "*.OGG" << "*.wma" << "*.WMA" << "*.tt";
 
     QDirIterator *dirIterator = new QDirIterator(
                     folder,
@@ -153,24 +153,27 @@ void TPFileScanner::doUpgradeScan()
     Q_ASSERT(dbs);
 
     //
-    // Firstly, import the database into memory.
+    // 1. import existing database into memory.
     //
     toState(TPFileScanner::MediaScannerUpgradeImportDB);
-    TPTrackDB *trackDB = dbs->getTrackDB();
-    qDebug() << "SCANNER: STATE: Upgrade scan initial tracks " << trackDB->count();
+    dbs->load();
 
     //
-    // Finally, do process possible new items if any.
+    // 2. Scan all files in disk(s).
     //
     toState(TPFileScanner::MediaScannerUpgradeScanDisk);
     QStringList list = mediaFiles();
 
+    //
+    // 3. Build runtime DB structure
+    //
     toState(TPFileScanner::MediaScannerUpgradeCheckNew);
-    trackDB->processFiles(list);
+    dbs->build(list);
 
-    // Always save to disk (for now at least).
+    //
+    // 4. Save changes to disk etc.
+    //
     toState(TPFileScanner::MediaScannerUpgradeExportDB);
-
     processFinalTasks();
 }
 
@@ -182,37 +185,41 @@ void TPFileScanner::doFullScan()
 
     qDebug() << "SCANNER: STATE: Start full scan";
 
+    //
+    // 1. List files in disk(s).
+    //
     toState(TPFileScanner::MediaScannerFullScanDisk);
     QStringList list = mediaFiles();
 
     toState(TPFileScanner::MediaScannerFullProcessFiles);
     emit mediaScannerProgress(0, list.count());
 
+    //
+    // 2. Build runtime db structure in smaller fragments
+    // and keep reporting status along the way.
+    //
     int steps = list.count() / 50 + (list.count() % 50 ? 1 : 0);
     int processed = 0;
 
     for (int i=0;i<steps;++i)
     {
         QStringList fragment = list.mid(i * 50, 50);
-        processed += fragment.count();
-
-        dbs->getTrackDB()->processFiles(fragment);
+        processed += fragment.length();
+        dbs->build(fragment);
         emit mediaScannerProgress(processed, list.count());
     }
     list.clear();
 
+    //
+    // 3. Write data to disk.
+    //
     toState(TPFileScanner::MediaScannerFullExportDB);
-
     processFinalTasks();
 }
 
 void TPFileScanner::processFinalTasks()
 {
-    dbs->getTrackDB()->executePostCreateTasks();
-
-    //
-    // Feeds are not to be touched here.
-    //
+    dbs->buildFinished();
     dbs->moveToThread(parentThread);
 
     toState(TPFileScanner::MediaScannerComplete);
@@ -246,10 +253,16 @@ bool TPFileScanner::doMaintainCheck()
 
     bool scanComplete = true;
 
+    //
+    // 1. Scan DISK.
+    //
     QStringList currentMediaFiles = mediaFiles();
 
     DEBUG() << "SCANNER: new files: " << currentMediaFiles.count();
 
+    //
+    // 2. Check were there any changes?
+    //
     if (!equalItemsInList(currentMediaFiles, maintainCachedMediaFiles))
     {
         // Three minute interval for next check.
@@ -259,6 +272,9 @@ bool TPFileScanner::doMaintainCheck()
 
     if (scanComplete)
     {
+        //
+        // No changest to previous scan -> do report the status.
+        //
         DEBUG() << "SCANNER: Maintain scan complete. " << currentMediaFiles.count() << " new media files.";
 
         newDbItems = new QVector<TPAssociativeDBItem *>();
@@ -279,10 +295,14 @@ bool TPFileScanner::doMaintainCheck()
         // available.
         maintainCachedMediaFiles.clear();
         toState(MediaScannerMaintainScanComplete);
+
         QThread::exit(0);
     }
     else
     {
+        //
+        // Changes since previous scan -> delay for a while before doing the scan again.
+        //
         DEBUG() << "SCANNER: maintain recheck scheduled for 3 minutes..";
 
         if (maintainTimer)
@@ -317,4 +337,5 @@ bool TPFileScanner::equalItemsInList(QStringList &list1, QStringList &list2)
     }
     return true;
 }
+
 

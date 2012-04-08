@@ -63,6 +63,7 @@ public:
 
 private:
 
+    //! Refers to DB this particular DB-ITEM object belongs to.
     TPAssociativeDB *db;
 };
 

@@ -55,26 +55,6 @@ int TPSearchFilterOpMatchBase::evalValueNum(Value &valRef, TPSearchFilterEvalArg
     return evalValue(valRef, args).toInt();
 }
 
-/*const QString TPSearchFilterOpMatchBase::evalValue1(TPSearchFilterEvalArgs &args)
-{
-    return evalValue(value1, args);
-}
-
-int TPSearchFilterOpMatchBase::evalValue1Num(TPSearchFilterEvalArgs &args)
-{
-    return evalValueNum(value1, args);
-}
-
-const QString TPSearchFilterOpMatchBase::evalValue2(TPSearchFilterEvalArgs &args)
-{
-    return evalValue(value2, args);
-}
-
-int TPSearchFilterOpMatchBase::evalValue2Num(TPSearchFilterEvalArgs &args)
-{
-    return evalValueNum(value2, args);
-}
-*/
 void TPSearchFilterOpMatchBase::preProcess(TPStoredProcedureArgs &args)
 {
     if (value1.isSetUp())

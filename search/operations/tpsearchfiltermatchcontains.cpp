@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "tpsearchfiltermatchcontains.h"
+#include "tplog.h"
 
 TPSearchFilterMatchContains::TPSearchFilterMatchContains(Qt::CaseSensitivity _caseSensitivity, bool _inverse)
 {
@@ -27,7 +28,10 @@ TPSearchFilterMatchContains::TPSearchFilterMatchContains(Qt::CaseSensitivity _ca
 
 bool TPSearchFilterMatchContains::evaluate(TPSearchFilterEvalArgs &args)
 {
-    bool comparison = evalValue1(args).contains(evalValue2(args), caseSensitivity);
+    QString v1(evalValue1(args));
+    QString v2(evalValue2(args));
+//    DEBUG() << "CONTAINS: v1=" << v1 << " v2=" << v2;
+    bool comparison = v1.contains(v2, caseSensitivity);
     return inverse ? !comparison : comparison;
 }
 

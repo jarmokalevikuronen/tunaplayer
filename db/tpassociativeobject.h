@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QStringList>
 
 #include "tpassociative.h"
+#include "tpassociativemeta.h"
 
 typedef QMap<QString, QVariant> TPMapModel;
 
@@ -63,14 +64,24 @@ public:
     //! @brief Checks whether given key is known
     bool contains(const QString key) const;
 
+private: // New impmentation
+
+    inline bool isDynamic(const QString &key) const
+    {
+        return key.startsWith(dynamicTokenPrefix);
+    }
+
 protected:
 
+    //! Dynamic properties not in scope of permanent saving.
+    QMap<QString, QVariant> dynamicProperties;
     //! Mutable as cache updated in const method
     mutable int cachedAge;
     //! Mutable as cache updated in const method.
     mutable int cachedLastPlayedAgo;
-
+    //! Do we own the /item/ variable and can delete it when quitting.
     bool itemOwned;
+    //! DB Object this higher level object represents.
     TPAssociativeDBItem *item;
 };
 

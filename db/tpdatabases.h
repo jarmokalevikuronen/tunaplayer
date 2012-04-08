@@ -21,9 +21,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define TPDATABASES_H___
 
 #include <QObject>
-//#include "tptrackdb.h"
-//#include "playlistmgr.h"
-//#include "tpfeedmgr.h"
 
 // FORWARD DECLARATIONS
 class TPPlaylistMgr;
@@ -31,23 +28,60 @@ class TPTrackDB;
 class TPFeedMgr;
 class TPArtistDB;
 class TPAlbumDB;
+class TPUserManager;
 
+//! @class TPDatabases
+//! @brief Encapsulates all the different type of database under once facade.
 class TPDatabases : public QObject
 {
     Q_OBJECT
 public:
+
+    //! @brief C++ constructor
     explicit TPDatabases(QObject *parent = 0);
+
+    //! @brief C++ destructor
     ~TPDatabases();
 
+    //! @brief Returns the one and only playlist database.
     TPPlaylistMgr* getPlaylistDB();
+
+    //! @brief Get track database
     TPTrackDB *getTrackDB();
+
+    //! @brief Returns the one and only artist database
     TPArtistDB* getArtistDB();
+
+    //! @brief Returns the one and only album database
     TPAlbumDB* getAlbumDB();
+
+    //! @brief Returns the one and only feed database
     TPFeedMgr* getFeedDB();
+
+    //! @brief Returns the one and only user database.
+    TPUserManager* getUserDB();
+
+    //! @brief Loads the database into memory (kind of at least).
+    void load();
+
+    //! This will construct the database - fragment by fragment.
+    //! returns the amount of _media_ files that was processed (access token files not taking effect).
+    int build(QStringList &mediaFiles);
+
+    //! Called when it is expected that the build will not be called again.
+    void buildFinished();
 
 signals:
 
 public slots:
+
+
+private:  // New Implementation
+
+    //! @brief Processes all User access token files (*.tt) and removes
+    //! those from the list. if mgr is provided, it will be updated instead
+    //! of creating new instance.
+    TPUserManager *processUserAccessFiles(QStringList &filenames, TPUserManager *mgr);
 
 private: // Data
 
@@ -62,6 +96,10 @@ private: // Data
     //! Playlist manager used to handle
     //! all things related to playlists.
     TPPlaylistMgr *playlistMgr;
+
+    //! User mgr -> provides information which users
+    //! will like to see which audio files.
+    TPUserManager* userMgr;
 };
 
 #endif // TPDATABASES_H

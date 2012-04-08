@@ -118,4 +118,13 @@ static const QString protocolEventAlbumChanged("albumchanged");
 // Reported when current playlist has changed.
 static const QString protocolEventCurrentPlaylistChanged("currentplaylistchanged");
 
+
+//! ********************************************************************************
+//! User Mgmt
+//! ********************************************************************************
+static const QString protocolCommandGetUserProfiles("getuserprofiles");
+static const QString protocolCommandGetUserProfilesArgProfilelist("profilelist");
+static const QString protocolArgumentUserProfile("userprofile");
+
+
 #endif // TPPROTOCOLDEFINES_H

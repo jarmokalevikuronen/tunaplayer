@@ -11,3 +11,12 @@ yello one second=yello
 coverdale page=coverdale & page
 vesa matti loiri=vesa-matti loiri
 adams, bryan=bryan adams
+69 eyes=69eyes
+22-pistepirkko=22pistepirkko
+22 pistepirkko=22pistepirkko
+j karjalainen & mustat lasit=j. karjalainen
+john cougar=john cougar mellencamp
+juice leskinen grand slam=juice leskinen
+freud marx engels jung=freud marx engels & jung
+freud marx engels & yung=freud marx engels & jung
+
