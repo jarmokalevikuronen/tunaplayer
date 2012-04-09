@@ -242,7 +242,13 @@ bool PlayerBackend_MPlayer::play(TPTrack *track)
         else
             cli = TPSettings::instance().get(settingPlayTrackCmd).toString().arg(filename);
 
+        QString customCli = track->getString(objectAttrCustomPlayback);
+
+        if (customCli.length())
+            cli = customCli;
+
         DEBUG() << "PLAYER: executing cli " << cli;
+
         process.start(cli);
         status = process.waitForStarted(5000);
 

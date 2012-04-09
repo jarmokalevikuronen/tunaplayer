@@ -37,6 +37,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define TRIGGER_TESTFILE                ".triggertestfile.removeme"
 
+#define TP_YOUTUBE_DB_FILENAME             "youtube.db"
 
 QString TPPathUtils::ensureBasePath(QString subdir)
 {
@@ -249,5 +250,12 @@ QString TPPathUtils::getArtistNameMappingConfigFile()
 {
     QString path = ensureBasePath();
     path += TP_ARTIST_NAME_MAPPING_CONFIG_FILE;
+    return path;
+}
+
+QString TPPathUtils::getYoutubeDbFilename()
+{
+    QString path = ensureBasePath("db");
+    path.append(TP_YOUTUBE_DB_FILENAME);
     return path;
 }

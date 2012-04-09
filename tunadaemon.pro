@@ -5,7 +5,7 @@
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG += warn_on
-INCLUDEPATH += ./search/sort ./playlist ./feed ./webserver ./webserver/libwebsocket ./albumart/util ./albumart/fetch ./basictypes ./search ./alsa ./db
+INCLUDEPATH += ./youtube ./search/sort ./playlist ./feed ./webserver ./webserver/libwebsocket ./albumart/util ./albumart/fetch ./basictypes ./search ./alsa ./db
 
 # TAGLIB
 LIBS += -L/usr/lib/ -ltag
@@ -83,7 +83,11 @@ SOURCES += player.cpp \
     search/sort/tpsortimplementationnum.cpp \
     tpclientconnectionmonitor.cpp \
     webserver/tpwebsocketprotocoleventfilter.cpp \
-    tpusermanager.cpp
+    tpusermanager.cpp \
+    youtube/tpyoutubesearch.cpp \
+    youtube/tpyoutubedb.cpp \
+    youtube/tpyoutubeobject.cpp \
+    basictypes/tpobjectdelegate.cpp
 
 HEADERS += player.h \
     tpreferencecounted.h \
@@ -162,7 +166,11 @@ HEADERS += player.h \
     basictypes/tpcachedvalues.h \
     tpclientconnectionmonitor.h \
     webserver/tpwebsocketprotocoleventfilter.h \
-    tpusermanager.h
+    tpusermanager.h \
+    youtube/tpyoutubesearch.h \
+    youtube/tpyoutubedb.h \
+    youtube/tpyoutubeobject.h \
+    basictypes/tpobjectdelegate.h
 ##### END PLAYER
 
 ##### BEGIN JSON
@@ -282,6 +290,13 @@ playlist_icons.files += rt-environment/playlists/icons/*
 playlist_icons.path = $$PREFIX/usr/share/tunaplayer/playlists/icons
 INSTALLS += playlist
 INSTALLS += playlist_icons
+
+#
+# Script files to aid playback.
+#
+scripts.files += scripts/tunaplaytube.sh
+scripts.path = $$PREFIX/usr/bin/
+INSTALLS += scripts
 
 
 #

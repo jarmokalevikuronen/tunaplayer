@@ -48,6 +48,7 @@ static const QString objectAttrPlayLength("pllen");
 static const QString objectAttrShortPlays("shortplays");
 static const QString objectAttrDeleted("deleted");
 static const QString objectAttrAge("age");
+static const QString objectAttrCustomPlayback("customplayback");
 
 // DYNAMIC TOKENS -> NEVER SAVED TO DISK OR ANYTHING
 static const QString dynamicTokenPrefix("_d.");
@@ -112,5 +113,11 @@ static const QString feedAttrUrl("url");
 static const QString feedAttrLink("link");
 static const QString feedAttrDescription("desc");
 static const QString feedAttrTitle("title");
+
+//
+// YOUTUBE specific meta information
+//
+static const QString youtubeAttrUrl("mediaurl");
+static const QString youtubeAttrThumbnailUrl("thumburl");
 
 #endif // TPASSOCIATIVEMETA_H

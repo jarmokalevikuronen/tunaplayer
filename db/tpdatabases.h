@@ -29,6 +29,7 @@ class TPFeedMgr;
 class TPArtistDB;
 class TPAlbumDB;
 class TPUserManager;
+class TPYouTubeDB;
 
 //! @class TPDatabases
 //! @brief Encapsulates all the different type of database under once facade.
@@ -60,6 +61,9 @@ public:
 
     //! @brief Returns the one and only user database.
     TPUserManager* getUserDB();
+
+    //! @brief Returns the Youtube DB if any.
+    TPYouTubeDB* getYouTubeDB();
 
     //! @brief Loads the database into memory (kind of at least).
     void load();
@@ -100,6 +104,9 @@ private: // Data
     //! User mgr -> provides information which users
     //! will like to see which audio files.
     TPUserManager* userMgr;
+
+    //! Youtube database handler..
+    TPYouTubeDB *youtubeDB;
 };
 
 #endif // TPDATABASES_H

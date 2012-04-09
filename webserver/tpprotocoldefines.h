@@ -126,5 +126,18 @@ static const QString protocolCommandGetUserProfiles("getuserprofiles");
 static const QString protocolCommandGetUserProfilesArgProfilelist("profilelist");
 static const QString protocolArgumentUserProfile("userprofile");
 
+//! ********************************************************************************
+//! YOUTUBE
+//! ********************************************************************************
+// -> Starts a youtube search operation.
+static const QString protocolCommandYoutubeSearch("youtube.search");
+static const QString protocolCommandYoutubeSearchArgCriteria("criteria");
+// -> Will save the picked youtube search result to local database.
+static const QString protocolCommandYoutubeSave("youtube.save");
+static const QString protocolCommandYoutubeSaveArgId("id");
+// -> Emitted as a response to youtube.search operation when it completes.
+static const QString protocolEventYoutubeSearchFinished("youtube.searchfinished");
+static const QString protocolEventYoutubeDbChanged("youtube.dbchanged");
+
 
 #endif // TPPROTOCOLDEFINES_H

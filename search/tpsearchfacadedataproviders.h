@@ -24,11 +24,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "db/tpartistdb.h"
 #include "db/tpalbumdb.h"
 #include "db/tpdbtemplate.h"
+#include "tpyoutubedb.h"
 #include "feed/tpfeedmgr.h"
 #include "playlistmgr.h"
 #include "playerengine.h"
 #include "tpsearchfacadedataproviderinterface.h"
 #include "tpschemes.h"
+#include "tpyoutubesearch.h"
 
 class TPSearchFacadeTrackDataProvider : public TPSearchFacadeDataProviderInterface
 {
@@ -253,6 +255,46 @@ private: // From TPSearchFacadeDataProviderInterface
 private:
 
     TPPlayerProxy &eng;
+};
+
+class TPSearchFacadeYouTubeSearchDataProvider : public TPSearchFacadeDataProviderInterface
+{
+public:
+
+    TPSearchFacadeYouTubeSearchDataProvider(TPYouTubeSearch &_search) :
+        TPSearchFacadeDataProviderInterface(schemeYoutubeSearchResults), search(_search)
+    {
+
+    }
+
+private: // From TPSearchFacadeDataProviderInterface
+
+    int count();
+    TPAssociativeObject* at(int at);
+
+private:
+
+    TPYouTubeSearch &search;
+};
+
+class TPSearchFacadeYouTubeDataProvider : public TPSearchFacadeDataProviderInterface
+{
+public:
+
+    TPSearchFacadeYouTubeDataProvider(TPYouTubeDB &_db) :
+        TPSearchFacadeDataProviderInterface(schemeYoutube), db(_db)
+    {
+
+    }
+
+private: // From TPSearchFacadeDataProviderInterface
+
+    int count();
+    TPAssociativeObject* at(int at);
+
+private:
+
+    TPYouTubeDB &db;
 };
 
 #endif // TPSEARCHFACADEDATAPROVIDERS_H

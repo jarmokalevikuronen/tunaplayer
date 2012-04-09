@@ -31,7 +31,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 TPAssociativeDB::TPAssociativeDB(QObject *parent, const QString _filename) : QObject(parent)
 {
     dirty = false;
-    saveTimer = NULL;
+    saveTimer = 0;
     filename = _filename;
     if (filename.length())
     {
@@ -57,7 +57,7 @@ TPAssociativeDB::~TPAssociativeDB()
 TPAssociativeDBItem* TPAssociativeDB::item(const QString primaryKey)
 {
     TPAssociativeDBModel::const_iterator it = find(primaryKey);
-    return it == end() ? NULL : it.value();
+    return it == end() ? 0 : it.value();
 }
 
 TPAssociativeDBItem* TPAssociativeDB::allocItem(const QString primaryKey)
@@ -88,6 +88,8 @@ void TPAssociativeDB::addItem(TPAssociativeDBItem *item)
     Q_ASSERT(item->primaryKey().length());
 
     insert(item->primaryKey(), item);
+    if (item->db != this)
+        item->db = this;
     dirty = true;
 }
 

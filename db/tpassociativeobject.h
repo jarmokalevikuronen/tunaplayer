@@ -64,6 +64,10 @@ public:
     //! @brief Checks whether given key is known
     bool contains(const QString key) const;
 
+    //! @brief Detaches the item from this object. returns 0 in case dbitem is not
+    //! owned and thus detaching is not feasible..
+    TPAssociativeDBItem *detachDbItem();
+
 private: // New impmentation
 
     inline bool isDynamic(const QString &key) const

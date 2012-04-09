@@ -23,6 +23,8 @@ var tunaPlayer = {
   onVolumeChanged: null,
   onCurrentPlaylistChanged: null,
   onDatabaseChanged: null,
+  onYoutubeSearchFinished: null,
+  onYoutubeDbChanged: null,
   openTimeoutTimer: null,
   cachedPlaybackControls: null,
   cachedPlaybackTrack: null,
@@ -195,7 +197,19 @@ var tunaPlayer = {
             if (tunaPlayer.onDatabaseChanged) {
               tunaPlayer.onDatabaseChanged();
             }
-        }
+        } else if (id == "youtube.searchfinished") {
+            if (tunaPlayer.onYoutubeSearchFinished) {
+              tunaPlayer.getYoutubeSearchResults(function(json) {
+                tunaPlayer.onYoutubeSearchFinished(json);
+              });
+            }
+        } else if (id == "youtube.dbchanged") {
+            if (tunaPlayer.onYoutubeDbChanged) {
+              tunaPlayer.getYoutube(function(json) {
+                tunaPlayer.onYoutubeDbChanged(json);
+              });
+            }
+        }  
       }
     }
     this.socket.onclose = function() {
@@ -476,6 +490,20 @@ var tunaPlayer = {
   },
   setUserProfile: function(profilename) {
     this.userProfile = profilename;
+  },
+  searchYoutube: function(criteria, callback) {
+    var args = { "criteria": criteria };
+    this.callFunc("youtube.search", callback, args);
+  },
+  saveYoutube: function(id, callback) {
+    var args = { "id": id };
+    this.callFunc("youtube.save", callback, args);
+  },
+  getYoutubeSearchResults: function(callback) {
+    this.callSP("get_youtubesearch", callback);
+  },
+  getYoutube: function(callback) {
+    this.callSP("get_youtube", callback);
   }
 };
 

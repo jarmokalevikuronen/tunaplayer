@@ -26,9 +26,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpfeedmgr.h"
 #include "playlistmgr.h"
 #include "tpusermanager.h"
+#include "tpyoutubedb.h"
 
 TPDatabases::TPDatabases(QObject *parent) :
-    QObject(parent), feedMgr(0), trackDB(0), playlistMgr(0), userMgr(0)
+    QObject(parent), feedMgr(0), trackDB(0), playlistMgr(0), userMgr(0), youtubeDB(0)
 {
 }
 
@@ -38,14 +39,19 @@ TPDatabases::~TPDatabases()
     delete playlistMgr;
     delete feedMgr;
     delete userMgr;
+    delete youtubeDB;
 }
 
 void TPDatabases::load()
 {
     // This will just instantiate the relevant databases - in practise
     // that means that existing data will be loaded from disk.
+
+    // Will be done in thread different.
+
     (void)getTrackDB()->getAlbumDB();
     (void)getTrackDB()->getArtistDB();
+    (void)getYouTubeDB();
 }
 
 int TPDatabases::build(QStringList &mediaFiles)
@@ -152,4 +158,11 @@ TPUserManager* TPDatabases::processUserAccessFiles(QStringList &filenames, TPUse
     return m;
 }
 
+TPYouTubeDB* TPDatabases::getYouTubeDB()
+{
+    if (!youtubeDB)
+        youtubeDB = new TPYouTubeDB(this);
+
+    return youtubeDB;
+}
 

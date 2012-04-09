@@ -57,7 +57,7 @@ public:
 
 public: // From TPAssociativeObject
 
-    QMap<QString, QVariant> toMap(QStringList *filteredKeys);
+    QVariantMap toMap(QStringList *filteredKeys);
     const QString getString(const QString key, const QString defaultValue = "") const;
     void clearCachedValues();
 

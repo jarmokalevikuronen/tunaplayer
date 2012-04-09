@@ -1836,6 +1836,10 @@ function doInitialize(loadtype) {
         radioStations = new Array();
       }
     });
+
+// TEST BEGIN
+//    tunaPlayer.searchYoutube("69eyes");
+// TEST END
 }
 
 
@@ -1987,6 +1991,24 @@ function compileTemplates() {
   });
 }
 
+function handleYouTubeSearchFinished(json) {
+  console.log("handleYouTubeSearchFinished: " + JSON.stringify(json));
+  var items = json["args"]["items"];
+  for (var i=0;i<items.length;i++) {
+    tunaPlayer.saveYoutube(items[i]["id"]);
+    tunaPlayer.addToPlaylist(items[i]["id"]);
+  }
+
+  tunaPlayer.getYoutube(function(json) {
+    console.log("YOUTUBE: " + JSON.stringify(json));
+  });
+}
+
+function handleYouTubeDbChanged(json) {
+  console.log("YOUTUBE ITEMS: " + json["args"]["items"].length);
+  console.log("handleYouTubeDbChanged: " + JSON.stringify(json));
+}
+
 function connectToDaemon() {
 
   tunaPlayer.onOpened = tunaDaemonConnectionEstablished;
@@ -2008,6 +2030,9 @@ function connectToDaemon() {
   tunaPlayer.onAlbumChanged = processAlbumChanged;
 
   tunaPlayer.onVolumeChanged = processVolumeChanged;
+
+  tunaPlayer.onYoutubeDbChanged = handleYouTubeDbChanged;
+  tunaPlayer.onYoutubeSearchFinished = handleYouTubeSearchFinished;
 
   tunaPlayer.onDatabaseChanged = processDatabaseChanged;
 

@@ -35,7 +35,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpassociative.h"
 #include "tpassociativemeta.h"
 #include "tplog.h"
-
+#include "tpyoutubeobject.h"
 
 // STATIC CONSTANT DATA
 static const QString randomPlaylistName("Random tracks");
@@ -94,6 +94,7 @@ public:
     void add(TPFeedItem *feedItem, bool toBack = true);
     void add(TPFeed *feed, bool toBack = true);
     void add(const QString url, bool toBack = true);
+    void add(TPYouTubeObject *object, bool toBack=true);
 
     //! @brief Removes track from playlist and if removed, will decrease its reference count by one.
     void remove(TPTrack *track);

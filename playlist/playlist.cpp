@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "playlist.h"
+#include "musicplaybackdefines.h"
 #include <QtGlobal>
 #include <QTime>
 
@@ -155,6 +156,25 @@ void TPPlaylist::add(TPFeed *feed, bool toBack)
     else
         for (int i=feed->count()-1;i>=0;--i)
             add(feed->at(i), toBack);
+}
+
+void TPPlaylist::add(TPYouTubeObject *object, bool toBack)
+{
+    Q_ASSERT(object);
+
+    TPAlbum *album = new TPAlbum("YouTube ->");
+    TPTrack *track = new TPTrack(album);
+    album->dec();
+    track->dec();
+
+    track->setActingAsDelegateOf(TPObjectDelegate(object, object));
+    track->setString(trackAttrFilename, object->getString(youtubeAttrUrl));
+    track->setString(objectAttrName, object->getString(objectAttrName));
+    QString customCommand = QString(MPLAYER_PLAY_YOUTUBE).arg(object->getString(youtubeAttrUrl));
+    track->setString(objectAttrCustomPlayback, customCommand);
+
+    add(track, toBack);
+    track->dec();
 }
 
 void TPPlaylist::add(TPTrack *track, bool toBack)
@@ -397,7 +417,7 @@ TPTrack* TPPlaylist::takeNext()
     if (tracks.count())
     {
         TPTrack *track = tracks.takeFirst();
-        track->dec();
+//        track->dec();
         fill();
         return track;
     }

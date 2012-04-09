@@ -122,7 +122,7 @@ const QString TPTrack::getString(const QString key, const QString defaultValue) 
     return TPAssociativeObject::getString(key, defaultValue);
 }
 
-QMap<QString, QVariant> TPTrack::toMap(QStringList *filteredKeys)
+QVariantMap TPTrack::toMap(QStringList *filteredKeys)
 {
     QMap<QString, QVariant> props;
 

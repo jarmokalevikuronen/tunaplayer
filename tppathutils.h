@@ -60,6 +60,7 @@ public:
     static QStringList getMediaTriggerFiles();
     static QString getRootPath();
     static QString getArtistNameMappingConfigFile();
+    static QString getYoutubeDbFilename();
 };
 
 #endif // TPPATHUTILS_H

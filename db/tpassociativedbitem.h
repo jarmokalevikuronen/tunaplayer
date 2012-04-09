@@ -38,6 +38,8 @@ typedef QMap<QString, QVariant> TPMapModel;
 //! is constructed from name-value pairs.
 class TPAssociativeDBItem : public TPMapModel
 {
+    friend class TPAssociativeDB;
+
 private:
 
     static int instanceCount;

@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
     "/usr/bin/mplayer -ao alsa -slave \"%1\""
 #define MPLAYER_PLAY_PLAYLIST \
     "/usr/bin/mplayer -ao alsa -slave -playlist \"%1\""
-
+#define MPLAYER_PLAY_YOUTUBE \
+    "/usr/bin/tunaplaytube.sh %1"
 
 #endif // MUSICPLAYBACKDEFINES_H
