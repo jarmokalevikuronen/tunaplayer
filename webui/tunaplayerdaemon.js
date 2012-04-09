@@ -29,6 +29,7 @@ var tunaPlayer = {
   cachedPlaybackAlbum: null,
   cachedVolumeLevel: null,
   userProfile: "<all>",
+  debugging: false,
 
   stringify: function(ctrl) {
     var s = "";
@@ -105,6 +106,14 @@ var tunaPlayer = {
       }
     };
     this.socket.onmessage = function(msg) {
+      if (this.debugging) {
+        if (msg.data.length > 128) {
+          console.log("RX: " + msg.data.length + " bytes");
+        } else {
+          console.log("RX: " + msg.data);
+        }
+      }
+
       var json = JSON.parse(msg.data);
       var type = json["type"];
       if (type == "response") {
@@ -233,8 +242,12 @@ var tunaPlayer = {
     return cmd;
   },
   callSP: function(spname, callback, args) {
-    var cmd = this.execSPCreate(spname, callback, args);
-    this.socket.send(JSON.stringify(cmd));
+    var cmd = this.execSPCreate(spname, callback, args); 
+    var out = JSON.stringify(cmd);
+    if (this.debugging) {
+      console.log("TX: " + out);
+    }
+    this.socket.send(out);
   },
   callFunc: function(fname, callback, args) {
     var cmd = this.cmdCreate(fname, callback);

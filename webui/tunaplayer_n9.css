@@ -29,10 +29,19 @@ body {
   top: 45%;
 }
 
-
 .tile_01 {
   left: 10%;
   top: 55%;
+}
+
+.tile_03 {
+  left: 10%;
+  top: 65%;
+}
+
+.tile_13 {
+  left: 10%;
+  top: 75%;
 }
 
 

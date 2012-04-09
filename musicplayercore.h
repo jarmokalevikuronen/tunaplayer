@@ -78,7 +78,7 @@ private: // PLAYLIST FUNCTIONALITY
 
     //! @brief Changes the currently active playlist to something else
     //! specified by the idOrName parameter (can be playlist name or id, as indicated).
-    bool setActivePlaylist(const QString idOrName);
+    bool setActivePlaylist(const QString idOrName, const QString userprofile);
 
     //! @brief Seeks to specified track within currently active playlist.
     bool seekToTrack(const QString trackId);

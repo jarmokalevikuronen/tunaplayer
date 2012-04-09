@@ -207,6 +207,8 @@ const QString TPArtist::getString(const QString key, const QString defaultValue)
             }
         }
 
+//        DEBUG() << "TOKENS(artist:" << getString(objectAttrName) << ") = " << tokens;
+
         return tokens.join(userTokensDelimiter);
     }
 

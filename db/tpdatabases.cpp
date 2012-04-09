@@ -70,8 +70,9 @@ void TPDatabases::buildFinished()
         // This will setup a dynamic property for a track. This property defines
         // which users actually like to see the particular track.
         QString tags = umgr->tagStringForFile(t->getFilename());
-//        DEBUG() << "TAGSFORFILE: " << t->getFilename() << " TAGS: " << tags;
         t->setString(objectAttrUserTokens_DYNAMIC, tags);
+//        if (tags.contains("kotimaiset"))
+  //          DEBUG() << "TAGSFORFILE: " << t->getFilename() << " TAGS: " << t->getString(objectAttrUserTokens_DYNAMIC);
     }
 }
 
@@ -141,10 +142,10 @@ TPUserManager* TPDatabases::processUserAccessFiles(QStringList &filenames, TPUse
 
         static const QString UserAccessFileExt(".tt");
 
-        if (fn.endsWith(UserAccessFileExt))
+        if (fn.endsWith(UserAccessFileExt, Qt::CaseInsensitive))
         {
-            filenames.removeAt(i);
             m->insertTagFile(fn);
+            filenames.removeAt(i);
         }
     }
 

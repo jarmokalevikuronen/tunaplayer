@@ -144,7 +144,6 @@ function playlistTrackMouseDown(object) {
   }
 
   if (playlistLongPressTimer) {
-    clearTimeout(playlistLongPressTimer);
     playlistLongPressTimer = null;
   }
   playlistLongPressTimer = setTimeout(function() { playlistPlayTrackNow(id); }, 500);
@@ -1246,6 +1245,16 @@ function createSearchHeaderContent(json) {
   return html;
 }
 
+function createSelectUserProfilePageContent() {
+  var html;
+
+  var json = { "userProfiles": userProfileList };
+
+  html = $.jqote(templates.tmpl_userprofileselection, json);
+
+  return html;
+}
+
 function renderView(viewId, arg) {
   var targetObject = document.getElementById(viewId);
   if (!targetObject) {
@@ -1302,7 +1311,8 @@ function renderView(viewId, arg) {
     }
     if (search_result_container)
       search_result_container.innerHTML = createSearchResultsContent(renderContext);
-/*console.log("GENERATED HTML=" + search_result_container.innerHTML);*/
+  } else if (viewId == "selectuserprofile_container") {
+     targetObject.innerHTML = createSelectUserProfilePageContent();
   }
 
   if (isMobile() && targetObject.innerHTML.length > 0) {
@@ -1359,8 +1369,6 @@ function openView(oldId, newId, initData) {
       elem.setAttribute("data-cached-y-position", window.pageYOffset);
       elem.innerHTML = "";
     }
-  } else {
-    console.log("OPEN '" + newId + "' from ROOT");
   }
 
   /* Page stack holds pairs. -> Thus when popping we get first the page to close and then the page to open 
@@ -1490,7 +1498,6 @@ function loadViewContent(oldid, newid, initData, renderer) {
     delayedRender = true;
     tunaPlayer.getAlbumTracks(id, function(json) {
       if (json["status"] == "OK") {
-/*console.log("ALBUMTRACKS: " + JSON.stringify(json));*/
         currentAlbumTracks = json["args"];
         if (renderer != undefined) {
           renderer();
@@ -1796,13 +1803,19 @@ function tunaDaemonConnectionClosed() {
 }
 
 function doInitialize(loadtype) {
+    if (loadtype === undefined)
+      loadtype = "direct";
+
     tunaPlayer.getAllArtists(function(json) {
       if (json["status"] == "OK") {
-        $("#waitamoment").addClass("hidden"); 
-        if (loadtype == "shadow") {
+        if (loadtype === "shadow") {
+          console.log("UPDATE ARTISTS: " + json["args"]["items"].length);
+
           allArtists_shadow = json["args"]["items"];
           initArtistShortcuts(allArtists_shadow, loadtype); 
         } else {
+          console.log("INITIAL ARTISTS: " + json["args"]["items"].length);
+
           allArtists = json["args"]["items"];
           initArtistShortcuts(allArtists, loadtype);
         }
@@ -1825,23 +1838,35 @@ function doInitialize(loadtype) {
     });
 }
 
-function selectUserProfile(profiles, callback) {
+
+var autoProfileSelectionTimer = null;
+
+function selectUserProfile(profiles) {
   userProfileList = profiles;
+
   console.log("AVAILABLE PROFILES: " + JSON.stringify(profiles));
 
   if (userProfileList.length < 2) {
-    callback();
+    doInitialize();
   } else {
-    userProfileSelected(profiles[0], callback);
-    // TODO: Move to the appro    
+    openView('root', 'selectuserprofile_container');
+
+    /* Lets wait max. 5 seconds for user to pick -> if not done -> fallback to default */
+    if (autoProfileSelectionTimer)
+      clearTimeout(autoProfileSelectionTimer);
+    autoProfileSelectionTimer = setTimeout(function() { userProfileSelected('all') }, 5000 );
   }
-// Fallback
 }
 
-function userProfileSelected(profilename, callback) {
+function userProfileSelected(profilename) {
+  clearTimeout(autoProfileSelectionTimer);
+  autoProfileSelectionTimer = null;
+
+  console.log("USERPROFILE: " + profilename);
+
   tunaPlayer.setUserProfile(profilename);
-  callback();
-  // TODO. Move to root view!
+  doInitialize();
+  closeView();
 }
 
 function processStartupProgress(percents, loadtype) {
@@ -1857,6 +1882,9 @@ function processStartupProgress(percents, loadtype) {
           selectUserProfile(profiles, function() { doInitialize(loadtype); });
         }
       });
+    $("#waitamoment").css("opacity", 0);
+    $("#indexingstatus").css("opacity", 0);
+    $("#waitamoment").addClass("hidden"); 
   } else { 
     var opacity_value = 1.4 - percents / 99;
     if (opacity_value > 1.0) opacity_value = 1.0;
@@ -2272,7 +2300,7 @@ Swipe.prototype = {
       <div id="playlist_container" class="topleft div_hidden">
       </div>
 
-      <div id="userprofileselect_container" class="topleft div_hidden">
+      <div id="selectuserprofile_container" class="topleft div_hidden">
 
       </div>
 

@@ -55,7 +55,7 @@ TPPlaylist::TPPlaylist(TPTrackDB &_db) : TPIdBase(schemePlaylist, "randomized")
 {
     db = &_db;
     clonedFrom = 0;
-    setString(objectAttrName, "Random tracks");
+    setString(objectAttrName, randomPlaylistName);
     setString(objectAttrScheme, schemePlaylist);
     setInt(playlistAttrBuiltIn, 1); // This is a "built-in" playlist
     fill();
@@ -441,17 +441,23 @@ TPPlaylist* TPPlaylist::getClonedFrom() const
 
 TPTrack *TPPlaylist::getRandomTrackNotInList()
 {
-    if (db->count() < 1)
+    int dbItems = db->count();
+
+    if (dbItems < 1)
         return 0;
 
     int startPosition = (qrand() % db->count());
-    for (int i=0;i<db->count();i++)
+    for (int i=0;i<dbItems;i++)
     {
-        TPTrack *track = db->at((i + startPosition) % db->count());
+        TPTrack *track = db->at((i + startPosition) % dbItems);
         if (!hasTrack(track))
-            return track;
+        {
+            if (trackMatchesUserProfile(track))
+                return track;
+        }
     }
 
+    // This means that there were no matching tracks.
     return 0;
 }
 
@@ -473,4 +479,35 @@ void TPPlaylist::fill()
         else
             break;
     }
+}
+
+void TPPlaylist::setUserProfile(const QString _userProfile)
+{
+    DEBUG() << "PLAYLIST: setUserProfile: " << _userProfile;
+    userProfile = _userProfile;
+
+    //
+    // Do fill in the tracks.
+    //
+    if (userProfile.length())
+    {
+        foreach(TPTrack *t, tracks)
+        {
+            t->dec();
+        }
+        tracks.clear();
+        fill();
+    }
+}
+
+bool TPPlaylist::trackMatchesUserProfile(TPTrack *track)
+{
+    if (!userProfile.length())
+        return true;
+    if (!track)
+        return false;
+
+    QString trackTok = track->getString(objectAttrUserTokens_DYNAMIC);
+
+    return trackTok.contains(userProfile, Qt::CaseInsensitive);
 }

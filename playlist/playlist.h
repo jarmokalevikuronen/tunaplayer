@@ -37,6 +37,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tplog.h"
 
 
+// STATIC CONSTANT DATA
+static const QString randomPlaylistName("Random tracks");
+
 //! @class TPPlaylist
 //! @brief Playlist class that encapsulates various types of playlists
 class TPPlaylist : public TPIdBase, public TPAssociativeObject, public TPReferenceCounted
@@ -54,6 +57,11 @@ public:
 
     //! @brief C++ destructor
     ~TPPlaylist();
+
+    //! @brief sets user profile that is used mainly if/when
+    //! playing random tracks where only matching items should
+    //! get pick'd
+    void setUserProfile(const QString userProfile);
 
     void dec()
     {
@@ -145,6 +153,10 @@ private:
     //! @brief Gets a random track that is not in tracklist
     TPTrack* getRandomTrackNotInList();
 
+    //! @brief Checks whether track matches against the currently
+    //! configured user profile so that it can be added to playlist.
+    bool trackMatchesUserProfile(TPTrack *track);
+
 private:
 
     //! TrackdB. Optional and only viable for playlists
@@ -156,6 +168,9 @@ private:
 
     //! Reference to other playlist instance.
     TPPlaylist *clonedFrom;
+
+    //! User profile.
+    QString userProfile;
 };
 
 #endif // PLAYLIST_H

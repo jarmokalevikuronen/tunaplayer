@@ -60,6 +60,9 @@ TPSearchResults* TPStoredProcedureRunner::execute(QVariantMap &args, TPStoredPro
         for (int i=0;i<count;++i)
         {
             TPAssociativeObject *object = op.at(i);
+
+//DEBUG() << "TOKEN: " << object->getString(objectAttrUserTokens_DYNAMIC);
+
             object->clearCachedValues();
 
             TPSearchFilterEvalArgs args(op.at(i), arguments);

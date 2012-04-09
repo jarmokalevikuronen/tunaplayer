@@ -428,8 +428,10 @@ bool TPMusicPlayerCore::seekToTrack(const QString trackId)
     return player->seekToTrack(track);
 }
 
-bool TPMusicPlayerCore::setActivePlaylist(const QString nameOrId)
+bool TPMusicPlayerCore::setActivePlaylist(const QString nameOrId, const QString userprofile)
 {
+    DEBUG() << "CORE: setActivePlaylist(" << nameOrId << "," << userprofile << ")";
+
     TPPlaylist *playlist = NULL;
 
     if (nameOrId.length())
@@ -448,6 +450,14 @@ bool TPMusicPlayerCore::setActivePlaylist(const QString nameOrId)
                 playlist = tmp;
             }
         }
+    }
+
+    //
+    // If random playlist -> set user profile if provided.
+    //
+    if (playlist && nameOrId == randomPlaylistName && userprofile.length())
+    {
+        playlist->setUserProfile(userprofile);
     }
 
     // NOTE: Player takes ownership of this playlist instance that
@@ -810,9 +820,10 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
         {
             QVariantMap args = message.arguments();
             QVariant id = args[protocolCommandSetActivePlaylistArgIdKey];
+            QString userprofile = args[protocolArgumentUserProfile].toString();
             if (id.isValid() && !id.isNull())
             {
-                if (setActivePlaylist(id.toString()))
+                if (setActivePlaylist(id.toString(), userprofile))
                     protocolRespondACK(protocol, message);
                 else
                     protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
@@ -1050,7 +1061,9 @@ void TPMusicPlayerCore::maintainTaskState(TPFileScanner::State state)
             for (int i=0;i<tdb->count();++i)
             {
                 TPTrack *t = tdb->at(i);
-                t->setString(objectAttrUserTokens_DYNAMIC, udb->tagStringForFile(t->getFilename()));
+                QString userProfile = udb->tagStringForFile(t->getFilename());
+                //DEBUG() << "CORE: File=" << t->getFilename() << " userProfile=" << userProfile;
+                t->setString(objectAttrUserTokens_DYNAMIC, userProfile);
             }
         }
     }
@@ -1210,7 +1223,7 @@ bool TPMusicPlayerCore::selectSearchedAlbumArt(const QString id)
 
 void TPMusicPlayerCore::clearActivePlaylist()
 {
-    setActivePlaylist(QString(""));
+    setActivePlaylist(QString(""), QString(""));
 }
 
 

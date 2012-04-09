@@ -1,6 +1,6 @@
 {
     "arguments":{
-      "userprofile": "/"
+      "userprofile": "all"
     },
     "schemes":["artist://"],
     "filterkeys": ["scheme","_pk_","artl","trcnt","len","plcnt","pllen","aadltries","updt","crtt","lastplt","len"],

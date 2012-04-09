@@ -135,7 +135,7 @@ int TPAssociativeObject::getInt(const QString key, int defaultValue) const
 void TPAssociativeObject::setString(const QString key, const QString value)
 {
     if (isDynamic(key))
-        dynamicProperties.insert(key, value);
+        dynamicProperties[key] = value;
     else if (item)
         item->setStringValue(key, value);
 }

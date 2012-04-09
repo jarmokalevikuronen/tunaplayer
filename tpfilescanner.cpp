@@ -312,7 +312,10 @@ bool TPFileScanner::doMaintainCheck()
             if (t->isValid())
                 newUserTags->append(t);
             else
+            {
+                ERROR() << "Invalid usertag file: " << tagfile;
                 delete t;
+            }
         }
 
         //

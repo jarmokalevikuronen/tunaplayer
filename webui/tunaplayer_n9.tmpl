@@ -294,3 +294,18 @@ _TUNA_BEGIN_TEMPLATE
   
 _TUNA_END_TEMPLATE=tmpl_search_results
 
+
+_TUNA_BEGIN_TEMPLATE
+<%
+  for (var i=0;i<8 && i<this.userProfiles.length;i++) { 
+    var clsdigithi = "" + Math.floor(i / 4);
+    var clsdigitlo = "" + Math.floor(i % 4);
+    var cls = "tile_" + clsdigithi + clsdigitlo;
+    var profile = this.userProfiles[i];
+%>
+    <div class="<%=cls%> tile_closed" onclick="userProfileSelected('<%=profile%>', this.callback);">
+      <div class="tile_closed_inner"><center><%=profile%></center></div>
+    </div>
+<%}%>
+_TUNA_END_TEMPLATE=tmpl_userprofileselection
+
