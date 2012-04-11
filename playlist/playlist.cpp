@@ -170,8 +170,7 @@ void TPPlaylist::add(TPYouTubeObject *object, bool toBack)
     track->setActingAsDelegateOf(TPObjectDelegate(object, object));
     track->setString(trackAttrFilename, object->getString(youtubeAttrUrl));
     track->setString(objectAttrName, object->getString(objectAttrName));
-    QString customCommand = QString(MPLAYER_PLAY_YOUTUBE).arg(object->getString(youtubeAttrUrl));
-    track->setString(objectAttrCustomPlayback, customCommand);
+    track->setString(trackAttrObjectType, trackAttrObjectTypeYoutube);
 
     add(track, toBack);
     track->dec();

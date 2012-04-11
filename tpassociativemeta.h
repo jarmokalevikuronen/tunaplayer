@@ -48,7 +48,6 @@ static const QString objectAttrPlayLength("pllen");
 static const QString objectAttrShortPlays("shortplays");
 static const QString objectAttrDeleted("deleted");
 static const QString objectAttrAge("age");
-static const QString objectAttrCustomPlayback("customplayback");
 
 // DYNAMIC TOKENS -> NEVER SAVED TO DISK OR ANYTHING
 static const QString dynamicTokenPrefix("_d.");
@@ -67,6 +66,10 @@ static const QString trackAttrFilename("fn");
 static const QString trackAttrGenre("genre");
 static const QString trackAttrYear("year");
 static const QString trackAttrAlbum("album.");
+static const QString trackAttrObjectType("type");
+   static const QString trackAttrObjectTypeFile("file");
+   static const QString trackAttrObjectTypePlaylist("playlist");
+   static const QString trackAttrObjectTypeYoutube("youtube");
 
 //
 // ALBUM SPECIFIC META INFORMATION KEYS

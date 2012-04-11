@@ -59,3 +59,14 @@ QString TPUtils::ensureFilenameCharacters(const QString source)
     return destination;
 }
 
+bool TPUtils::playlistFile(QString filename)
+{
+    if (filename.startsWith("http://", Qt::CaseInsensitive) &&
+                    (
+                    filename.endsWith(".m3u", Qt::CaseInsensitive) ||
+                    filename.endsWith(".pls", Qt::CaseInsensitive) ||
+                    filename.endsWith(".asx", Qt::CaseInsensitive)
+                    ))
+        return true;
+    return false;
+}

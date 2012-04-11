@@ -294,7 +294,7 @@ INSTALLS += playlist_icons
 #
 # Script files to aid playback.
 #
-scripts.files += scripts/tunaplaytube.sh
+scripts.files += scripts/*.sh
 scripts.path = $$PREFIX/usr/bin/
 INSTALLS += scripts
 

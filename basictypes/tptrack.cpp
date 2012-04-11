@@ -150,3 +150,13 @@ QVariantMap TPTrack::toMap(QStringList *filteredKeys)
     return props;
 }
 
+const QString TPTrack::objectType()
+{
+    QString t = getString(trackAttrObjectType);
+    if (t.length())
+        return t;
+
+    if (TPUtils::playlistFile(getFilename()))
+        return trackAttrObjectTypePlaylist;
+    return trackAttrObjectTypeFile;
+}

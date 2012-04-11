@@ -227,11 +227,13 @@ bool PlayerBackend_MPlayer::play(TPTrack *track)
         process.close();
 
         playbackLengthReported = track->getLen() > 0;
-        QString filename;
-        filename = track->getFilename();
-        QString cli;
+//        QString filename;
+  //      filename = track->getFilename();
+        //QString cli;
 
-        if (filename.startsWith("http://", Qt::CaseInsensitive) &&
+        QString cli = "/usr/bin/tunaplayobject.sh " + track->objectType() + " \"" + track->getFilename() + "\"";
+
+/*        if (filename.startsWith("http://", Qt::CaseInsensitive) &&
                 (
                 filename.endsWith(".m3u", Qt::CaseInsensitive) ||
                 filename.endsWith(".pls", Qt::CaseInsensitive) ||
@@ -246,7 +248,7 @@ bool PlayerBackend_MPlayer::play(TPTrack *track)
 
         if (customCli.length())
             cli = customCli;
-
+*/
         DEBUG() << "PLAYER: executing cli " << cli;
 
         process.start(cli);

@@ -51,6 +51,9 @@ public:
 
     ~TPTrack();
 
+    //! @brief Returns the type of the target track object (file, url, youtube, ..)
+    const QString objectType();
+
     void setActingAsDelegateOf(TPObjectDelegate _delegate)
     {
         if (delegate.rc)
