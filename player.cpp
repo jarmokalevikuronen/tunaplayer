@@ -218,15 +218,21 @@ bool PlayerBackend_MPlayer::play(TPTrack *track)
 {
     bool status = true;
 
+    if (!track)
+        return false;
+
     if (!canPlay())
         status = false;
     else
     {
         process.terminate();
         process.waitForFinished(3000);
-        process.close();
+        process.kill();
+        if (process.isOpen())
+            process.close();
 
         playbackLengthReported = track->getLen() > 0;
+
 //        QString filename;
   //      filename = track->getFilename();
         //QString cli;
@@ -388,7 +394,9 @@ void PlayerBackend_MPlayer::runWatchdog()
 
     process.terminate();
     process.waitForFinished(3000);
-    process.close();
+    process.kill();
+    if (process.isOpen())
+        process.close();
     changeToState(Playing);
     changeToState(Stopped);
 }

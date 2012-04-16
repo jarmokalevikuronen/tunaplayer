@@ -571,6 +571,7 @@ void TPMusicPlayerCore::currentTrackChanged(TPTrack *track)
             currentlyPlayingAlbum->inc();
 
         emit playingAlbumChanged();
+
         protocolReportEvent(protocolEventPlaybackAlbumChanged);
     }
 
@@ -1288,7 +1289,14 @@ TPTrack* TPMusicPlayerCore::findTrack(const QString trackId)
     // effectively contain "detached" tracks
     // that are actually not part of the
     // DB:s as such.
-    return db->getPlaylistDB()->findTrack(trackId);
+    track = db->getPlaylistDB()->findTrack(trackId);
+    if (track)
+        return track;
+
+    if (player->getPlaylist())
+        return player->getPlaylist()->findTrack(trackId);
+
+    return 0;
 }
 
 void TPMusicPlayerCore::youtubeSearchComplete()

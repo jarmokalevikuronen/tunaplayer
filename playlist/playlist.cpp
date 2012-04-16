@@ -162,7 +162,11 @@ void TPPlaylist::add(TPYouTubeObject *object, bool toBack)
 {
     Q_ASSERT(object);
 
-    TPAlbum *album = new TPAlbum("YouTube ->");
+    static const QString artistAlbumYoutube("(youtube)");
+
+    TPAlbum *album = new TPAlbum(artistAlbumYoutube);
+    album->setString(albumAttrArtUrl, object->getString(youtubeAttrThumbnailUrl));
+
     TPTrack *track = new TPTrack(album);
     album->dec();
     track->dec();
@@ -171,6 +175,10 @@ void TPPlaylist::add(TPYouTubeObject *object, bool toBack)
     track->setString(trackAttrFilename, object->getString(youtubeAttrUrl));
     track->setString(objectAttrName, object->getString(objectAttrName));
     track->setString(trackAttrObjectType, trackAttrObjectTypeYoutube);
+    track->setString(trackAttrAlbumName, artistAlbumYoutube);
+
+    QVariantMap x = track->toMap(0);
+    DEBUG() << "YOUTUBETRACK: " << x;
 
     add(track, toBack);
     track->dec();
@@ -466,6 +474,7 @@ TPTrack *TPPlaylist::getRandomTrackNotInList()
         return 0;
 
     int startPosition = (qrand() % db->count());
+    DEBUG() << "PLAYLIST: RandomStart: " << startPosition << " dbItems: " << dbItems;
     for (int i=0;i<dbItems;i++)
     {
         TPTrack *track = db->at((i + startPosition) % dbItems);

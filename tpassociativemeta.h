@@ -76,6 +76,7 @@ static const QString trackAttrObjectType("type");
 //
 static const QString albumAttrArtSmall("album.arts");
 static const QString albumAttrArtLarge("album.artl");
+static const QString albumAttrArtUrl("album.arturl");
 static const QString albumAttrCountTracks("trcnt");
 static const QString albumAttrAutomaticAlbumArtDownloadTries("aadltries");
 static const QString albumAttrAutomaticAlbumArtLastTry("aadllast");

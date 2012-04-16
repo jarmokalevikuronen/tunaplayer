@@ -15,30 +15,28 @@ then
 fi
 
 MPLAYER=`which mplayer`
-YOUTUBEDL=`which mplayer`
+#YOUTUBEDL=`which youtube-dl`
 if [ $MPLAYER = "" ]
 then
   echo "TUNAERROR: MISSING: mplayer"
   exit
 fi
-
 if [ ! -x $MPLAYER ]
 then
   echo "TUNAERROR: NOTEXECUTABLE: mplayer"
   exit
 fi
 
-if [ $YOUTUBEDL = "" ]
-then
-  echo "TUNAERROR: MISSING: youtube-dl"
-  exit
-fi
-
-if [ ! -x $YOUTUBEDL ]
-then
-  echo "TUNAERROR: NOTEXECUTABLE: youtube-dl"
-  exit
-fi
+#if [ $YOUTUBEDL = "" ]
+#then
+#  echo "TUNAERROR: MISSING: youtube-dl"
+#  exit
+#fi
+#if [ ! -x $YOUTUBEDL ]
+#then
+#  echo "TUNAERROR: NOTEXECUTABLE: youtube-dl"
+#  exit
+#fi
 
 case "$1" in
 
@@ -49,7 +47,7 @@ playlist)
   $MPLAYER -slave -ao alsa -playlist "$2"
     ;;
 youtube)
-  $MPLAYER -slave -ao-alsa -novideo - fs -cookies -cookies-file /tmp/tunayoutubecookie.txt $($YOUTUBEDL -g --cookies /tmp/tunayoutubecookie.txt "$2")
+  $MPLAYER -slave -ao alsa -novideo -fs -cookies -cookies-file /tmp/tunayoutubecookie.txt $(/usr/bin/youtube-dl -g --cookies /tmp/tunayoutubecookie.txt "$2")
     ;;
 *) echo  "TUNAERROR: ARGUMENTS"
    ;;
