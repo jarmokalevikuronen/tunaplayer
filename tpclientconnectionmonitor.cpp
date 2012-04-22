@@ -1,6 +1,7 @@
 #include "tpclientconnectionmonitor.h"
 #include "tppathutils.h"
 #include "tplog.h"
+#include <unistd.h>
 
 TPClientConnectionMonitor::TPClientConnectionMonitor(QObject *parent) :
     QObject(parent)
@@ -25,8 +26,14 @@ void TPClientConnectionMonitor::onClientConnected(int count)
 
             if (f.open(QIODevice::WriteOnly))
             {
+                f.write("wallywashere");
+                fdatasync(f.handle());
                 f.close();
                 QFile::remove(file);
+            }
+            else
+            {
+                ERROR() << "CLIENTCONNECTIONMONITOR: Failed to create file: " << file;
             }
         }
     }

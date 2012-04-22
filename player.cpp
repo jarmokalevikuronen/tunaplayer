@@ -24,6 +24,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpsettings.h"
 #include "tplog.h"
 
+static const QString stateToStr(PlayerBackend_MPlayer::State s)
+{
+    if (s == PlayerBackend_MPlayer::Playing) return QString("Playing");
+    if (s == PlayerBackend_MPlayer::Stopped) return QString("Stopped");
+    return QString("Paused");
+}
+
+
 PlayerBackend_MPlayer::PlayerBackend_MPlayer(QObject *parent) :
     QObject(parent)
 {
@@ -121,7 +129,7 @@ void PlayerBackend_MPlayer::processOutput(QString output)
         }
         else if (output.contains("=====  PAUSE  ====="))
         {
-            STATE() << "MPLAYER: PAUSED";
+            STATE() << "PLAYER: PAUSED";
             changeToState(Paused);
         }
         else if (output.startsWith("A:"))
@@ -197,6 +205,7 @@ void PlayerBackend_MPlayer::processHasStdoutData()
 
 void PlayerBackend_MPlayer::processFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
+    DEBUG() << "PLAYER: processFinished - " << exitCode;
     stopWatchdog();
 
     Q_UNUSED(exitCode);
@@ -209,8 +218,18 @@ void PlayerBackend_MPlayer::processError(QProcess::ProcessError err)
 {
     stopWatchdog();
 
-    ERROR() << "MPLAYER: processError: " << err;
-    if (state != Paused)
+    QString ed = "Unknown";
+    if (err == QProcess::FailedToStart)
+        ed = "FailedToStart";
+    else if (err == QProcess::Crashed)
+        ed = "Crashed";
+    else if (err == QProcess::Timedout)
+        ed = "TimedOut";
+    else if (err == QProcess::ReadError)
+        ed = "ReadError";
+
+    ERROR() << "PLAYER: processError: " << err << " (" << ed <<")";
+    if (state != Paused && err != QProcess::Timedout)
         stop(false);
 }
 
@@ -311,16 +330,33 @@ bool PlayerBackend_MPlayer::stop(bool noSignal)
         ignoreStateChange = noSignal;
 
         process.write("q\n");
-        if (!process.waitForFinished(500))
+        if (!process.waitForFinished(15000))
         {
+            DEBUG() << "PLAYER: Calling terminate for a hung(?) process";
             process.terminate();
-            process.waitForFinished(1500);
+            if (!process.waitForFinished(1500)) 
+            {
+                ERROR() << "PLAYER: Enable to stop process..";
+            }
+            else
+            {
+                if (process.isOpen())
+                    process.close();
+                DEBUG() << "PLAYER: Process terminated successfully.";
+            }
+        }
+        else
+        {
+            DEBUG() << "PLAYER: Process quitted successfully.";
+            if (process.isOpen())
+                process.close();
         }
         changeToState(Stopped);
 
         ignoreStateChange = false;
     }
 
+    DEBUG() << "PLAYER: stop() = " << (status ? "OK" : "NOT POSSIBLE");
     return status;
 }
 
@@ -353,7 +389,7 @@ bool PlayerBackend_MPlayer::unmute()
 
 bool PlayerBackend_MPlayer::seekTo(int seconds)
 {
-    DEBUG() << "MPLAYER: seekTo: " << seconds;
+    DEBUG() << "PLAYER: seekTo: " << seconds;
 
     if (state == Stopped)
         return false;
@@ -375,7 +411,10 @@ void PlayerBackend_MPlayer::changeToState(State _state)
 {
     if (state != _state)
     {
-        STATE() << "MPLAYER: " << state << " -> " << _state;
+        QString stateFrom = stateToStr(state);
+        QString stateTo = stateToStr(_state);
+
+        STATE() << "PLAYER: " << stateFrom << " -> " << stateTo;
         state = _state;
         if (!ignoreStateChange)
             emit playerStateChanged(state);
