@@ -371,7 +371,7 @@ void PlayerBackend_MPlayer::changeToState(State _state)
 void PlayerBackend_MPlayer::kickWatchdog()
 {
     watchdog.stop();
-    watchdog.start(1000 * 15); // 15s watchdog timer.
+    watchdog.start(1000 * 30); // 30s watchdog timer.
 }
 
 void PlayerBackend_MPlayer::runWatchdog()
