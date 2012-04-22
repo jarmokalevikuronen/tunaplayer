@@ -35,6 +35,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpprotocoldefines.h"
 #include "tpsettings.h"
 #include "tpclargs.h"
+#include "tpyoutubedb.h"
 
 TPMusicPlayerCore::TPMusicPlayerCore(TPWebSocketProtocol *_protocol) : QObject(NULL)
 {
@@ -59,6 +60,12 @@ TPMusicPlayerCore::TPMusicPlayerCore(TPWebSocketProtocol *_protocol) : QObject(N
     startupProgressPercents = 0;
     currentlyPlayingAlbum = 0;
     volumeCtrl = new TPALSAVolume;
+
+    //
+    // Youtube search functionality stands here.
+    //
+    youtubeSearch = new TPYouTubeSearch(this);
+    connect(youtubeSearch, SIGNAL(searchComplete()), this, SLOT(youtubeSearchComplete()));
 
     createMaintainTask();
 }
@@ -272,6 +279,8 @@ void TPMusicPlayerCore::createSearchObjectProvider()
     sob->addProvider(new TPSearchFacadeCurrentTrackDataProvider(*this->player));
     sob->addProvider(new TPSearchFacadeCurrentAlbumDataProvider(*this->player));
     sob->addProvider(new TPSearchFacadeCurrentArtistDataProvider(*this->player));
+    sob->addProvider(new TPSearchFacadeYouTubeSearchDataProvider(*this->youtubeSearch));
+    sob->addProvider(new TPSearchFacadeYouTubeDataProvider(*db->getYouTubeDB()));
 }
 
 bool TPMusicPlayerCore::addToPlaylist(QVariant aObject, const QString &position)
@@ -320,7 +329,15 @@ bool TPMusicPlayerCore::addToPlaylist(QVariant aObject, const QString &position)
                         if (feedItem)
                             pl->add(feedItem, toBack);
                         else
-                            return false;
+                        {
+                            TPYouTubeObject *uo = youtubeSearch->findById(id);
+                            if (!uo)
+                                uo = db->getYouTubeDB()->getById(id);
+                            if (uo)
+                                pl->add(uo, toBack);
+                            else
+                                return false;
+                        }
                     }
                 }
             }
@@ -542,7 +559,7 @@ void TPMusicPlayerCore::currentTrackChanged(TPTrack *track)
     emit playingTrackChanged();
     protocolReportEvent(protocolEventPlaybackTrackChanged);
 
-    TPAlbum *newAlbum = track ? track->getAlbum() : NULL;
+    TPAlbum *newAlbum = track ? track->getAlbum() : 0;
 
     if (currentlyPlayingAlbum != newAlbum)
     {
@@ -554,6 +571,7 @@ void TPMusicPlayerCore::currentTrackChanged(TPTrack *track)
             currentlyPlayingAlbum->inc();
 
         emit playingAlbumChanged();
+
         protocolReportEvent(protocolEventPlaybackAlbumChanged);
     }
 
@@ -976,6 +994,40 @@ void TPMusicPlayerCore::onProtocolMessage(TPWebSocketProtocol *protocol, TPWebSo
             args.insert(protocolCommandGetUserProfilesArgProfilelist, profiles);
             protocolRespondACK(protocol, message, QVariantMap(), args);
         }
+        else if (msgId == protocolCommandYoutubeSearch)
+        {
+            QString criteria = message.arguments().value(protocolCommandYoutubeSearchArgCriteria).toString();
+
+            if (criteria.length())
+            {
+                if (youtubeSearch->search(criteria))
+                    protocolRespondACK(protocol, message);
+                else
+                    protocolRespondNAK(protocol, message, protocolExecErrorDescriptionNotReady);
+            }
+            else
+                protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
+        }
+        else if (msgId == protocolCommandYoutubeSave)
+        {
+            QString id = message.arguments().value(protocolCommandYoutubeSaveArgId).toString();
+            if (id.length())
+            {
+                TPYouTubeObject *object = youtubeSearch->takeById(id);
+                if (object)
+                {
+                    db->getYouTubeDB()->insertItem(object);
+                    protocolRespondACK(protocol, message);
+
+                    protocolReportEvent(protocolEventYoutubeDbChanged);
+                }
+                else
+                    protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
+            }
+            else
+                protocolRespondNAK(protocol, message, protocolExecErrorDescriptionArgument);
+        }
+
         else if (msgId == protocolCommandExecSP)
         {
             if (!sob)
@@ -1237,6 +1289,18 @@ TPTrack* TPMusicPlayerCore::findTrack(const QString trackId)
     // effectively contain "detached" tracks
     // that are actually not part of the
     // DB:s as such.
-    return db->getPlaylistDB()->findTrack(trackId);
+    track = db->getPlaylistDB()->findTrack(trackId);
+    if (track)
+        return track;
+
+    if (player->getPlaylist())
+        return player->getPlaylist()->findTrack(trackId);
+
+    return 0;
+}
+
+void TPMusicPlayerCore::youtubeSearchComplete()
+{
+    protocolReportEvent(protocolEventYoutubeSearchFinished);
 }
 

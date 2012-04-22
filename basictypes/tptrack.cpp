@@ -122,31 +122,37 @@ const QString TPTrack::getString(const QString key, const QString defaultValue) 
     return TPAssociativeObject::getString(key, defaultValue);
 }
 
-QMap<QString, QVariant> TPTrack::toMap(QStringList *filteredKeys)
+QVariantMap TPTrack::toMap(QStringList *filteredKeys)
 {
     QMap<QString, QVariant> props;
 
     props = TPAssociativeObject::toMap(filteredKeys);
 
-    if (filteredKeys)
-    {
-        if (!filteredKeys->contains(trackAttrAlbumId))
-            props.insert(trackAttrAlbumId, getString(trackAttrAlbumId));
-        if (!filteredKeys->contains(objectAttrIdentifier))
-            props.insert(objectAttrIdentifier, getString(objectAttrIdentifier));
-        if (!filteredKeys->contains(trackAttrArtistId))
-            props.insert(trackAttrArtistId, getString(trackAttrArtistId));
-        if (!filteredKeys->contains(albumAttrArtLarge))
-            props.insert(albumAttrArtLarge, getString(albumAttrArtLarge));
+#define INSERT_STR_IF_NOT_EMPTY_AND_NOT_FILTERED(filter, map, key)\
+    {\
+     if (!filter || !filter->contains(key)) {\
+        QString _s = getString(key);\
+        if (_s.length())\
+            map.insert(key, getString(key));\
+        }\
     }
-    else
-    {
-        props.insert(trackAttrAlbumId, getString(trackAttrAlbumId));
-        props.insert(objectAttrIdentifier, getString(objectAttrIdentifier));
-        props.insert(trackAttrArtistId, getString(trackAttrArtistId));
-        props.insert(albumAttrArtLarge, getString(albumAttrArtLarge));
-    }
+
+    INSERT_STR_IF_NOT_EMPTY_AND_NOT_FILTERED(filteredKeys, props, trackAttrAlbumId)
+    INSERT_STR_IF_NOT_EMPTY_AND_NOT_FILTERED(filteredKeys, props, objectAttrIdentifier)
+    INSERT_STR_IF_NOT_EMPTY_AND_NOT_FILTERED(filteredKeys, props, trackAttrArtistId)
+    INSERT_STR_IF_NOT_EMPTY_AND_NOT_FILTERED(filteredKeys, props, albumAttrArtLarge)
+    INSERT_STR_IF_NOT_EMPTY_AND_NOT_FILTERED(filteredKeys, props, albumAttrArtUrl)
 
     return props;
 }
 
+const QString TPTrack::objectType()
+{
+    QString t = getString(trackAttrObjectType);
+    if (t.length())
+        return t;
+
+    if (TPUtils::playlistFile(getFilename()))
+        return trackAttrObjectTypePlaylist;
+    return trackAttrObjectTypeFile;
+}

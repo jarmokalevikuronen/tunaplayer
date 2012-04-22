@@ -28,6 +28,7 @@ class TPUtils
 {
 public:
 
+    static bool playlistFile(const QString filename);
     static bool webAddress(const QString line);
     static int currentEpoch();
     static int age(int bornEpoch);

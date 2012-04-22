@@ -4,5 +4,6 @@
 #include "tpassociativedbitem.h"
 #include "tpassociativeobject.h"
 #include "tpassociativedb.h"
+#include "tpassociativemeta.h"
 
 #endif

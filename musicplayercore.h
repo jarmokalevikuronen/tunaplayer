@@ -41,6 +41,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpsearchresults.h"
 #include "tpalsavolume.h"
 #include "tpwebsocketprotocoleventfilter.h"
+#include "tpyoutubesearch.h"
 
 class TPMusicPlayerCore : public QObject
 {
@@ -186,6 +187,10 @@ private slots:
     //! control operations are possible at the moment
     void protocolReportPlaybackControls();
 
+    //! @brief Signales by the TPYouTubeSearch when search towards youtube
+    //! has completed..
+    void youtubeSearchComplete();
+
 private:
 
     // Reports the startup progress in percents.
@@ -245,6 +250,9 @@ private:
     //! being distributed to them (E.g. no reason to receive playback position every second
     //! if not showing such a view that would require that information).
     TPWebSocketProtocolEventFilter evtFilters;
+
+    //! searching for content from youtube.
+    TPYouTubeSearch *youtubeSearch;
 };
 
 #endif // MUSICPLAYERCORE_H

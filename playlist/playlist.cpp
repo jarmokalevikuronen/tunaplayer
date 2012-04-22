@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "playlist.h"
+#include "musicplaybackdefines.h"
 #include <QtGlobal>
 #include <QTime>
 
@@ -155,6 +156,32 @@ void TPPlaylist::add(TPFeed *feed, bool toBack)
     else
         for (int i=feed->count()-1;i>=0;--i)
             add(feed->at(i), toBack);
+}
+
+void TPPlaylist::add(TPYouTubeObject *object, bool toBack)
+{
+    Q_ASSERT(object);
+
+    static const QString artistAlbumYoutube("(youtube)");
+
+    TPAlbum *album = new TPAlbum(artistAlbumYoutube);
+    album->setString(albumAttrArtUrl, object->getString(youtubeAttrThumbnailUrl));
+
+    TPTrack *track = new TPTrack(album);
+    album->dec();
+    track->dec();
+
+    track->setActingAsDelegateOf(TPObjectDelegate(object, object));
+    track->setString(trackAttrFilename, object->getString(youtubeAttrUrl));
+    track->setString(objectAttrName, object->getString(objectAttrName));
+    track->setString(trackAttrObjectType, trackAttrObjectTypeYoutube);
+    track->setString(trackAttrAlbumName, artistAlbumYoutube);
+
+    QVariantMap x = track->toMap(0);
+    DEBUG() << "YOUTUBETRACK: " << x;
+
+    add(track, toBack);
+    track->dec();
 }
 
 void TPPlaylist::add(TPTrack *track, bool toBack)
@@ -397,7 +424,7 @@ TPTrack* TPPlaylist::takeNext()
     if (tracks.count())
     {
         TPTrack *track = tracks.takeFirst();
-        track->dec();
+//        track->dec();
         fill();
         return track;
     }
@@ -447,6 +474,7 @@ TPTrack *TPPlaylist::getRandomTrackNotInList()
         return 0;
 
     int startPosition = (qrand() % db->count());
+    DEBUG() << "PLAYLIST: RandomStart: " << startPosition << " dbItems: " << dbItems;
     for (int i=0;i<dbItems;i++)
     {
         TPTrack *track = db->at((i + startPosition) % dbItems);

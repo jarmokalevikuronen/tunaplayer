@@ -160,11 +160,9 @@ TPTrack* TPPlaylistRunner::nextTrackQueue(bool *peek)
         if (playlist)
             currentTrack = playlist->takeNext();
         else
-            return NULL;
+            return 0;
 
-        if (currentTrack)
-            currentTrack->inc();
-        else
+        if (!currentTrack)
         {
             if (playlist)
             {

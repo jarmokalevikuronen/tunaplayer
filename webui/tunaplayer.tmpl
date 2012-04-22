@@ -455,3 +455,14 @@ _TUNA_BEGIN_TEMPLATE
 </div>
 _TUNA_END_TEMPLATE=tmpl_search_results
 
+_TUNA_BEGIN_TEMPLATE
+<input onload="this.selection.empty();" onkeyup="youtubeSearchContext.criteriaChanged(this);" type="text" class="search_header" placeholder="search.." id="youtubesearchcriteria" autofocus="autofocus" value="<%=this.value ? this.value : ''%>" />
+_TUNA_END_TEMPLATE=tmpl_youtube_search_header
+
+_TUNA_BEGIN_TEMPLATE
+<div>
+  <p style="color: white">Youtube search results</p>
+</div>
+_TUNA_END_TEMPLATE=tmpl_youtube_search_results
+
+

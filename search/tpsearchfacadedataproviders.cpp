@@ -211,3 +211,25 @@ TPAssociativeObject* TPSearchFacadeCurrentArtistDataProvider::at(int index)
     return eng.getCurrentTrack()->getAlbum()->getArtist();
 }
 
+
+
+int TPSearchFacadeYouTubeSearchDataProvider::count()
+{
+    return search.count();
+}
+
+TPAssociativeObject* TPSearchFacadeYouTubeSearchDataProvider::at(int index)
+{
+    return search.at(index);
+}
+
+int TPSearchFacadeYouTubeDataProvider::count()
+{
+    return db.count();
+}
+
+TPAssociativeObject* TPSearchFacadeYouTubeDataProvider::at(int index)
+{
+    return db.at(index);
+}
+

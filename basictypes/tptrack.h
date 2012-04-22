@@ -27,22 +27,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpassociative.h"
 #include "tpassociativemeta.h"
 #include "tpidbase.h"
+#include "tpobjectdelegate.h"
 
 class TPAlbum;
-
-class TPObjectDelegate
-{
-public:
-
-    TPObjectDelegate(TPAssociativeObject *_ao = 0, TPReferenceCounted *_rc = 0)
-    {
-        rc = _rc;
-        ao = _ao;
-    }
-
-    TPAssociativeObject *ao;
-    TPReferenceCounted *rc;
-};
 
 class TPTrack :
         public TPReferenceCounted,
@@ -59,10 +46,13 @@ public:
     TPTrack(TPAlbum *_album, TPAssociativeDBItem *dbItem);
 
     const QString getString(const QString key, const QString defaultValue="") const;
-    QMap<QString, QVariant> toMap(QStringList *filteredKeys);
+    QVariantMap toMap(QStringList *filteredKeys);
 
 
     ~TPTrack();
+
+    //! @brief Returns the type of the target track object (file, url, youtube, ..)
+    const QString objectType();
 
     void setActingAsDelegateOf(TPObjectDelegate _delegate)
     {

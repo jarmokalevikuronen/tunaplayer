@@ -234,9 +234,14 @@ function setImage(json, objectId) {
   if (art == undefined || art == null || art.length < 1) {
     art = json["album.arts"];
     if (art == null || art == undefined || art.length < 1) {  
-      art = null;
+      art = json["album.arturl"];
+      if (art == null || art == undefined || art.length < 1) {
+        art = null;
+      }
     }
   }
+
+  console.log("ALBUM ART URL: " + art);
 
   var o = document.getElementById(objectId);
   if (o != undefined && o != null) {
@@ -639,7 +644,7 @@ function playerUpdatePlaybackAlbum(json) {
 }
 
 function playerUpdatePlaybackTrack(json) {
-/*  console.log("playerUpdatePlaybackTrack: " + JSON.stringify(json));*/
+  console.log("playerUpdatePlaybackTrack: " + JSON.stringify(json));
 
   if (!json)
     return;
@@ -1067,6 +1072,72 @@ function createRecentAlbumsPageContent(json) {
 }
 
 /**
+* Youtube search context responsible of making youtube queries..
+* Mostly equal to local search, except totally different.. :-)
+*/
+var youtubeSearchContext = {
+  results: {},
+  triggerTimer: null,
+  triggerTimeout: 1000,
+  inProgress: false,
+  pending: false,
+  criteria: "",
+
+  clear: function() {
+    youtubeSearchContext.results = {};
+  },
+
+  /* Starts to execute the search operation */
+  start: function() {
+    youtubeSearchContext.pending = false;
+    var elem = document.getElementById("youtubesearchcriteria");
+    if (elem) {
+      youtubeSearchContext.execute(elem.value);
+    } else {
+      console.log("ERROR: No search criteria element found.");
+    }
+  },
+
+  /* Called if/when user has typed something to the search criteria input box. */
+  criteriaChanged: function(inp) {
+    clearTimeout(youtubeSearchContext.triggerTimer);
+    if (inp.value.length <= 1) {
+      youtubeSearchContext.criteria = "";
+      return;
+    }
+
+    youtubeSearchContext.triggerTimer = setTimeout(function() { 
+      youtubeSearchContext.triggerTimer = null;
+      youtubeSearchContext.start();
+    }, youtubeSearchContext.triggerTimeout);  
+  },
+
+  /* Private function: Performs the actual search. */
+  execute: function(criteria) {
+    console.log("YOUTUBE: executeSearch(" + criteria + ")");
+    if (youtubeSearchContext.inProgress) {
+      youtubeSearchContext.pending = true;
+      return;
+    }
+
+    youtubeSearchContext.inProgress = true;
+    tunaPlayer.searchYoutube(criteria, function(json) {
+      if (json["status"] == "OK") {
+        youtubeSearchContext.inProgress = false;
+        youtubeSearchContext.results = json["items"];
+        renderView("youtube_container", { "renderHint": "resultsonly", "renderContext": youtubeSearchContext.results } );
+        if (youtubeSearchContext.pending) {
+          youtubeSearchContext.startSearch();
+        }
+      } else {
+        console.log("ERROR: Youtube search failed: " + JSON.stringify(json));
+      }
+    });
+  }
+};
+
+
+/**
 * SearchContext is main object that is responsible of making the searches
 * towards the tunadaemon.
 */
@@ -1255,6 +1326,20 @@ function createSelectUserProfilePageContent() {
   return html;
 }
 
+function createYoutubeSearchHeaderContent(json) {
+  var html = $.jqote(templates.tmpl_youtube_search_header, json);
+
+  return html;
+}
+
+function createYoutubeSearchResultContent(json) {
+  var html;
+
+  html = $.jqote(templates.tmpl_youtube_search_results, json);
+
+  return html;
+}
+
 function renderView(viewId, arg) {
   var targetObject = document.getElementById(viewId);
   if (!targetObject) {
@@ -1298,6 +1383,7 @@ function renderView(viewId, arg) {
   } else if (viewId == "recent_albums_container") {
     targetObject.innerHTML = createRecentAlbumsPageContent(renderContext["args"]);
   } else if (viewId == "search_container") {
+console.log("DEBUG search_container");
     var search_header_container = document.getElementById("search_header");
     var search_result_container = document.getElementById("search_results");
     if (!search_header_container && !search_result_container) {
@@ -1313,6 +1399,17 @@ function renderView(viewId, arg) {
       search_result_container.innerHTML = createSearchResultsContent(renderContext);
   } else if (viewId == "selectuserprofile_container") {
      targetObject.innerHTML = createSelectUserProfilePageContent();
+  } else if (viewId == "youtube_container") {
+    var youtubeSearchHeaderContainer = document.getElementById("youtube_search_header");
+    var youtubeSearchResultContainer = document.getElementById("youtube_search_results");
+    if (!youtubeSearchHeaderContainer && !youtubeSearchResultContainer) {
+      targetObject.innerHTML = '<div id="youtube_search_header"></div><div id="youtube_search_results"></div>';
+    }
+    youtubeSearchHeaderContainer = document.getElementById("youtube_search_header");
+    youtubeSearchHeaderContainer.innerHTML = createYoutubeSearchHeaderContent(renderContext);
+
+    youtubeSearchResultContainer = document.getElementById("youtube_search_results");
+    youtubeSearchResultContainer.innerHTML = createYoutubeSearchResultContent(renderContext);
   }
 
   if (isMobile() && targetObject.innerHTML.length > 0) {
@@ -1555,6 +1652,14 @@ function loadViewContent(oldid, newid, initData, renderer) {
       searchContext.criteria = "";
       searchViewData.cachedResults = {};
       console.log("OPEN SEARCH VIEW from ROOT");
+    }
+  }
+  if (newid == "youtube_container") {
+    if (oldid == "root") {
+      youtubeSearchContext.results = {};
+      youtubeSearchContext.criteria = "";
+/*      youtubeSearchViewData.cachedResults = {};*/
+      console.log("OPEN YOUTUBE SEARCH VIEW from ROOT");
     }
   }
   if (isMobile()) {
@@ -1987,6 +2092,24 @@ function compileTemplates() {
   });
 }
 
+function handleYouTubeSearchFinished(json) {
+  console.log("handleYouTubeSearchFinished: " + JSON.stringify(json));
+/*
+  var items = json["args"]["items"];
+  for (var i=0;i<items.length;i++) {
+    tunaPlayer.saveYoutube(items[i]["id"]);
+    tunaPlayer.addToPlaylist(items[i]["id"]);
+  }
+
+  tunaPlayer.getYoutube(function(json) {
+    console.log("YOUTUBE: " + JSON.stringify(json));
+  });*/
+}
+
+function handleYouTubeDbChanged(json) {
+  console.log("YOUTUBE ITEMS: " + json["args"]["items"].length);
+}
+
 function connectToDaemon() {
 
   tunaPlayer.onOpened = tunaDaemonConnectionEstablished;
@@ -2008,6 +2131,9 @@ function connectToDaemon() {
   tunaPlayer.onAlbumChanged = processAlbumChanged;
 
   tunaPlayer.onVolumeChanged = processVolumeChanged;
+
+  tunaPlayer.onYoutubeDbChanged = handleYouTubeDbChanged;
+  tunaPlayer.onYoutubeSearchFinished = handleYouTubeSearchFinished;
 
   tunaPlayer.onDatabaseChanged = processDatabaseChanged;
 
@@ -2267,6 +2393,10 @@ Swipe.prototype = {
         <div class="tile_closed_inner"><center>new</center></div>
       </div>
 
+      <div id="youtube_launcher" class="tile_03 tile_closed" onclick="openView('root', 'youtube_container');">
+        <div class="tile_closed_inner"><center>youtube</center></div>
+      </div>
+
       <div id="radio_container" class="topleft div_hidden">
       </div>
 
@@ -2301,7 +2431,10 @@ Swipe.prototype = {
       </div>
 
       <div id="selectuserprofile_container" class="topleft div_hidden">
+      </div>
 
+      <!-- Container for Youtube PAGE - content will be entered dynamically from the template(s) -->
+      <div id="youtube_container" class="topleft div_hidden">
       </div>
 
     </div>

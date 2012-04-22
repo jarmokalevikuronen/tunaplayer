@@ -66,12 +66,17 @@ static const QString trackAttrFilename("fn");
 static const QString trackAttrGenre("genre");
 static const QString trackAttrYear("year");
 static const QString trackAttrAlbum("album.");
+static const QString trackAttrObjectType("type");
+   static const QString trackAttrObjectTypeFile("file");
+   static const QString trackAttrObjectTypePlaylist("playlist");
+   static const QString trackAttrObjectTypeYoutube("youtube");
 
 //
 // ALBUM SPECIFIC META INFORMATION KEYS
 //
 static const QString albumAttrArtSmall("album.arts");
 static const QString albumAttrArtLarge("album.artl");
+static const QString albumAttrArtUrl("album.arturl");
 static const QString albumAttrCountTracks("trcnt");
 static const QString albumAttrAutomaticAlbumArtDownloadTries("aadltries");
 static const QString albumAttrAutomaticAlbumArtLastTry("aadllast");
@@ -112,5 +117,11 @@ static const QString feedAttrUrl("url");
 static const QString feedAttrLink("link");
 static const QString feedAttrDescription("desc");
 static const QString feedAttrTitle("title");
+
+//
+// YOUTUBE specific meta information
+//
+static const QString youtubeAttrUrl("mediaurl");
+static const QString youtubeAttrThumbnailUrl("thumburl");
 
 #endif // TPASSOCIATIVEMETA_H

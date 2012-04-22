@@ -218,20 +218,28 @@ bool PlayerBackend_MPlayer::play(TPTrack *track)
 {
     bool status = true;
 
+    if (!track)
+        return false;
+
     if (!canPlay())
         status = false;
     else
     {
         process.terminate();
         process.waitForFinished(3000);
-        process.close();
+        process.kill();
+        if (process.isOpen())
+            process.close();
 
         playbackLengthReported = track->getLen() > 0;
-        QString filename;
-        filename = track->getFilename();
-        QString cli;
 
-        if (filename.startsWith("http://", Qt::CaseInsensitive) &&
+//        QString filename;
+  //      filename = track->getFilename();
+        //QString cli;
+
+        QString cli = "/usr/bin/tunaplayobject.sh " + track->objectType() + " \"" + track->getFilename() + "\"";
+
+/*        if (filename.startsWith("http://", Qt::CaseInsensitive) &&
                 (
                 filename.endsWith(".m3u", Qt::CaseInsensitive) ||
                 filename.endsWith(".pls", Qt::CaseInsensitive) ||
@@ -242,7 +250,13 @@ bool PlayerBackend_MPlayer::play(TPTrack *track)
         else
             cli = TPSettings::instance().get(settingPlayTrackCmd).toString().arg(filename);
 
+        QString customCli = track->getString(objectAttrCustomPlayback);
+
+        if (customCli.length())
+            cli = customCli;
+*/
         DEBUG() << "PLAYER: executing cli " << cli;
+
         process.start(cli);
         status = process.waitForStarted(5000);
 
@@ -380,7 +394,9 @@ void PlayerBackend_MPlayer::runWatchdog()
 
     process.terminate();
     process.waitForFinished(3000);
-    process.close();
+    process.kill();
+    if (process.isOpen())
+        process.close();
     changeToState(Playing);
     changeToState(Stopped);
 }

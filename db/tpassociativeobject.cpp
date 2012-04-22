@@ -205,3 +205,15 @@ void TPAssociativeObject::clearCachedValues()
 {
     cachedAge = cachedLastPlayedAgo = -1;
 }
+
+TPAssociativeDBItem *TPAssociativeObject::detachDbItem()
+{
+    TPAssociativeDBItem *i = 0;
+    if (itemOwned)
+    {
+        i = item;
+        item = 0;
+    }
+
+    return i;
+}

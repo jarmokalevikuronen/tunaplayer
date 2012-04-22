@@ -37,5 +37,7 @@ static const QString schemeParameter("parameter://");
 static const QString schemeValue("value://");
 static const QString schemeObject("object://");
 static const QString schemeDlAlbumArt("dlalbumart://");
+static const QByteArray schemeYoutubeSearchResults("youtubesearch://");
+static const QByteArray schemeYoutube("youtube://");
 
 #endif // TPSCHEMES_H

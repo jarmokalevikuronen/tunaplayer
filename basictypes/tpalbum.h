@@ -40,6 +40,9 @@ const int AlbumYearNotResolved = -2;
 const int AlbumYearNotAvailable = -1;
 
 
+//! @class TPAlbum
+//! @brief Represents a album that is effectively a collection of songs - in
+//! this context it does not mean always a "real" album.
 class TPAlbum :
         public TPReferenceCounted,
         public TPAssociativeObject,

@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 class TPIdBase
 {
 public:
+
     TPIdBase(const QByteArray scheme);
     TPIdBase(const QByteArray scheme, const QString id1);
     TPIdBase(const QByteArray scheme, const QString id1, const QString id2);
