@@ -1,21 +1,31 @@
 # -------------------------------------------------
 # Project created by QtCreator 2011-03-22T22:27:20
 # -------------------------------------------------
-
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG += warn_on
-INCLUDEPATH += ./youtube ./search/sort ./playlist ./feed ./webserver ./webserver/libwebsocket ./albumart/util ./albumart/fetch ./basictypes ./search ./alsa ./db
+INCLUDEPATH += ./youtube \
+    ./search/sort \
+    ./playlist \
+    ./feed \
+    ./webserver \
+    ./webserver/libwebsocket \
+    ./albumart/util \
+    ./albumart/fetch \
+    ./basictypes \
+    ./search \
+    ./alsa \
+    ./db
 
 # TAGLIB
-LIBS += -L/usr/lib/ -ltag
-
+LIBS += -L/usr/lib/ \
+    -ltag
 QT += gui
 QT += network
 QT += xml
 TEMPLATE = app
 
-##### BEGIN PLAYER
+# #### BEGIN PLAYER
 DEPENDPATH += ./player
 SOURCES += player.cpp \
     tpreferencecounted.cpp \
@@ -87,8 +97,8 @@ SOURCES += player.cpp \
     youtube/tpyoutubesearch.cpp \
     youtube/tpyoutubedb.cpp \
     youtube/tpyoutubeobject.cpp \
-    basictypes/tpobjectdelegate.cpp
-
+    basictypes/tpobjectdelegate.cpp \
+    tpmouseremotecontrol.cpp
 HEADERS += player.h \
     tpreferencecounted.h \
     playerengine.h \
@@ -170,21 +180,22 @@ HEADERS += player.h \
     youtube/tpyoutubesearch.h \
     youtube/tpyoutubedb.h \
     youtube/tpyoutubeobject.h \
-    basictypes/tpobjectdelegate.h
-##### END PLAYER
+    basictypes/tpobjectdelegate.h \
+    tpmouseremotecontrol.h
 
-##### BEGIN JSON
+# #### END PLAYER
+# #### BEGIN JSON
 DEPENDPATH += ./3rdparty/json
 SOURCES += ./3rdparty/json/json.cpp
 HEADERS += ./3rdparty/json/json.h
 INCLUDEPATH += ./3rdparty/json
-#### END JSON
 
-##### BEGIN TAGLIB
+# ### END JSON
+# #### BEGIN TAGLIB
 INCLUDEPATH += /usr/include/taglib
-##### END TAGLIB
 
-##### BEGIN LIBWEBSOCKET
+# #### END TAGLIB
+# #### BEGIN LIBWEBSOCKET
 DEPENDPATH += ./3rdparty/libwebsocket
 SOURCES += ./3rdparty/libwebsocket/sha-1.c \
     ./3rdparty/libwebsocket/parsers.c \
@@ -196,48 +207,45 @@ SOURCES += ./3rdparty/libwebsocket/sha-1.c \
     ./3rdparty/libwebsocket/extension.c \
     ./3rdparty/libwebsocket/client-handshake.c \
     ./3rdparty/libwebsocket/base64-decode.c
-
 HEADERS += ./3rdparty/libwebsocket/private-libwebsockets.h \
     ./3rdparty/libwebsocket/libwebsockets.h \
     ./3rdparty/libwebsocket/extension-x-google-mux.h \
     ./3rdparty/libwebsocket/extension-deflate-stream.h
-##### END LIBWEBSOCKET
 
-##### BEGIN WEBSERVER
+# #### END LIBWEBSOCKET
+# #### BEGIN WEBSERVER
 DEPENDPATH += ./webserver
 SOURCES += ./webserver/tplibwebsocketinterface.cpp \
     ./webserver/tpwebsocketvirtualfolder.cpp \
     ./webserver/tpwebsocketprotocol.cpp \
     ./webserver/tpwebsocketprotocolmessage.cpp
-
 HEADERS += ./webserver/tplibwebsocketinterface.h \
     ./webserver/tpwebsocketdataproviderinterface.h \
     ./webserver/tpwebsocketvirtualfolder.h \
     ./webserver/tpwebsocketprotocol.h \
     ./webserver/tpwebsocketprotocolmessage.h
-##### END WEBSERVER
 
-##### BEGIN PLAYLISTS
+# #### END WEBSERVER
+# #### BEGIN PLAYLISTS
 DEPENDPATH += ./playlist
-
 HEADERS += ./playlist/playlistutils.h \
     ./playlist/playlistmgr.h \
     ./playlist/playlist.h
 SOURCES += ./playlist/playlistutils.cpp \
     ./playlist/playlistmgr.cpp \
     ./playlist/playlist.cpp
-##### END PLAYLISTS
 
-#### BEGIC BASIC TYPES and containers
+# #### END PLAYLISTS
+# ### BEGIC BASIC TYPES and containers
 DEPENDPATH += ./basictypes
-#### END BASIC TYPES
 
+# ### END BASIC TYPES
 SOURCES += main.cpp
-
 target = tunaplayer
 CONFIG(debug, debug|release) { 
     message("Debug build of tunaPlayer")
-    CONFIG += -DDEBUG -D_DEBUG
+    CONFIG += -DDEBUG \
+        -D_DEBUG
     DESTDIR = ./tunaplayer-debug
     OBJECTS_DIR = ./tunaplayer-debug/objects
 }
@@ -246,15 +254,14 @@ else {
     DESTDIR = ./tunaplayer-release
     OBJECTS_DIR = ./tunaplayer-release/objects
 }
-
 target.path = $$PREFIX/usr/bin
-sources.files = $$SOURCES $$HEADERS tunaplayer.pro
+sources.files = $$SOURCES \
+    $$HEADERS \
+    tunaplayer.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/tutorials/tutorial/tunaplayer
 INSTALLS += target
 
-#
 # HTML UI
-#
 html.files += webui/jquery.min.js
 html.files += webui/jquery.jqote2.min.js
 html.files += webui/tunaplayer.css
@@ -267,23 +274,17 @@ html.files += webui/jgestures.min.js
 html.path = $$PREFIX/usr/share/tunaplayer/
 INSTALLS += html
 
-#
 # Tunaplayer Stored Procedures for queries
-#
 tsp.files += rt-environment/tsp/*
 tsp.path = $$PREFIX/usr/share/tunaplayer/tsp
 INSTALLS += tsp
 
-#
 # Other configuration files
-#
 cfg.files += rt-environment/configs/*
 cfg.path = $$PREFIX/usr/share/tunaplayer/configs
 INSTALLS += cfg
 
-#
 # Hardcoded playlists + their icons
-#
 playlist.files += rt-environment/playlists/*.m3u
 playlist.path = $$PREFIX/usr/share/tunaplayer/playlists
 playlist_icons.files += rt-environment/playlists/icons/*
@@ -291,17 +292,12 @@ playlist_icons.path = $$PREFIX/usr/share/tunaplayer/playlists/icons
 INSTALLS += playlist
 INSTALLS += playlist_icons
 
-#
 # Script files to aid playback.
-#
 scripts.files += scripts/*.sh
 scripts.path = $$PREFIX/usr/bin/
 INSTALLS += scripts
 
-
-#
 # Autostart
-#
 daemon_autostart.files += ubuntu/tunaplayer.desktop
 daemon_autostart.path = $$PREFIX/etc/xdg/autostart
 INSTALLS += daemon_autostart

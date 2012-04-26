@@ -40,6 +40,7 @@ public:
     static const char *cliArgSecret;
     static const char *cliArgMaintainInterval;
     static const char *cliArgIpFilter;
+    static const char *cliArgMouseRemco;
 
     static TPCLArgs& initialize(QStringList cliArgs);
     static TPCLArgs& instance();

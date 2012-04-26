@@ -67,6 +67,17 @@ TPMusicPlayerCore::TPMusicPlayerCore(TPWebSocketProtocol *_protocol) : QObject(N
     youtubeSearch = new TPYouTubeSearch(this);
     connect(youtubeSearch, SIGNAL(searchComplete()), this, SLOT(youtubeSearchComplete()));
 
+    //
+    // If requested, instantiate mouse remote control and bind it to this class.
+    //
+    QString inputDev = TPCLArgs::instance().arg(TPCLArgs::cliArgMouseRemco, QVariant("")).toString();
+    if (inputDev.length())
+    {
+        remco = new TPMouseRemoteControl(inputDev, this);
+        connect(remco, SIGNAL(remoteControlCommand(QString)), this, SLOT(processRemoteControlCommand(QString)));
+        remco->start();
+    }
+
     createMaintainTask();
 }
 
@@ -1303,4 +1314,38 @@ void TPMusicPlayerCore::youtubeSearchComplete()
 {
     protocolReportEvent(protocolEventYoutubeSearchFinished);
 }
+
+
+
+void TPMusicPlayerCore::processRemoteControlCommand(const QString command)
+{
+    DEBUG() << "CORE: REMCO: " << command;
+
+    if (command == remoteControlCommandStopPlay)
+    {
+        if (player && player->CanExecute(playerCmdPlay))
+            player->Execute(playerCmdPlay);
+        else if (player)
+            player->Execute(playerCmdStop);
+    }
+    else if (command == remoteControlCommandVolumeUp)
+    {
+        int volume = 0;
+        if (volumeCtrl && volumeCtrl->getVolume(&volume) && volume < 100)
+            volumeCtrl->setVolume(volume + 1);
+    }
+    else if (command == remoteControlCommandVolumeDown)
+    {
+        // Allow much faster volume down than volume up - for obvious reasons..
+        int volume = 0;
+        if (volumeCtrl && volumeCtrl->getVolume(&volume) && volume > 0)
+            volumeCtrl->setVolume(volume - 5);
+    }
+    else if (command == remoteControlCommandNext)
+    {
+        if (player && player->CanExecute(playerCmdNext))
+            player->Execute(playerCmdNext);
+    }
+}
+
 

@@ -42,6 +42,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpalsavolume.h"
 #include "tpwebsocketprotocoleventfilter.h"
 #include "tpyoutubesearch.h"
+#include "tpmouseremotecontrol.h"
 
 class TPMusicPlayerCore : public QObject
 {
@@ -191,6 +192,9 @@ private slots:
     //! has completed..
     void youtubeSearchComplete();
 
+    //! @brief Processes a commands from remote control.
+    void processRemoteControlCommand(const QString command);
+
 private:
 
     // Reports the startup progress in percents.
@@ -253,6 +257,9 @@ private:
 
     //! searching for content from youtube.
     TPYouTubeSearch *youtubeSearch;
+
+    //! Mouse remote control.
+    TPMouseRemoteControl *remco;
 };
 
 #endif // MUSICPLAYERCORE_H

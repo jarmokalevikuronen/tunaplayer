@@ -30,6 +30,7 @@ const char *TPCLArgs::cliArgLogLevel = "-loglevel";
 const char *TPCLArgs::cliArgSecret = "-secret";
 const char *TPCLArgs::cliArgMaintainInterval = "-maintain";
 const char *TPCLArgs::cliArgIpFilter = "-ipfilter";
+const char *TPCLArgs::cliArgMouseRemco = "-remco";
 
 static struct usage_item
 {
@@ -45,6 +46,7 @@ static struct usage_item
     {TPCLArgs::cliArgMediaPath, "Where to search for music content. Multiple paths can be given by separating those with \';\'. ($HOME)."},
     {TPCLArgs::cliArgSecret, "Secret value for http server. (topsecret). Server will serve in http://ip:port/<secret>/tunaplayer.html"},
     {TPCLArgs::cliArgIpFilter, "IP Mask as regular expression. Used to specify which devices are allowed to connect to this server (127.0.0.1)"},
+    {TPCLArgs::cliArgMouseRemco, "Input device for mouse remote control. (E.g. /dev/input/event5). (not enabled)."},
     {0, 0}
 };
 
