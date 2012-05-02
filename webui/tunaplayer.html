@@ -31,7 +31,7 @@
 /* Global instance that contains the search results */
 var searchResults = {};
 
-/* Contains a precompiled qjote templates index by name */
+/* Contains a precompiled qjote templates indexed by name */
 var templates = {};
 
 /* Amount of tracks visible in playlist view at a time */
@@ -711,6 +711,13 @@ function rotateTracks(callerObject) {
   });
 }
 
+function addTrackToPlaylist(div) {
+  id = div.getAttribute("data-track-id");
+  if (id != undefined && id.length > 0) {
+    tunaPlayer.addToPlaylistFront(id);
+  }
+}
+
 function albumCommand(command, div, caller) {
   var albumId = div.getAttribute("data-album-id");
 
@@ -1071,12 +1078,66 @@ function createRecentAlbumsPageContent(json) {
   return html;
 }
 
+
+function youtubeSearchRotateNextPage() {
+  youtubeViewContext.nextPage();
+  renderView("youtube_container", { "renderHint": "resultsonly", "renderContext": youtubeViewContext } );    
+}
+
+function youtubeSearchRotatePreviousPage() {
+  youtubeViewContext.previousPage();
+  renderView("youtube_container", { "renderHint": "resultsonly", "renderContext": youtubeViewContext } );  
+}
+
+/**
+* Youtube view settings
+*
+*/
+var youtubeViewContext = {
+  topIndex: 0,
+  bottomIndex: 0,
+  visibleItems: 4, 
+  items: null,
+
+  setupResults: function(results) {
+console.log("DEBUG: " + JSON.stringify(results));
+    youtubeViewContext.items = results;
+    youtubeViewContext.topIndex = 0;
+    youtubeViewContext.bottomIndex = youtubeViewContext.topIndex + youtubeViewContext.visibleItems;
+    if (youtubeViewContext.bottomIndex >= youtubeViewContext.items.length)
+      youtubeViewContext.bottomIndex = youtubeViewContext.items.length - 1;
+  },
+  nextPage: function() {
+    youtubeViewContext.topIndex += youtubeViewContext.visibleItems;
+
+    if (youtubeViewContext.topIndex >= youtubeViewContext.items.length) {
+      youtubeViewContext.topIndex = 0;
+    }
+    youtubeViewContext.bottomIndex = youtubeViewContext.topIndex + youtubeViewContext.visibleItems;
+
+    if (youtubeViewContext.bottomIndex >= youtubeViewContext.items.length) {
+      youtubeViewContext.bottomIndex = youtubeViewContext.items.length - 1;
+    }
+  },
+  previousPage: function() {
+    youtubeViewContext.topIndex -= youtubeViewContext.visibleItems;
+
+    if (youtubeViewContext.topIndex < 0) {
+      youtubeViewContext.topIndex = 0;
+    }
+    youtubeViewContext.bottomIndex = youtubeViewContext.topIndex + youtubeViewContext.visibleItems;
+
+    if (youtubeViewContext.bottomIndex >= youtubeViewContext.items.length) {
+      youtubeViewContext.bottomIndex = youtubeViewContext.items.length - 1;
+    }
+  }
+}
+
 /**
 * Youtube search context responsible of making youtube queries..
 * Mostly equal to local search, except totally different.. :-)
 */
 var youtubeSearchContext = {
-  results: {},
   triggerTimer: null,
   triggerTimeout: 1000,
   inProgress: false,
@@ -1084,7 +1145,7 @@ var youtubeSearchContext = {
   criteria: "",
 
   clear: function() {
-    youtubeSearchContext.results = {};
+    criteria = "";
   },
 
   /* Starts to execute the search operation */
@@ -1121,18 +1182,8 @@ var youtubeSearchContext = {
     }
 
     youtubeSearchContext.inProgress = true;
-    tunaPlayer.searchYoutube(criteria, function(json) {
-      if (json["status"] == "OK") {
-        youtubeSearchContext.inProgress = false;
-        youtubeSearchContext.results = json["items"];
-        renderView("youtube_container", { "renderHint": "resultsonly", "renderContext": youtubeSearchContext.results } );
-        if (youtubeSearchContext.pending) {
-          youtubeSearchContext.startSearch();
-        }
-      } else {
-        console.log("ERROR: Youtube search failed: " + JSON.stringify(json));
-      }
-    });
+    // Will complete in handleYoutubeSearchFinished(...)
+    tunaPlayer.searchYoutube(criteria);
   }
 };
 
@@ -1334,7 +1385,7 @@ function createYoutubeSearchHeaderContent(json) {
 
 function createYoutubeSearchResultContent(json) {
   var html;
-
+console.log("YOUTUBE: " + JSON.stringify(json));
   html = $.jqote(templates.tmpl_youtube_search_results, json);
 
   return html;
@@ -1656,7 +1707,7 @@ function loadViewContent(oldid, newid, initData, renderer) {
   }
   if (newid == "youtube_container") {
     if (oldid == "root") {
-      youtubeSearchContext.results = {};
+      /*youtubeSearchContext.results = {};*/
       youtubeSearchContext.criteria = "";
 /*      youtubeSearchViewData.cachedResults = {};*/
       console.log("OPEN YOUTUBE SEARCH VIEW from ROOT");
@@ -2093,17 +2144,17 @@ function compileTemplates() {
 }
 
 function handleYouTubeSearchFinished(json) {
-  console.log("handleYouTubeSearchFinished: " + JSON.stringify(json));
-/*
-  var items = json["args"]["items"];
-  for (var i=0;i<items.length;i++) {
-    tunaPlayer.saveYoutube(items[i]["id"]);
-    tunaPlayer.addToPlaylist(items[i]["id"]);
+//  console.log("handleYouTubeSearchFinished: " + JSON.stringify(json));
+  if (json["status"] === "OK") {
+    youtubeSearchContext.inProgress = false;
+    youtubeViewContext.setupResults(json["args"]["items"]);
+    renderView("youtube_container", { "renderHint": "resultsonly", "renderContext": youtubeViewContext } );
+    if (youtubeSearchContext.pending) {
+      youtubeSearchContext.startSearch();
+    }
+  } else {
+    console.log("ERROR: Youtube search failed: " + JSON.stringify(json));
   }
-
-  tunaPlayer.getYoutube(function(json) {
-    console.log("YOUTUBE: " + JSON.stringify(json));
-  });*/
 }
 
 function handleYouTubeDbChanged(json) {

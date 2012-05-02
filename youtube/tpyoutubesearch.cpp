@@ -11,7 +11,7 @@ TPYouTubeSearch::~TPYouTubeSearch()
 {
     delete requestInProcess;
     delete nam;
-    qDeleteAll(objects);
+    TPDecForAll(objects)
 }
 
 bool TPYouTubeSearch::search(const QString criteria)
@@ -27,7 +27,7 @@ bool TPYouTubeSearch::search(const QString criteria)
     if (requestInProcess)
         return false;
 
-    qDeleteAll(objects);
+    TPDecForAll(objects);
     objects.clear();
 
     requestInProcess = nam->get(QNetworkRequest(buildUrl(criteria)));
@@ -39,7 +39,7 @@ void TPYouTubeSearch::requestComplete(QNetworkReply *response)
 {
     Q_ASSERT(response == requestInProcess && response);
 
-    qDeleteAll(objects);
+    TPDecForAll(objects);
     objects.clear();
 
     QByteArray xml = response->readAll();

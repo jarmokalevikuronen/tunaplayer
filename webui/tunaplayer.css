@@ -1702,6 +1702,94 @@
   position: absolute;
   top: 3%;
   width:80%;
-  left:10%;"
+  left:10%;
 }
+
+#youtube_search_header {
+  position: absolute;
+  top: 1%;
+  height: 15%;
+  width: 100%;
+}
+
+#youtube_search_results {
+  position: absolute;
+  top: 20%;
+  height: 80%;
+  width: 100%;
+}
+
+#youtube_search_results_container {
+  position: relative;
+  width: 98%;
+  float: left;
+  height: 100%;
+  left: 5%;
+  font-size: 20px;
+  color: white;
+  top: 0%;
+  display: block;
+  background-color: black;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.youtube_search_result_item {
+  position: relative;
+  width: 100%;
+  float: left;
+  display: block;
+  height: 22%;
+  overflow: hidden;
+}
+
+.youtube_search_result_item_thumbnail {
+  height: 75px;
+  width: 75px;
+  float: left;
+  vertical-align: middle;
+  position: relative;
+  margin-right: 10px;
+}
+
+.youtube_search_result_item_text {
+  position: relative;
+  margin: 5px;
+  float: left;
+}
+
+.youtube_search_rotate {
+  position: absolute;
+  display: block;
+  width: 6%;
+  left: 0%;
+  height: 35%;
+  background: darkgray;
+  vertical-align: middle;
+  opacity: 0.25;
+  -webkit-transition: opacity 0.25s ease-in-out;
+  -webkit-border-radius: 5px;
+  -webkit-box-shadow: 0 3px 7px #333; 
+  -moz-transition: opacity 0.25s ease-in-out;
+  -moz-border-radius: 5px;
+  -moz-box-shadow: 0 3px 7px #333; 
+  -o-transition: opacity 0.25s ease-in-out;
+  -o-border-radius: 5px;
+  -o-box-shadow: 0 3px 7px #333; 
+  text-align: middle;
+}
+
+.youtube_search_rotate_previous {
+  top: 0%;
+}
+
+.youtube_search_rotate_next {
+  top: 50%;
+}
+
+#youtube_search_rotate_next:active {
+  opacity: .50;
+}
+
+
 

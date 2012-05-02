@@ -30,7 +30,7 @@ var tunaPlayer = {
   cachedPlaybackTrack: null,
   cachedPlaybackAlbum: null,
   cachedVolumeLevel: null,
-  userProfile: "<all>",
+  userProfile: "all",
   debugging: false,
 
   stringify: function(ctrl) {

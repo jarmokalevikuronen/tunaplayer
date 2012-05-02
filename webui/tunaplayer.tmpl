@@ -460,9 +460,31 @@ _TUNA_BEGIN_TEMPLATE
 _TUNA_END_TEMPLATE=tmpl_youtube_search_header
 
 _TUNA_BEGIN_TEMPLATE
-<div>
-  <p style="color: white">Youtube search results</p>
+<div id="youtube_search_results_container">
+<% for(var i=this.topIndex;i<this.bottomIndex;i++) { %>
+  <div class="youtube_search_result_item" onclick="addTrackToPlaylist(this);" data-track-id="<%=this.items[i]['id']%>">
+    <p class="youtube_search_result_item_text"  data-track-id="<%=this.items[i]['id']%>">
+      <img  data-track-id="<%=this.items[i]['id']%>" class="youtube_search_result_item_thumbnail" src="<%=this.items[i]['thumburl']%>"/><%=this.items[i]['name']%></p>
+  </div>
+<%}%>
+
+  <% if(this.topIndex > 0) { %>
+  <div class="youtube_search_rotate youtube_search_rotate_previous" onclick="youtubeSearchRotatePreviousPage();"></div>
+  <%} if (this.bottomIndex < this.items.length) { %>
+  <div class="youtube_search_rotate youtube_search_rotate_next" onclick="youtubeSearchRotateNextPage();"></div>
+  <%}%>
 </div>
+   <div class="shortcut_button close_button" onclick="closeView();">
+     <div class="shortcut_button_inner">
+       <center>&#x21d0;</center>
+     </div>
+   </div>
+   <div class="shortcut_button home_button" onclick="closeAllViews();">
+     <div class="shortcut_button_inner">
+       <center>&#x21da;</center>
+     </div>
+   </div>
+
 _TUNA_END_TEMPLATE=tmpl_youtube_search_results
 
 

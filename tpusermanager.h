@@ -27,7 +27,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 /*
 Tagging mechanism in tunaplayer
 
-.johndoe.restrict.tt
+johndoe.restrict.tt
  => Bydefault, all files within this folder, and its subfolders are hidden
    for user johndoe.
 
