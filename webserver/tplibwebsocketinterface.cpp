@@ -35,9 +35,8 @@ struct libwebsocket_protocols TPWebSocketServer::protocols[] =
         TPWebSocketServer::callback_http,
         0,
         0,
-        0,
-        0,
-        0
+	0,
+	0
     }
     ,
     {
@@ -45,24 +44,30 @@ struct libwebsocket_protocols TPWebSocketServer::protocols[] =
         TPWebSocketServer::callback_tp_json_protocol,
         0,
         0,
-        0,
-        0,
-        0
+	0,
+	0
     },
     {
         NULL,
         NULL,
         0,
         0,
-        0,
-        0,
-        0
+	0,
+	0
     }
 };
 
 TPWebSocketServer::TPWebSocketServer(QObject *parent) :
     QObject(parent)
 {
+    struct lws_context_creation_info info;
+    memset(&info, 0, sizeof(info));
+
+    info.gid = -1;
+    info.uid = -1;
+    info.protocols = protocols;
+
+
     filter = 0;
 
     clientCount = 0;
@@ -72,9 +77,11 @@ TPWebSocketServer::TPWebSocketServer(QObject *parent) :
     if (port < 1 || port > 65535)
         port = 10087;
 
-    context = libwebsocket_create_context(port, NULL, protocols,
-                    libwebsocket_internal_extensions,
-                    NULL, NULL, -1, -1, 0);
+    info.port = port;
+    info.extensions = libwebsocket_get_internal_extensions();
+    info.options = 0;
+
+    context = libwebsocket_create_context(&info);
 
     Q_ASSERT(context);
 
@@ -195,7 +202,7 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
 
             QString contentType = gWebSocketServer->filenameToMime(filePath);
             DEBUG() << "HTTP: SERVE: file=" << filePath << " content:" << contentType;
-            if (libwebsockets_serve_http_file(wsi, filePath.toUtf8().constData(), contentType.toUtf8().constData()))
+            if (libwebsockets_serve_http_file(context, wsi, filePath.toUtf8().constData(), contentType.toUtf8().constData()))
             {
                 ERROR() << "HTTP: SERVE";
             }

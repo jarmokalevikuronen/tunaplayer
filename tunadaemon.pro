@@ -196,22 +196,8 @@ INCLUDEPATH += /usr/include/taglib
 
 # #### END TAGLIB
 # #### BEGIN LIBWEBSOCKET
-DEPENDPATH += ./3rdparty/libwebsocket
-SOURCES += ./3rdparty/libwebsocket/sha-1.c \
-    ./3rdparty/libwebsocket/parsers.c \
-    ./3rdparty/libwebsocket/md5.c \
-    ./3rdparty/libwebsocket/libwebsockets.c \
-    ./3rdparty/libwebsocket/handshake.c \
-    ./3rdparty/libwebsocket/extension-x-google-mux.c \
-    ./3rdparty/libwebsocket/extension-deflate-stream.c \
-    ./3rdparty/libwebsocket/extension.c \
-    ./3rdparty/libwebsocket/client-handshake.c \
-    ./3rdparty/libwebsocket/base64-decode.c
-HEADERS += ./3rdparty/libwebsocket/private-libwebsockets.h \
-    ./3rdparty/libwebsocket/libwebsockets.h \
-    ./3rdparty/libwebsocket/extension-x-google-mux.h \
-    ./3rdparty/libwebsocket/extension-deflate-stream.h
-
+LIBS += -L/usr/local/lib -lwebsockets
+INCLUDEPATH += /usr/local/include
 # #### END LIBWEBSOCKET
 # #### BEGIN WEBSERVER
 DEPENDPATH += ./webserver
