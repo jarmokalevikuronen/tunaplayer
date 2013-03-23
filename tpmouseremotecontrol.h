@@ -32,15 +32,22 @@ public:
     TPMouseRemoteControl(const QString inp = QString(), QObject *parent = 0);
     ~TPMouseRemoteControl();
 
+    bool loadKeyboardConfig(const QString filename);
+
     bool start(const QString inp = QString());
 
 signals:
 
     void remoteControlCommand(const QString remcoCommand);
+    void remoteControlPlaylistRequest(const QString playlistName);
 
 private slots:
 
     void readEvent();
+
+private:
+
+    bool processRemcoConfigItem(QVariant &item);
 
 private:
 
@@ -55,6 +62,12 @@ private:
 
     //! Input handle.
     int fd;
+
+    // Mapping from keycodes to playlist item(s).
+    QMap<int, QString> playlistActions;
+
+    // Mapping from keycodes to control actions.
+    QMap<int, QString> controlActions;
 };
 
 #endif // TPMOUSEREMOTECONTROL_H

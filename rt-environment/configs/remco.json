@@ -1,0 +1,28 @@
+{
+  "items": [
+    {
+      "key": "KEY_2",
+      "action": "PLAYLIST://Radio Rock"
+    },
+    {
+      "key": "KEY_1",
+      "action": "PLAYLIST://Radio Nova"
+    },
+    {
+      "key": "KEY_UP",
+      "action": "VOLUMEUP"
+    },
+    {
+      "key": "KEY_DOWN",
+      "action": "VOLUMEDOWN"
+    },
+    {
+      "key": "KEY_SPACE",
+      "action": "NEXT"
+    },
+    {
+      "key": "KEY_ESC",
+      "action": "STOPPLAY"
+    }
+  ]
+}

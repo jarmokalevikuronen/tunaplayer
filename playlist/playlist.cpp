@@ -421,15 +421,15 @@ TPTrack* TPPlaylist::at(int index) const
 
 TPTrack* TPPlaylist::takeNext()
 {
+    TPTrack *track = 0;
+
     if (tracks.count())
     {
-        TPTrack *track = tracks.takeFirst();
-//        track->dec();
+        track = tracks.takeFirst();
         fill();
-        return track;
     }
 
-    return NULL;
+    return track;
 }
 
 QString TPPlaylist::getName() const
@@ -474,7 +474,7 @@ TPTrack *TPPlaylist::getRandomTrackNotInList()
         return 0;
 
     int startPosition = (qrand() % db->count());
-    DEBUG() << "PLAYLIST: RandomStart: " << startPosition << " dbItems: " << dbItems;
+    //DEBUG() << "PLAYLIST: RandomStart: " << startPosition << " dbItems: " << dbItems;
     for (int i=0;i<dbItems;i++)
     {
         TPTrack *track = db->at((i + startPosition) % dbItems);

@@ -70,12 +70,19 @@ TPMusicPlayerCore::TPMusicPlayerCore(TPWebSocketProtocol *_protocol) : QObject(N
     //
     // If requested, instantiate mouse remote control and bind it to this class.
     //
-    QString inputDev = TPCLArgs::instance().arg(TPCLArgs::cliArgMouseRemco, QVariant("")).toString();
+    QString inputDev =
+            TPCLArgs::instance().arg(TPCLArgs::cliArgMouseRemco, QVariant("")).toString();
     if (inputDev.length())
     {
         remco = new TPMouseRemoteControl(inputDev, this);
+
         connect(remco, SIGNAL(remoteControlCommand(QString)), this, SLOT(processRemoteControlCommand(QString)));
+        connect(remco, SIGNAL(remoteControlPlaylistRequest(QString)), this, SLOT(processRemoteControlPlaylistRequest(QString)));
         remco->start();
+        QString remcoConfig =
+                TPCLArgs::instance().arg(TPCLArgs::cliArgRemcoMapping, QVariant("")).toString();
+        if (remcoConfig.length())
+            remco->loadKeyboardConfig(remcoConfig);
     }
 
     createMaintainTask();
@@ -687,7 +694,7 @@ void TPMusicPlayerCore::protocolRespondACK(TPWebSocketProtocol *protocol,
         response.setHeaderValue(it.key(), it.value());
         ++it;
     }
-    printf("protocol::sendResponse\n");
+
     protocol->sendResponse(response);
 }
 
@@ -1316,7 +1323,36 @@ void TPMusicPlayerCore::youtubeSearchComplete()
 }
 
 
+// processRemoteControlPlaylistRequest
+void TPMusicPlayerCore::processRemoteControlPlaylistRequest(const QString playlistName)
+{
+    DEBUG() << "CORE: REMCO: PlaylistRequest: " << playlistName;
 
+    if (!db || !player || !db->getPlaylistDB())
+        return;
+
+    TPPlaylist *pl = db->getPlaylistDB()->getPlaylist(playlistName);
+    if (!pl)
+    {
+        ERROR() << "CORE: Unable to find playlist: " << playlistName;
+
+        return;
+    }
+
+    addToPlaylist(pl->identifier(true), protocolCommandAddToPlaylistArgPositionValueFront);
+    if (player->CanExecute(playerCmdPlay))
+    {
+        player->Execute(playerCmdPlay);
+    }
+    else
+    {
+        player->Execute(playerCmdNext);
+
+    }
+    playbackOperationsChanged();
+}
+
+// processRemoteControlCommand
 void TPMusicPlayerCore::processRemoteControlCommand(const QString command)
 {
     DEBUG() << "CORE: REMCO: " << command;
@@ -1346,6 +1382,9 @@ void TPMusicPlayerCore::processRemoteControlCommand(const QString command)
         if (player && player->CanExecute(playerCmdNext))
             player->Execute(playerCmdNext);
     }
+
+    protocolReportVolumeLevel();
+    protocolReportPlaybackControls();
 }
 
 

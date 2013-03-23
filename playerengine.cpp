@@ -176,6 +176,7 @@ void TPPlayerProxy::setPlaylist(TPPlaylist *_playlist)
     Execute(playerCmdStop);
 
     TPTrack* track = playlistRunner->setPlaylist(_playlist);
+
     emit currentTrackChanged(track);
     emit activePlaylistChanged();
 }
@@ -243,6 +244,14 @@ void TPPlayerProxy::playerMutingChanged(bool muted)
 void TPPlayerProxy::playbackStreamTitleChanged(const QString streamTitle)
 {
     DEBUG() << "PLAYER: StreamTitleChanged: " << streamTitle;
+    TPTrack *currentTrack = playlistRunner->getCurrentTrack();
+
+    if (currentTrack)
+    {
+        currentTrack->setString(trackAttrArtistName, streamTitle);
+
+        emit currentTrackChanged(currentTrack);
+    }
 }
 
 bool TPPlayerProxy::seekToTrack(const TPTrack *track)

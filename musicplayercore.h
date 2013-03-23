@@ -195,6 +195,9 @@ private slots:
     //! @brief Processes a commands from remote control.
     void processRemoteControlCommand(const QString command);
 
+    //! @brief Processes a request to play playlist.
+    void processRemoteControlPlaylistRequest(const QString playlistName);
+
 private:
 
     // Reports the startup progress in percents.

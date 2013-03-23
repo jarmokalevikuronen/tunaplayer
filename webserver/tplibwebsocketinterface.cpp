@@ -339,7 +339,7 @@ void TPWebSocketServer::sendFilteredEvent(TPWebSocketProtocolMessage message)
     {
         QByteArray content = message.serialize();
 
-        DEBUG() << "SEND-EVENT: " << content;
+//        DEBUG() << "SEND-EVENT: " << content;
 
         char *buffer = new char [content.length() + LWS_SEND_BUFFER_PRE_PADDING + LWS_SEND_BUFFER_POST_PADDING];
         if (!buffer)
@@ -360,7 +360,7 @@ void TPWebSocketServer::sendMessage(TPWebSocketProtocolMessage message)
 {
     QByteArray content = message.serialize();
 
-    DEBUG() << "SEND-MESSAGE: " << content;
+//    DEBUG() << "SEND-MESSAGE: " << content;
 
     char *buffer = new char [content.length() + LWS_SEND_BUFFER_PRE_PADDING + LWS_SEND_BUFFER_POST_PADDING];
     if (!buffer)
