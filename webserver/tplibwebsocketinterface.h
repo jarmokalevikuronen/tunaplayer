@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tpwebsocketipaddressmask.h"
 #include "tpwebsocketprotocolmessage.h"
 #include <QVector>
+#include <QTimer>
 
 extern "C"
 {
@@ -44,7 +45,11 @@ class TPWebSocketServerNotifier : public QSocketNotifier
 
 public:
 
-    TPWebSocketServerNotifier(int fd, struct libwebsocket *_wsi, QObject *parent = 0) : QSocketNotifier(fd, QSocketNotifier::Read, parent)
+    TPWebSocketServerNotifier(int fd,
+                              Type type,
+                              struct libwebsocket *_wsi,
+                              QObject *parent = 0) :
+        QSocketNotifier(fd, type, parent)
     {
         wsi = _wsi;
     }
@@ -88,11 +93,22 @@ public:
         filter = new TPWebSocketIPAddressMask(ipFilter);
     }
 
-    TPWebSocketServerNotifier* notifierForFd(int fd);
+    TPWebSocketServerNotifier* readNotifierForFd(int fd);
+    TPWebSocketServerNotifier* writeNotifierForFd(int fd);
 
     void removeNotifier(int fd)
     {
-        notifiers.remove(fd);
+        QMap<int, TPWebSocketServerNotifier *>::iterator it;
+
+        it = notifiersRead.find(fd);
+        if (it != notifiersRead.end())
+            delete it.value();
+        it = notifiersWrite.find(fd);
+        if (it != notifiersWrite.end())
+            delete it.value();
+
+        notifiersRead.remove(fd);
+        notifiersWrite.remove(fd);
     }
 
     //! Sends a event to one or more recipients. In practise event is delivered
@@ -110,6 +126,8 @@ public:
 private slots:
 
     void notifierActivated(int fd);
+
+  //  void timedServe();
 
 signals:
 
@@ -150,8 +168,8 @@ private:
 
     struct libwebsocket_context *context;
 
-    QMap<int, TPWebSocketServerNotifier *> notifiers;
-
+    QMap<int, TPWebSocketServerNotifier *> notifiersRead;
+    QMap<int ,TPWebSocketServerNotifier *> notifiersWrite;
 
 private:
 
@@ -165,6 +183,8 @@ private:
     //! This is used to map web request paths to physical
     //! files within a disk.
     QVector<TPWebSocketDataProviderInterface *> providers;
+
+//    QTimer serveTimer;
 };
 
 

@@ -60,6 +60,15 @@ struct libwebsocket_protocols TPWebSocketServer::protocols[] =
 TPWebSocketServer::TPWebSocketServer(QObject *parent) :
     QObject(parent)
 {
+    /*
+    connect(&serveTimer,
+            SIGNAL(timeout()),
+            this,
+            SLOT(timedServe()));
+    serveTimer.setInterval(10);
+    serveTimer.setSingleShot(false);
+    serveTimer.start();
+*/
     struct lws_context_creation_info info;
     memset(&info, 0, sizeof(info));
 
@@ -94,6 +103,12 @@ TPWebSocketServer::~TPWebSocketServer()
         libwebsocket_context_destroy(context);
     delete filter;
 }
+/*
+void TPWebSocketServer::timedServe()
+{
+    if (context)
+        libwebsocket_service(context, 0);
+}*/
 
 int TPWebSocketServer::callback_tp_json_protocol(struct libwebsocket_context *context,
                         struct libwebsocket *wsi,
@@ -104,7 +119,6 @@ int TPWebSocketServer::callback_tp_json_protocol(struct libwebsocket_context *co
 {
     Q_UNUSED(context);
     Q_UNUSED(user);
-
 
     if (reason == LWS_CALLBACK_ESTABLISHED)
     {
@@ -120,11 +134,13 @@ int TPWebSocketServer::callback_tp_json_protocol(struct libwebsocket_context *co
     }
     else if (reason == LWS_CALLBACK_RECEIVE)
     {
-       QByteArray b((const char *)in, len);
-       emit gWebSocketServer->messageReceived(b, wsi);
+        // todo: use fromRawData here to avoid copying.
+        QByteArray b((const char *)in, len);
+        emit gWebSocketServer->messageReceived(b, wsi);
     }
     else if (reason == LWS_CALLBACK_SERVER_WRITEABLE)
     {
+        libwebsocket_service(context, 0);
         libwebsocket_callback_on_writable(context, wsi);
         DEBUG() << "WEBSOCKET: ServerWriteable: " << wsi;
     }
@@ -141,10 +157,15 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
 {
     Q_UNUSED(context);
     Q_UNUSED(len);
-    int fd = (int)(long)user;
+
+    int fd = (int)(long)in;
 
     switch (reason)
     {
+        case LWS_CALLBACK_HTTP_FILE_COMPLETION:
+            DEBUG() << "HTTP COMPLETE: " << wsi;
+        break;
+
         case LWS_CALLBACK_FILTER_NETWORK_CONNECTION:
         {
             // If no filter configured -> allow any IP.
@@ -187,9 +208,10 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
 
         case LWS_CALLBACK_HTTP:
         {
-            DEBUG() << "HTTP: SERVE: " << (char *)in;
-
             const char *http_request_path = (const char *)in;
+
+            if (!http_request_path || strcmp(http_request_path, "/") == 0)
+                http_request_path = "/topsecret/tunaplayer.html";
 
             QString filePath;
             bool found = false;
@@ -200,11 +222,18 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
                     found = true;
             }
 
+            if (!found)
+            {
+                ERROR() << "NOT FOUND: " << http_request_path;
+                return 1;
+            }
+
             QString contentType = gWebSocketServer->filenameToMime(filePath);
             DEBUG() << "HTTP: SERVE: file=" << filePath << " content:" << contentType;
-            if (libwebsockets_serve_http_file(context, wsi, filePath.toUtf8().constData(), contentType.toUtf8().constData()))
+            int status;
+            if ((status = libwebsockets_serve_http_file(context, wsi, filePath.toUtf8().constData(), contentType.toUtf8().constData())) < 0)
             {
-                ERROR() << "HTTP: SERVE";
+                ERROR() << "HTTP: SERVE: " << strerror(errno);
             }
     }
     break;
@@ -213,22 +242,32 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
     {
         DEBUG() << "HTTP: AddFD: " << fd;
 
-        TPWebSocketServerNotifier *notifier = new TPWebSocketServerNotifier(fd, wsi, gWebSocketServer);
-        notifier->setEnabled(true);
-        gWebSocketServer->notifiers.insert(fd, notifier);
-        connect(notifier, SIGNAL(activated(int)), gWebSocketServer, SLOT(notifierActivated(int)));
+        TPWebSocketServerNotifier *notifierRead =
+                new TPWebSocketServerNotifier(fd,
+                                              QSocketNotifier::Read,
+                                              wsi,
+                                              gWebSocketServer);
+        TPWebSocketServerNotifier *notifierWrite =
+                new TPWebSocketServerNotifier(fd,
+                                              QSocketNotifier::Write,
+                                              wsi,
+                                              gWebSocketServer);
+
+        notifierRead->setEnabled(true);
+        notifierWrite->setEnabled(true);
+
+        gWebSocketServer->notifiersRead.insert(fd, notifierRead);
+        gWebSocketServer->notifiersWrite.insert(fd, notifierWrite);
+
+        connect(notifierRead, SIGNAL(activated(int)), gWebSocketServer, SLOT(notifierActivated(int)));
+        connect(notifierWrite, SIGNAL(activated(int)), gWebSocketServer, SLOT(notifierActivated(int)));
     }
     break;
 
     case LWS_CALLBACK_DEL_POLL_FD:
     {
         DEBUG() << "HTTP: RemoveFD: " << fd;
-        TPWebSocketServerNotifier *notifier = gWebSocketServer->notifierForFd(fd);
-        if (notifier)
-        {
-            gWebSocketServer->removeNotifier(fd);
-            delete notifier;
-        }
+        gWebSocketServer->removeNotifier(fd);
     }
     break;
 
@@ -239,29 +278,43 @@ int TPWebSocketServer::callback_http(struct libwebsocket_context *context,
     return 0;
 }
 
-TPWebSocketServerNotifier* TPWebSocketServer::notifierForFd(int fd)
+TPWebSocketServerNotifier* TPWebSocketServer::readNotifierForFd(int fd)
 {
-    QMap<int, TPWebSocketServerNotifier *>::iterator it = notifiers.find(fd);
-    if (it == notifiers.end())
+    QMap<int, TPWebSocketServerNotifier *>::iterator it = notifiersRead.find(fd);
+    if (it == notifiersRead.end())
         return NULL;
 
     TPWebSocketServerNotifier *notifier = it.value();
     return notifier;
 }
 
+TPWebSocketServerNotifier* TPWebSocketServer::writeNotifierForFd(int fd)
+{
+    QMap<int, TPWebSocketServerNotifier *>::iterator it = notifiersWrite.find(fd);
+    if (it == notifiersWrite.end())
+        return NULL;
+
+    TPWebSocketServerNotifier *notifier = it.value();
+    return notifier;
+}
 
 void TPWebSocketServer::notifierActivated(int fd)
 {
-    TPWebSocketServerNotifier* notifier = notifierForFd(fd);
-    if (notifier)
+    TPWebSocketServerNotifier* readNotifier = readNotifierForFd(fd);
+    TPWebSocketServerNotifier* writeNotifier = writeNotifierForFd(fd);
+    if (readNotifier && writeNotifier)
     {
-        notifier->setEnabled(false);
+        readNotifier->setEnabled(false);
+        writeNotifier->setEnabled(false);
         libwebsocket_service(gWebSocketServer->context, 0);
         // Above call might cause the notifier to be deleted ->
         // refetch the pointer here.
-        notifier = notifierForFd(fd);
-        if (notifier)
-            notifier->setEnabled(true);
+        readNotifier = readNotifierForFd(fd);
+        if (readNotifier)
+            readNotifier->setEnabled(true);
+        writeNotifier = writeNotifierForFd(fd);
+        if (writeNotifier)
+            writeNotifier->setEnabled(true);
     }
 }
 
@@ -271,8 +324,8 @@ void TPWebSocketServer::sendFilteredEvent(TPWebSocketProtocolMessage message)
 
     QVector<void *>  targets;
 
-    QMap<int, TPWebSocketServerNotifier *>::iterator it = notifiers.begin();
-    while (it != notifiers.end())
+    QMap<int, TPWebSocketServerNotifier *>::iterator it = notifiersWrite.begin();
+    while (it != notifiersWrite.end())
     {
         TPWebSocketServerNotifier *notifier = it.value();
         void *clientHandle = notifier->getWsi();
@@ -285,6 +338,8 @@ void TPWebSocketServer::sendFilteredEvent(TPWebSocketProtocolMessage message)
     if (targets.count())
     {
         QByteArray content = message.serialize();
+
+        DEBUG() << "SEND-EVENT: " << content;
 
         char *buffer = new char [content.length() + LWS_SEND_BUFFER_PRE_PADDING + LWS_SEND_BUFFER_POST_PADDING];
         if (!buffer)
@@ -304,6 +359,8 @@ void TPWebSocketServer::sendFilteredEvent(TPWebSocketProtocolMessage message)
 void TPWebSocketServer::sendMessage(TPWebSocketProtocolMessage message)
 {
     QByteArray content = message.serialize();
+
+    DEBUG() << "SEND-MESSAGE: " << content;
 
     char *buffer = new char [content.length() + LWS_SEND_BUFFER_PRE_PADDING + LWS_SEND_BUFFER_POST_PADDING];
     if (!buffer)

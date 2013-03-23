@@ -28,10 +28,6 @@ TPWebSocketProtocol::TPWebSocketProtocol(TPWebSocketServer *_server, QObject *pa
 
     connect(server, SIGNAL(messageReceived(QByteArray,void*)), this, SLOT(handleDataReceived(QByteArray, void*)));
     connect(server, SIGNAL(clientDisconnected(int,void*)), this, SLOT(handleClientDisconnected(int,void *)));
-
-    sendTimer = new QTimer(this);
-    sendTimer->setSingleShot(true);
-    connect(sendTimer, SIGNAL(timeout()), this, SLOT(sendNow()));
 }
 
 TPWebSocketProtocol::~TPWebSocketProtocol()
@@ -62,10 +58,9 @@ void TPWebSocketProtocol::sendEvent(TPWebSocketProtocolMessage event)
 
     if (server->countClients())
     {
-        // TODO: Check here.
         pendingEvents.append(event);
-        if (!sendTimer->isActive())
-            sendTimer->start(5);
+
+        sendAll();
     }
 }
 
@@ -77,28 +72,34 @@ void TPWebSocketProtocol::sendResponse(TPWebSocketProtocolMessage response)
         if (response.getOrigin())
         {
             pendingResponses.append(response);
-            if (!sendTimer->isActive())
-                sendTimer->start(5);
+
+            sendAll();
         }
     }
 }
 
-void TPWebSocketProtocol::sendNow()
+void TPWebSocketProtocol::sendAll()
+{
+    while (sendNow());
+}
+
+bool TPWebSocketProtocol::sendNow()
 {
     // Firstly, always process events to keep UI as up to date as possible.
     if (pendingEvents.count())
     {
         server->sendFilteredEvent(pendingEvents.takeFirst());
+
+        return true;
     }
     else if (pendingResponses.count())
     {
         server->sendMessage(pendingResponses.takeFirst());
+
+        return true;
     }
 
-    // Start sending in deferred manner... give some time for sending in
-    // order not to choke on modest hardware.
-    if (pendingResponses.count() || pendingEvents.count())
-        sendTimer->start(5);
+    return false;
 }
 
 

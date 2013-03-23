@@ -687,7 +687,7 @@ void TPMusicPlayerCore::protocolRespondACK(TPWebSocketProtocol *protocol,
         response.setHeaderValue(it.key(), it.value());
         ++it;
     }
-
+    printf("protocol::sendResponse\n");
     protocol->sendResponse(response);
 }
 

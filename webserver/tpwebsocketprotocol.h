@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <QObject>
 #include <QDebug>
-#include <QTimer>
 #include <QQueue>
 #include "tpwebsocketprotocolmessage.h"
 #include "tplibwebsocketinterface.h"
@@ -69,13 +68,13 @@ public slots:
     //! @brief Responds to a specific command if any.
     void sendResponse(TPWebSocketProtocolMessage response);
 
+    void sendAll();
+
 private slots:
 
-    void sendNow();
+    bool sendNow();
 
 private:
-
-    QTimer *sendTimer;
 
     // Queue for events that are to be delivered
     // to all the clients.
