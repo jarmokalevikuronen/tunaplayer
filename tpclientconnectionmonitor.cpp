@@ -16,7 +16,7 @@ void TPClientConnectionMonitor::onClientConnected(int count)
         // the disk spin early on by creating, and removing,
         // a dummy file from the each and every place we are handling
         // for information.
-        QStringList triggerFiles = TPPathUtils::getMediaTriggerFiles();
+/*        QStringList triggerFiles = TPPathUtils::getMediaTriggerFiles();
 
         foreach(QString file, triggerFiles)
         {
@@ -35,7 +35,7 @@ void TPClientConnectionMonitor::onClientConnected(int count)
             {
                 ERROR() << "CLIENTCONNECTIONMONITOR: Failed to create file: " << file;
             }
-        }
+        }*/
     }
 }
 
